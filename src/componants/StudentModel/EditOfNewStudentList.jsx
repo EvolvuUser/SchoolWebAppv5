@@ -268,7 +268,7 @@ function EditOfNewStudentList() {
     }
   }, [student, API_URL]);
   // for fecting data for parent informations
-  //   const [classes, setClasses] = useState([]);
+  const [classesforForm, setClassesforForm] = useState([]);
   const [studentNameWithClassId, setStudentNameWithClassId] = useState([]);
   //   const [selectedClass, setSelectedClass] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -317,11 +317,12 @@ function EditOfNewStudentList() {
   // Custom styles for class dropdown
   const classOptions = useMemo(
     () =>
-      classes.map((cls) => ({
+      classesforForm.map((cls) => ({
         value: cls.section_id,
         label: `${cls?.get_class?.name} ${cls.name}`,
+        key: `${cls.class_id}-${cls.section_id}`, // Add key here for uniqueness
       })),
-    [classes]
+    [classesforForm]
   );
 
   // Custom styles for student dropdown
@@ -437,7 +438,7 @@ function EditOfNewStudentList() {
         `${API_URL}/api/getallClassWithStudentCount`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setClasses(classResponse.data || []);
+      setClassesforForm(classResponse.data || []);
     } catch (error) {
       toast.error("Error fetching initial data.");
     } finally {
@@ -926,8 +927,9 @@ function EditOfNewStudentList() {
     if (parentExist === "no") {
       formData.parent_id = " ";
       console.log("formadata parent_id not exit", formData.parent_id);
+    } else {
+      console.log("formadata parent_id is exit", formData.parent_id);
     }
-    console.log("formadata parent_id is exit", formData.parent_id);
     try {
       const token = localStorage.getItem("authToken");
       if (!token) {
