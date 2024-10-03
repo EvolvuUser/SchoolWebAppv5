@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { RxCross1 } from "react-icons/rx";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -7,12 +7,14 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ImageCropper from "../common/ImageUploadAndCrop";
 import { FaUserGroup } from "react-icons/fa6";
+import Select from "react-select";
 
-function Form() {
+function EditOfNewStudentList() {
   const API_URL = import.meta.env.VITE_API_URL;
   // for unique user name
   const [usernameError, setUsernameError] = useState(""); // To store the error message
-
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [parentInformation, setParentInformation] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
   const { student } = location.state || {};
@@ -28,7 +30,7 @@ function Form() {
     fatherEmail: "",
     motherEmail: "",
   });
-
+  const [nameError, setNameError] = useState("");
   const [selectedUsername, setSelectedUsername] = useState(null);
 
   // Fetch class names
@@ -120,6 +122,7 @@ function Form() {
     student_id: "",
     reg_id: " ",
     // Parent fields
+    parent_id: "",
     father_name: "",
     father_occupation: "",
     f_office_add: "",
@@ -145,7 +148,7 @@ function Form() {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [backendErrors, setBackendErrors] = useState({});
 
-  console.log("employeeID", student.employeeId);
+  console.log("employeeID", student?.employeeId);
 
   // State for father's mobile selection
   const [fatherMobileSelected, setFatherMobileSelected] = useState({
@@ -258,12 +261,216 @@ function Form() {
 
       if (student.image_name) {
         setPhotoPreview(
-          `${API_URL}${student.image_name}`
-          // `${student.image_name}`
+          // `${API_URL}/path/to/images/${student.teacher_image_name}`
+          `${student.image_name}`
         );
       }
     }
   }, [student, API_URL]);
+  // for fecting data for parent informations
+  //   const [classes, setClasses] = useState([]);
+  const [studentNameWithClassId, setStudentNameWithClassId] = useState([]);
+  //   const [selectedClass, setSelectedClass] = useState(null);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [loading, setLoading] = useState(false);
+  //   const [isDropdownDisabled, setIsDropdownDisabled] = useState(false);
+  const [parentExist, setParentExist] = useState("no"); // Track the selected radio button
+  // Handle radio button change
+  const handleRadioChange = (e) => {
+    const value = e.target.value;
+    setParentExist(value);
+
+    if (value === "no") {
+      // Clear form data if "Yes" is selected
+      setFormData((prevFormData) => ({
+        ...prevFormData, // Spread the existing form data to keep it intact
+        // Now update only the parent-related fields
+        father_name: "",
+        father_occupation: "",
+        f_office_add: "",
+        f_office_tel: "",
+        f_mobile: "",
+        f_email: "",
+        parent_adhar_no: "",
+        mother_name: "",
+        mother_occupation: "",
+        m_office_add: "",
+        m_office_tel: "",
+        m_mobile: "",
+        m_emailid: "",
+        m_adhar_no: "",
+        f_dob: "",
+        m_dob: "",
+        f_blood_group: "",
+        m_blood_group: "",
+      }));
+      setSelectedClass(null);
+      setSelectedStudent(null);
+      setSelectedStudentId(null);
+    }
+  };
+
+  // Conditionally disable/enable dropdowns and other fields based on the selected radio button value
+  const isDropdownDisabled = parentExist === "no"; // Disable class and student dropdowns if "No" is selected
+  const areOtherFieldsDisabled = parentExist === "yes"; // Disable other fields if "Yes" is selected
+
+  // Custom styles for class dropdown
+  const classOptions = useMemo(
+    () =>
+      classes.map((cls) => ({
+        value: cls.section_id,
+        label: `${cls?.get_class?.name} ${cls.name}`,
+      })),
+    [classes]
+  );
+
+  // Custom styles for student dropdown
+  const studentOptions = useMemo(
+    () =>
+      studentNameWithClassId.map((stu) => ({
+        value: stu.student_id,
+        label: `${stu?.first_name} ${stu?.mid_name} ${stu.last_name}`,
+      })),
+    [studentNameWithClassId]
+  );
+
+  // Handle class selection
+  const handleClassSelect = (selectedOption) => {
+    setNameError("");
+    setSelectedClass(selectedOption);
+    setSelectedStudent(null); // Clear the student selection when class changes
+    setSelectedStudentId(null);
+    fetchStudentNameWithClassId(selectedOption.value); // Fetch students based on selected class
+  };
+
+  // Handle student selection
+  const handleStudentSelect = (selectedOption) => {
+    setNameError("");
+    setSelectedStudent(selectedOption);
+    setSelectedStudentId(selectedOption.value);
+  };
+
+  // Function to handle the search
+  const handleSearch = async () => {
+    if (!selectedStudentId) {
+      setNameError("Please select a student.");
+      toast.error("Please select a student!");
+      return;
+    }
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("authToken");
+      let response;
+      if (selectedStudentId) {
+        response = await axios.get(
+          `${API_URL}/api/getParentInfoOfStudent/${selectedStudentId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+      console.log("Response:", response.data);
+      const studentList = response?.data?.parent || [];
+      if (studentList.length > 0) {
+        // If parent data is found, set parentExist to "yes" and fill the fields
+        setParentExist("yes");
+        setParentInformation(studentList[0]); // Take the first parent's information
+      } else {
+        setParentInformation(null);
+      }
+      console.log("Parent info:", studentList);
+    } catch (error) {
+      toast.error("Error fetching student details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (parentInformation) {
+      setFormData((prevFormData) => ({
+        ...prevFormData, // Spread the existing formData to retain other values
+        // Now update only the parent-related fields
+        parent_id: parentInformation.parent_id || " ",
+        father_name: parentInformation.father_name || "",
+        father_occupation: parentInformation.father_occupation || "",
+        f_office_add: parentInformation.f_office_add || "",
+        f_office_tel: parentInformation.f_office_tel || "",
+        f_mobile: parentInformation.f_mobile || "",
+        f_email: parentInformation.f_email || "",
+        parent_adhar_no: parentInformation.parent_adhar_no || "",
+        mother_name: parentInformation.mother_name || "",
+        mother_occupation: parentInformation.mother_occupation || "",
+        m_office_add: parentInformation.m_office_add || "",
+        m_office_tel: parentInformation.m_office_tel || "",
+        m_mobile: parentInformation.m_mobile || "",
+        m_emailid: parentInformation.m_emailid || "",
+        m_adhar_no: parentInformation.m_adhar_no || "",
+        f_dob: parentInformation.f_dob || "",
+        m_dob: parentInformation.m_dob || "",
+        f_blood_group: parentInformation.f_blood_group || "",
+        m_blood_group: parentInformation.m_blood_group || "",
+      }));
+
+      // Set additional preferences for mobile or email-based login or SMS settings
+      setFatherMobileSelected({
+        setUsername: parentInformation.SetEmailIDAsUsername === "FatherMob",
+        receiveSms: parentInformation.SetToReceiveSMS === "FatherMob",
+      });
+      setMotherMobileSelected({
+        setUsername: parentInformation.SetEmailIDAsUsername === "MotherMob",
+        receiveSms: parentInformation.SetToReceiveSMS === "MotherMob",
+      });
+      setFatherEmailSelected({
+        setUsername: parentInformation.SetEmailIDAsUsername === "Father",
+      });
+      setMotherEmailSelected({
+        setUsername: parentInformation.SetEmailIDAsUsername === "Mother",
+      });
+    }
+  }, [parentInformation]);
+
+  // Fetch classes with student count
+  const fetchInitialData = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("authToken");
+      const classResponse = await axios.get(
+        `${API_URL}/api/getallClassWithStudentCount`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setClasses(classResponse.data || []);
+    } catch (error) {
+      toast.error("Error fetching initial data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch student list based on class ID
+  const fetchStudentNameWithClassId = async (section_id = null) => {
+    setLoading(true);
+    try {
+      const params = section_id ? { section_id } : {};
+      const token = localStorage.getItem("authToken");
+      const response = await axios.get(
+        `${API_URL}/api/getStudentListBySection`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params,
+        }
+      );
+      setStudentNameWithClassId(response?.data?.students || []);
+    } catch (error) {
+      toast.error("Error fetching students.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInitialData(); // Fetch classes when the component mounts
+    fetchStudentNameWithClassId();
+  }, []);
+
   // Fetch divisions when the class is already selected (for pre-filled data)
   useEffect(() => {
     if (selectedClass) {
@@ -489,16 +696,20 @@ function Form() {
     const m_emailid = validateEmail(formData.m_emailid);
     if (m_emailid) newErrors.m_emailid = m_emailid;
     // Validate required fields
-    if (!formData.father_name.trim())
+    if (!formData.father_name)
       newErrors.father_name = "Father Name is required";
     // mother
-    if (!formData.m_adhar_no.trim())
+    // Validate Aadhaar fields with null/undefined check before using trim()
+    if (!formData.m_adhar_no || !formData.m_adhar_no.trim()) {
       newErrors.m_adhar_no = "Mother Aadhaar Card No. is required";
-    if (!formData.stu_aadhaar_no.trim())
+    }
+    if (!formData.stu_aadhaar_no || !formData.stu_aadhaar_no.trim()) {
       newErrors.stu_aadhaar_no = "Student Aadhaar Card No. is required";
-    if (!formData.parent_adhar_no.trim())
+    }
+    if (!formData.parent_adhar_no || !formData.parent_adhar_no.trim()) {
       newErrors.parent_adhar_no = "Father Aadhaar Card No. is required";
-    if (!formData.mother_name.trim())
+    }
+    if (!formData.mother_name)
       newErrors.mother_name = "Mother Name is required";
     // if (!formData.m_adhar_no.trim())
     //   newErrors.m_adhar_no = "Mother Aadhaar Card No. is required";
@@ -531,8 +742,6 @@ function Form() {
       fieldErrors.parent_adhar_no = validateAadhar(newValue);
     } else if (name === "stu_aadhaar_no") {
       fieldErrors.stu_aadhaar_no = validateAadhar(newValue);
-    } else if (name === "m_adhar_no") {
-      fieldErrors.m_adhar_no = validateAadhar(newValue);
     } else if (name === "f_email" || name === "m_emailid") {
       fieldErrors[name] = validateEmail(newValue);
     }
@@ -679,6 +888,7 @@ function Form() {
   //   }
   // };
   const handleSubmit = async (event) => {
+    console.log("hudsfh");
     event.preventDefault();
     const validationErrors = validate();
 
@@ -713,7 +923,11 @@ function Form() {
     // Object.keys(formData).forEach((key) => {
     //   formattedFormData.append(key, formData[key]);
     // });
-
+    if (parentExist === "no") {
+      formData.parent_id = " ";
+      console.log("formadata parent_id not exit", formData.parent_id);
+    }
+    console.log("formadata parent_id is exit", formData.parent_id);
     try {
       const token = localStorage.getItem("authToken");
       if (!token) {
@@ -761,7 +975,7 @@ function Form() {
           </h5>
           <RxCross1
             className="float-end relative right-2 text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
-            onClick={() => navigate("/manageStudent")}
+            onClick={() => navigate("/newStudentList")}
           />
         </div>
         <div
@@ -994,6 +1208,7 @@ function Form() {
                 </p>
               )}
             </div>
+            {/* Birth place */}
             <div className="mt-2">
               <label
                 htmlFor="birthPlace"
@@ -1035,6 +1250,7 @@ function Form() {
                 </p>
               )}
             </div>
+            {/* Mother toung */}
             <div className="mt-2">
               <label
                 htmlFor="motherTongue"
@@ -1064,6 +1280,7 @@ function Form() {
               {" "}
               Student Details
             </h5>
+            {/* Student Name is */}
             <div className="mt-2">
               <label
                 htmlFor="studentName"
@@ -1201,6 +1418,7 @@ function Form() {
                 <option value="S">Sapphire</option>
               </select>
             </div>
+            {/* Admision in class */}
             <div className="mt-2">
               <label
                 htmlFor="admittedInClass"
@@ -1261,6 +1479,7 @@ function Form() {
                 </p>
               )}
             </div>
+            {/* Student Id number */}
             <div className="mt-2">
               <label
                 htmlFor="studentIdNumber"
@@ -1303,6 +1522,7 @@ function Form() {
                 </p>
               )}
             </div>{" "}
+            {/* Udise Number */}
             {selectedClass > 99 && (
               <div className="mt-2">
                 <label
@@ -1657,6 +1877,7 @@ function Form() {
                 // onBlur={handleBlur}
               />
             </div>
+            {/* Has Spectales */}
             <div className="  flex gap-4 pt-[7px]">
               <div
                 htmlFor="weight"
@@ -1698,13 +1919,105 @@ function Form() {
             {/* ... */}
             {/* Add other form fields similarly */}
             {/* ... */}
-            <div className="w-full col-span-4 relative top-4">
+            <div className="w-full col-span-4 relative top-6">
               <div className="w-full mx-auto">
                 <h3 className="text-blue-500 w-full mx-auto text-center  md:text-[1.2em] text-nowrap font-bold">
                   {" "}
                   <FaUserGroup className="text-[1.4em] text-blue-700 inline" />{" "}
                   Parent's Information :{" "}
                 </h3>
+              </div>
+            </div>
+            <div className=" w-full col-span-4   flex justify-center flex-col md:flex-row gap-x-1 md:gap-x-8  bg-white  rounded-lg border border-gray-300 mx-auto mt-10 p-6">
+              <div className=" w-full md:w-[40%]  flex md:flex-row justify-between items-center">
+                <label
+                  htmlFor="siblingmap"
+                  className="block md:text-nowrap  md:mb-0 font-bold text-[.9em] mb-0.5"
+                >
+                  If Parent Already Exist:{" "}
+                </label>
+                <label className="block md:text-nowrap font-semibold text-[.9em] mb-0.5">
+                  <input
+                    type="radio"
+                    //   id="siblingmap"
+                    value="yes"
+                    name="parentExist"
+                    checked={parentExist === "yes"} //   className="md:text-nowrap"
+                    onChange={handleRadioChange}
+                  />{" "}
+                  Yes
+                </label>
+                <label className="block md:text-nowrap font-semibold text-[.9em] mb-0.5">
+                  <input
+                    type="radio"
+                    value="no"
+                    checked={parentExist === "no"}
+                    name="parentExist"
+                    onChange={handleRadioChange}
+                  />{" "}
+                  No
+                </label>
+              </div>
+              <div className="w-full md:w[80%]  flex flex-col gap-y-2 md:gap-y-0 md:flex-row ml-0 md:ml-10">
+                <div className="w-full   gap-x-3 md:justify-start justify-between  my-1 md:my-4 flex  md:flex-row  ">
+                  <label
+                    htmlFor="classSection"
+                    className="block relative left-0 md:-left-3   pt-2 items-center text-center md:text-nowrap font-bold text-[.9em] mb-0.5"
+                  >
+                    Sibling in
+                  </label>
+                  <div className="w-[60%] md:w-[50%] ">
+                    <Select
+                      isDisabled={isDropdownDisabled} // Disable if parentExist is "no"
+                      value={selectedClass}
+                      onChange={handleClassSelect}
+                      options={classOptions}
+                      placeholder="Class "
+                      isSearchable
+                      isClearable
+                      className="text-sm"
+                    />
+                    {/* {nameError && (
+                        <div className=" relative top-0.5 ml-1 text-danger text-xs">
+                          {nameError}
+                        </div>
+                      )} */}
+                  </div>
+                </div>
+                <div className="w-full  relative left-0 md:-left-[7%] justify-between  md:w-[90%] my-1 md:my-4 flex  md:flex-row  ">
+                  <label
+                    htmlFor="classSection"
+                    className="relative left-0 md:-left-3  md:text-nowrap pt-2 items-center text-center"
+                  ></label>
+                  <div className="w-full md:w-[85%] ">
+                    <Select
+                      isDisabled={isDropdownDisabled} // Disable if no class is selected or parentExist is "no"
+                      value={selectedStudent}
+                      onChange={handleStudentSelect}
+                      options={studentOptions}
+                      placeholder="Student Name"
+                      isSearchable
+                      isClearable
+                      className="text-sm"
+                      // isClearable={() => {
+                      //   setSelectedStudentId("");
+                      // }}
+                    />
+                    {nameError && (
+                      <span className=" relative top-0.5 md:absolute md:top-[95%]   ml-1 text-danger text-xs">
+                        {nameError}
+                      </span>
+                    )}{" "}
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSearch}
+                  type="button"
+                  className=" my-1 md:my-4 btn h-10  w-18 md:w-auto btn-primary "
+                >
+                  Search
+                </button>
               </div>
             </div>
             <h5 className="col-span-4 text-blue-400 mt-2 relative top-4">
@@ -1722,7 +2035,14 @@ function Form() {
                 maxLength={100}
                 value={formData.father_name}
                 onChange={handleChange}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
+
+                // className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
               />
               {errors.father_name && (
                 <span className="text-red-500 text-xs">
@@ -1741,7 +2061,12 @@ function Form() {
                 name="father_occupation"
                 value={formData.father_occupation}
                 onChange={handleChange}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
               />
             </div>
             <div className="mt-2">
@@ -1755,7 +2080,12 @@ function Form() {
                 id="bloodGroup"
                 name="blood_group"
                 value={formData.blood_group}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
                 onChange={handleChange}
                 // onBlur={handleBlur}
               >
@@ -1781,7 +2111,12 @@ function Form() {
                 maxLength={12}
                 value={formData.parent_adhar_no}
                 onChange={handleChange}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
               />
               {errors.parent_adhar_no && (
                 <span className="text-red-500 text-xs">
@@ -1800,7 +2135,12 @@ function Form() {
                 name="f_office_add"
                 value={formData.f_office_add}
                 onChange={handleChange}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
               />
             </div>
             <div className="mt-2">
@@ -1825,7 +2165,12 @@ function Form() {
                     });
                   }
                 }}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
               />
             </div>
             <div>
@@ -1844,7 +2189,12 @@ function Form() {
                   maxLength="10"
                   value={formData.f_mobile}
                   onChange={handleChange}
-                  className="input-field block w-full border-1 border-gray-400 outline-none rounded-r-md py-1 px-3 bg-white shadow-inner"
+                  disabled={areOtherFieldsDisabled}
+                  className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                    areOtherFieldsDisabled
+                      ? "bg-gray-200  text-gray-500"
+                      : "bg-white"
+                  }`}
                   required
                 />
               </div>
@@ -1896,7 +2246,12 @@ function Form() {
                 maxLength={50}
                 value={formData.f_email}
                 onChange={handleChange}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
               />
               {errors.f_email && (
                 <span className="text-red-500 text-xs">{errors.f_email}</span>
@@ -1918,6 +2273,7 @@ function Form() {
                 <label htmlFor="setUserNameFather">Set this as username</label>
               </div>
             </div>
+            {/* Father Date of birth */}
             <div className="mt-2">
               <label
                 htmlFor="dataOfAdmission"
@@ -1930,7 +2286,12 @@ function Form() {
                 id="dataOfAdmission"
                 name="f_dob"
                 value={formData.f_dob}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
                 onChange={handleChange}
                 // onBlur={handleBlur}
               />
@@ -1951,7 +2312,12 @@ function Form() {
                 name="mother_name"
                 value={formData.mother_name}
                 onChange={handleChange}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
               />
               {errors.mother_name && (
                 <span className="text-red-500 text-xs">
@@ -1970,7 +2336,12 @@ function Form() {
                 name="mother_occupation"
                 value={formData.mother_occupation}
                 onChange={handleChange}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
               />
             </div>
             <div className="mt-2">
@@ -1984,7 +2355,12 @@ function Form() {
                 id="bloodGroup"
                 name="m_blood"
                 value={formData.m_blood}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
                 onChange={handleChange}
                 // onBlur={handleBlur}
               >
@@ -1999,6 +2375,7 @@ function Form() {
                 <option value="O-">O-</option>
               </select>
             </div>
+            {/* Mother Adhar Card */}
             <div className="mt-2">
               <label htmlFor="email" className="block font-bold text-xs mb-0.5">
                 Mother Aadhaar Card No. <span className="text-red-500">*</span>
@@ -2010,27 +2387,18 @@ function Form() {
                 maxLength={12}
                 value={formData.m_adhar_no}
                 onChange={handleChange}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
               />
               {errors.m_adhar_no && (
                 <span className="text-red-500 text-xs">
                   {errors.m_adhar_no}
                 </span>
               )}
-            </div>
-            <div className="mt-2">
-              <label htmlFor="email" className="block font-bold text-xs mb-0.5">
-                Office Address
-              </label>
-              <textarea
-                id="email"
-                rows={2}
-                maxLength={200}
-                name="m_office_add"
-                value={formData.m_office_add}
-                onChange={handleChange}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
-              />
             </div>
             <div className="mt-2">
               <label
@@ -2054,7 +2422,31 @@ function Form() {
                     });
                   }
                 }}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
+              />
+            </div>{" "}
+            <div className="mt-2">
+              <label htmlFor="email" className="block font-bold text-xs mb-0.5">
+                Office Address
+              </label>
+              <textarea
+                id="email"
+                rows={2}
+                maxLength={200}
+                name="m_office_add"
+                value={formData.m_office_add}
+                onChange={handleChange}
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
               />
             </div>
             {/* <div className="mt-2">
@@ -2087,7 +2479,12 @@ function Form() {
                   maxLength="10"
                   value={formData.m_mobile}
                   onChange={handleChange}
-                  className="input-field block w-full border-1 border-gray-400 outline-none rounded-r-md py-1 px-3 bg-white shadow-inner"
+                  disabled={areOtherFieldsDisabled}
+                  className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                    areOtherFieldsDisabled
+                      ? "bg-gray-200  text-gray-500"
+                      : "bg-white"
+                  }`}
                   required
                 />
               </div>
@@ -2139,7 +2536,12 @@ function Form() {
                 maxLength={50}
                 value={formData.m_emailid}
                 onChange={handleChange}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
               />
               {errors.m_emailid && (
                 <span className="text-red-500 text-xs">{errors.m_emailid}</span>
@@ -2160,6 +2562,7 @@ function Form() {
                 <label htmlFor="emailuser">Set this as username</label>
               </div>
             </div>
+            {/* Mother date of birth */}
             <div className="mt-2">
               <label
                 htmlFor="dataOfAdmission"
@@ -2172,20 +2575,26 @@ function Form() {
                 id="dataOfAdmission"
                 name="m_dob"
                 value={formData.m_dob}
-                className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
+                disabled={areOtherFieldsDisabled}
+                className={`input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 shadow-inner ${
+                  areOtherFieldsDisabled
+                    ? "bg-gray-200  text-gray-500"
+                    : "bg-white"
+                }`}
                 onChange={handleChange}
                 // onBlur={handleBlur}
               />
             </div>
             {/*  */}
             {/* added father feilds here */}
-            <div className="col-span-3 md:mr-9 my-2 text-right">
+            <div className="col-span-4 md:mr-9 my-2 text-right">
               <button
                 type="submit"
+                // type="button"
                 style={{ backgroundColor: "#2196F3" }}
                 className=" text-white font-bold py-1 border-1 border-blue-500 px-4 rounded"
               >
-                Save
+                Update
               </button>
             </div>
           </div>
@@ -2195,4 +2604,4 @@ function Form() {
   );
 }
 
-export default Form;
+export default EditOfNewStudentList;

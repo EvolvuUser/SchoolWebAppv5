@@ -127,6 +127,8 @@ import ManageStudent from "../componants/StudentModel/ManageStudent.jsx";
 import ViewStudent from "../componants/StudentModel/ViewStudent.jsx";
 import SubjectAllotmentForReportCard from "../componants/SubjectAllotmentForReportCard.jsx/SubjectAllotmentForReportCard.jsx";
 import SubjectForRc from "../componants/SubjectForRCard/SubjectForRc.jsx";
+import NewStudentList from "../componants/StudentModel/NewStudentList.jsx";
+import EditOfNewStudentList from "../componants/StudentModel/EditOfNewStudentList.jsx";
 // import Menus from "../c";
 function Index() {
   return (
@@ -226,6 +228,10 @@ function Index() {
           path="/manageStudent"
           element={<PrivateRoute element={ManageStudent} />}
         />
+        <Route
+          path="/newStudentList"
+          element={<PrivateRoute element={NewStudentList} />}
+        />
         {/* <Route
           path="/student-create"
           element={<PrivateRoute element={CreateStudent} />}
@@ -238,6 +244,11 @@ function Index() {
           path="/student/view/:id"
           element={<PrivateRoute element={ViewStudent} />}
         />
+        <Route
+          path="/newStudetEdit/edit/:id"
+          element={<PrivateRoute element={EditOfNewStudentList} />}
+        />
+
         <Route path="/sections" element={<PrivateRoute element={Sections} />} />
         <Route path="/notification" element={<NotificationPage />} />
         <Route path="/changepassword" element={<ChangePassword />} />
