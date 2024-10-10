@@ -129,6 +129,11 @@ import SubjectAllotmentForReportCard from "../componants/SubjectAllotmentForRepo
 import SubjectForRc from "../componants/SubjectForRCard/SubjectForRc.jsx";
 import NewStudentList from "../componants/StudentModel/NewStudentList.jsx";
 import EditOfNewStudentList from "../componants/StudentModel/EditOfNewStudentList.jsx";
+import AllotClassTeacher from "../componants/AllotClassTeacher/AllotClassTeacher.jsx";
+import Exam from "../componants/Exam/Exam.jsx";
+import Grade from "../componants/Grade/Grade.jsx";
+import MarksHeading from "../componants/MarksHeading/MarksHeading.jsx";
+import AllotMarksHeading from "../componants/AllotMarkHeading/AllotMaekHeading.jsx";
 // import Menus from "../c";
 function Index() {
   return (
@@ -247,6 +252,26 @@ function Index() {
         <Route
           path="/newStudetEdit/edit/:id"
           element={<PrivateRoute element={EditOfNewStudentList} />}
+        />
+        {/* AllotClassTeacher */}
+        <Route
+          path="/allotClassTeacher"
+          element={<PrivateRoute element={AllotClassTeacher} />}
+        />
+        {/* ExamMdule */}
+        <Route path="/exams" element={<PrivateRoute element={Exam} />} />
+        {/* Grade Module */}
+        <Route path="/grades" element={<PrivateRoute element={Grade} />} />
+        {/* MarksHeading Moudle */}
+
+        <Route
+          path="/marksHeading"
+          element={<PrivateRoute element={MarksHeading} />}
+        />
+        {/* AllotMarksHeading module */}
+        <Route
+          path="/allotMarksHeading"
+          element={<PrivateRoute element={AllotMarksHeading} />}
         />
 
         <Route path="/sections" element={<PrivateRoute element={Sections} />} />

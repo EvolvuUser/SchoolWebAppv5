@@ -894,7 +894,7 @@ const AdminNavBar = () => {
         </NavDropdown.Item>
         <NavDropdown.Item
           as={Link}
-          to="#"
+          to="/allotClassTeacher"
           className="text-sm font-bold hover:text-black"
         >
           Allot Class Teachers
@@ -1102,17 +1102,34 @@ const AdminNavBar = () => {
         </NavDropdown.Item>
         <NavDropdown.Item
           as={Link}
-          to="#"
+          to="/Exams"
           className="text-sm font-bold hover:text-black"
         >
           Exams
         </NavDropdown.Item>
         <NavDropdown.Item
           as={Link}
-          to="#"
+          to="/grades"
+          // to="#"
           className="text-sm font-bold hover:text-black"
         >
           Grades
+        </NavDropdown.Item>
+        <NavDropdown.Item
+          as={Link}
+          // to="/grades"
+          to="/marksHeading"
+          className="text-sm font-bold hover:text-black"
+        >
+          Marks heading
+        </NavDropdown.Item>
+        <NavDropdown.Item
+          as={Link}
+          to="#"
+          // to="/allotMarksHeading"
+          className="text-sm font-bold hover:text-black"
+        >
+          Allot Marks heading
         </NavDropdown.Item>
       </NavDropdown>
 
