@@ -1,3 +1,4 @@
+// Working 100% Correct
 import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
@@ -16,7 +17,6 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function NewStudentList() {
   const API_URL = import.meta.env.VITE_API_URL; // URL for host
-  // const [loading, setLoading] = useState(false);
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [sectionIdForStudentList, setSectionIdForStudentList] = useState("");
@@ -44,12 +44,9 @@ function NewStudentList() {
   const [passwordError, setPasswordError] = useState(""); // For password error
   const [userIdError, setUserIdError] = useState(""); // For userId error
   const [selectedFile, setSelectedFile] = useState(null);
-  // const [uploadStatus, setUploadStatus] = useState("");
-  // const [errorMessage, setErrorMessage] = useState("");
   const [uploadStatus, setUploadStatus] = useState(""); // For success message
   const [errorMessage, setErrorMessage] = useState(""); // For error message
   const [errorMessageUrl, setErrorMessageUrl] = useState(""); // For error message
-
   const [loading, setLoading] = useState(false); // For loader
   const [showDisplayUpload, setShowDisplayUpload] = useState(false);
   const [isFileUploaded, setIsFileUploaded] = useState(false); // Track upload status
@@ -146,28 +143,13 @@ function NewStudentList() {
     }
   };
 
-  // useEffect(() => {
-  //   fetchInitialData(); // Fetch classes once when the component mounts
-  //   fetchAllStudents();
-  //   // Clear the selected file when the page is refreshed or component is mounted
-  //   setSelectedFile(null);
-  // }, []);
-
-  // Fetch initial data when component mounts or when file is successfully uploaded
-  // useEffect(() => {
-  //   fetchInitialData();
-  //   fetchAllStudents();
-
-  //   setSelectedFile(null); // Clear the selected file on mount or upload
-  // }, [isFileUploaded]); // Trigger this effect when 'isFileUploaded' change
-
   // Re-fetch data when the component mounts or after successful post
   useEffect(() => {
     fetchInitialData();
     fetchAllStudents();
     // If data is posted successfully, reset the flag and refetch
     if (isDataPosted) {
-      handleSearch();
+      fetchAllStudents();
       setIsDataPosted(false); // Reset the flag after refresh
     }
   }, [isDataPosted]);
@@ -187,17 +169,30 @@ function NewStudentList() {
     );
   };
 
-  const handleDelete = (subject) => {
-    console.log("inside delete of subjectallotmenbt____", subject);
-    console.log("inside delete of subjectallotmenbt", subject.student_id);
-    const sectionId = subject.student_id;
-    const classToDelete = subjects.find((cls) => cls.student_id === sectionId);
-    // setCurrentClass(classToDelete);
-    setCurrentSection({ classToDelete });
-    console.log("the currecne t section", currentSection);
-    setCurrestSubjectNameForDelete(currentSection?.classToDelete?.student_name);
-    console.log("cureendtsungjeg", currentSection?.classToDelete?.student_name);
-    console.log("currestSubjectNameForDelete", currestSubjectNameForDelete);
+  const handleDelete = (Subject) => {
+    console.log(
+      "inside delete of subjectallotmenbt____The ClassToDelete",
+      Subject
+    );
+    console.log(
+      "inside delete of subjectallotmenbt the Id is",
+      Subject.student_id
+    );
+
+    // Find the class to delete (you already have this in the Subject parameter)
+    const classToDelete = subjects.find(
+      (cls) => cls.student_id === Subject.student_id
+    );
+
+    // Directly use the data from `Subject` instead of waiting for `currentSection` state update
+    setCurrestSubjectNameForDelete(Subject.student_name);
+
+    // Log the values for debugging
+    // console.log("Class to delete:", classToDelete);
+    // console.log("Current subject name for delete:", Subject.student_name);
+
+    // Set the state with class to delete and show the delete modal
+    setCurrentSection({ classToDelete }); // Optional, if you still need to store this
     setShowDeleteModal(true);
   };
 
@@ -276,8 +271,8 @@ function NewStudentList() {
       );
 
       // fetchClassNames();
-      handleSearch();
 
+      fetchAllStudents();
       setShowDeleteModal(false);
       // setSubjects([]);
       toast.success("Student deleted successfully!");
@@ -330,7 +325,6 @@ function NewStudentList() {
   };
 
   // Handle file selection
-  // Handle file selection
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     setSelectedFile(file); // Set the selected file to state
@@ -372,18 +366,6 @@ function NewStudentList() {
         setIsDataPosted(true); // Set the flag to true after a successful post
         setSelectedFile(null);
       }
-      // if (response.status === 200) {
-      //   // If file upload is successful
-      //   setUploadStatus("File uploaded successfully!");
-      //   setErrorMessage(""); // Clear any error messages
-      //   toast.success("File uploaded successfully!");
-
-      //   setSelectedFile(null); // Clear the selected file
-      //   setLoading(false);
-      //   setIsFileUploaded(true); // Mark as uploaded
-      //   // setShowDisplayUpload(false);
-      //   setErrorMessageUrl("");
-      // }
     } catch (error) {
       setLoading(false); // Hide loader
 
@@ -562,14 +544,6 @@ function NewStudentList() {
                         {uploadStatus && (
                           <p style={{ color: "green" }}>{uploadStatus}</p>
                         )}
-
-                        {/* <button
-                          onClick={handleUpload}
-                          className="bg-blue-600 text-white text-xs rounded-full px-6 py-3 hover:bg-blue-700 transition duration-200"
-                        >
-                          <i className="fas fa-cloud-upload-alt text-lg"></i>{" "}
-                          Upload
-                        </button> */}
                       </div>
                     </div>
                   </div>

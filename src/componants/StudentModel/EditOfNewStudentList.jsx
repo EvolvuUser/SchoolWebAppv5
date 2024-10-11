@@ -119,8 +119,8 @@ function EditOfNewStudentList() {
     nationality: "",
     pincode: "",
     image_name: "",
-    student_id: "",
-    reg_id: " ",
+    // student_id: "",
+    reg_no: " ",
     // Parent fields
     parent_id: "",
     father_name: "",
@@ -192,8 +192,8 @@ function EditOfNewStudentList() {
         city: student.city || " ",
         state: student.state || "",
         roll_no: student.roll_no || "",
-        student_id: student.student_id || " ",
-        reg_id: student.reg_id || " ",
+        // student_id: student.student_id || " ",
+        reg_no: student.reg_no || " ",
         blood_group: student.blood_group || " ",
         category: student.category || " ",
         class_id: student.class_id || "",
@@ -270,6 +270,7 @@ function EditOfNewStudentList() {
   // for fecting data for parent informations
   const [classesforForm, setClassesforForm] = useState([]);
   const [studentNameWithClassId, setStudentNameWithClassId] = useState([]);
+  const [classIdForSearch, setClassIdForSearch] = useState(null);
   //   const [selectedClass, setSelectedClass] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -305,8 +306,11 @@ function EditOfNewStudentList() {
         m_blood_group: "",
       }));
       setSelectedClass(null);
+      setClassIdForSearch(null);
       setSelectedStudent(null);
       setSelectedStudentId(null);
+      console.log("setClassIdForSearch_______!", classIdForSearch);
+      fetchStudentNameWithClassId(null);
     }
   };
 
@@ -341,6 +345,8 @@ function EditOfNewStudentList() {
     setSelectedClass(selectedOption);
     setSelectedStudent(null); // Clear the student selection when class changes
     setSelectedStudentId(null);
+    setClassIdForSearch(selectedOption.value);
+    console.log("classIdForSearch__________", classIdForSearch);
     fetchStudentNameWithClassId(selectedOption.value); // Fetch students based on selected class
   };
 
@@ -642,8 +648,8 @@ function EditOfNewStudentList() {
       newErrors.mother_tongue = "MotherTongue is required";
     if (!formData.student_name)
       newErrors.student_name = "Student name is required";
-    if (!formData.reg_id) {
-      newErrors.reg_id = "GR number is required";
+    if (!formData.reg_no) {
+      newErrors.reg_no = "GR number is required";
     }
     if (!formData.admission_date)
       newErrors.admission_date = "Date of admission is required";
@@ -925,7 +931,7 @@ function EditOfNewStudentList() {
     //   formattedFormData.append(key, formData[key]);
     // });
     if (parentExist === "no") {
-      formData.parent_id = " ";
+      formData.parent_id = 0;
       console.log("formadata parent_id not exit", formData.parent_id);
     } else {
       console.log("formadata parent_id is exit", formData.parent_id);
@@ -937,12 +943,12 @@ function EditOfNewStudentList() {
       }
       // console.log("formattedFormData", formattedFormData);
       console.log("formData", formData);
+      // const ParentIdIs=formData.parent_id;
       const response = await axios.put(
-        `${API_URL}/api/students/${student.student_id}`,
+        `${API_URL}/api/updateNewStudent/${student.student_id}/${formData?.parent_id}`,
         formData, // Send the FormData object
         {
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         }
@@ -951,7 +957,7 @@ function EditOfNewStudentList() {
       if (response.status === 200) {
         toast.success("Student updated successfully!");
         setTimeout(() => {
-          navigate("/manageStudent");
+          navigate("/newStudentList");
         }, 3000);
       }
     } catch (error) {
@@ -1390,15 +1396,15 @@ function EditOfNewStudentList() {
               <input
                 type="text"
                 id="grnNumber"
-                name="reg_id"
+                name="reg_no"
                 maxLength={10}
-                value={formData.reg_id}
+                value={formData.reg_no}
                 className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
                 onChange={handleChange}
                 // onBlur={handleBlur}
               />
-              {errors.reg_id && (
-                <p className="text-[12px] text-red-500 mb-1">{errors.reg_id}</p>
+              {errors.reg_no && (
+                <p className="text-[12px] text-red-500 mb-1">{errors.reg_no}</p>
               )}
             </div>{" "}
             <div className="mt-2">
@@ -1492,9 +1498,9 @@ function EditOfNewStudentList() {
               <input
                 type="text"
                 id="studentIdNumber"
-                name="student_id"
+                name="stud_id_no"
                 maxLength={25}
-                value={formData.student_id}
+                value={formData.stud_id_no}
                 className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
                 onChange={handleChange}
                 // onBlur={handleBlur}
