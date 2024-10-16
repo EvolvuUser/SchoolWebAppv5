@@ -2,14 +2,17 @@ import React from "react";
 import { NavDropdown, Nav } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { IoIosHelpCircleOutline } from "react-icons/io";
-import "./styles.css";
+// import "./styles.css";
+import "./AdminNavBar.css"; // Attach the CSS file
 
 const AdminNavBar = () => {
   return (
     <>
       {/* Role Dropdown */}
       <NavDropdown
-        title={<span className="nav-dropdown-title">Role</span>}
+        title={
+          <span className="nav-dropdown-title custom-dropdown ">Role</span>
+        }
         // title="Role"
         style={{ color: "black", fontWeight: "700" }}
         className="pr-0 mr-0 w-fit"
@@ -38,7 +41,11 @@ const AdminNavBar = () => {
           id="students-dropdown"
           title={<span className="nav-dropdown-title">Students</span>}
           // title="Students"
-          style={{ color: "black", fontWeight: "700" }}
+          style={{
+            color: "gray",
+            fontWeight: "400",
+            display: "block",
+          }}
         >
           <NavDropdown.Item
             as={Link}
@@ -113,7 +120,11 @@ const AdminNavBar = () => {
           id="certificate-dropdown"
           // title="Certificate"
           title={<span className="nav-dropdown-title">Certificate</span>}
-          style={{ color: "black", fontWeight: "700" }}
+          style={{
+            color: "gray",
+            fontWeight: "400",
+            display: "block",
+          }}
         >
           <NavDropdown.Item as={Link} to="#" className="text-sm font-bold">
             Bonafide Certificate
@@ -154,7 +165,11 @@ const AdminNavBar = () => {
           id="staff-dropdown"
           title={<span className="nav-dropdown-title">Staff</span>}
           // title=""
-          style={{ color: "black", fontWeight: "700" }}
+          style={{
+            color: "gray",
+            fontWeight: "400",
+            display: "block",
+          }}
         >
           <NavDropdown.Item
             as={Link}
@@ -187,7 +202,11 @@ const AdminNavBar = () => {
           title={
             <span className="nav-dropdown-title">Leaving Certificate</span>
           }
-          style={{ color: "black", fontWeight: "700" }}
+          style={{
+            color: "gray",
+            fontWeight: "400",
+            display: "block",
+          }}
         >
           <NavDropdown.Item as={Link} to="#" className="text-sm font-bold">
             Generate LC
@@ -207,7 +226,11 @@ const AdminNavBar = () => {
           id="leave-dropdown"
           title={<span className="nav-dropdown-title">Leave</span>}
           // title=""
-          style={{ color: "black", fontWeight: "700" }}
+          style={{
+            color: "gray",
+            fontWeight: "400",
+            display: "block",
+          }}
         >
           <NavDropdown.Item as={Link} to="#" className="text-sm font-bold">
             Leave Allocation
@@ -507,6 +530,72 @@ const AdminNavBar = () => {
 };
 
 export default AdminNavBar;
+
+// working
+// import React from "react";
+// import { NavDropdown, Nav } from "react-bootstrap";
+// import { Link } from "react-router-dom";
+// import { IoIosHelpCircleOutline } from "react-icons/io";
+// import "./AdminNavBar.css"; // Attach the CSS file
+
+// const AdminNavBar = () => {
+//   return (
+//     <>
+//       {/* Role Dropdown */}
+//       <NavDropdown
+//         title={<span className="nav-dropdown-title">Role</span>}
+//         className="custom-nav-dropdown"
+//       >
+//         <NavDropdown.Item as={Link} to="/roles">
+//           Manage Role
+//         </NavDropdown.Item>
+//         <NavDropdown.Item as={Link} to="/menus">
+//           Manage Menu
+//         </NavDropdown.Item>
+//         <NavDropdown.Item as={Link} to="/show_roles">
+//           Manage Access
+//         </NavDropdown.Item>
+//       </NavDropdown>
+
+//       {/* My Actions Dropdown */}
+//       <NavDropdown
+//         title={<span className="nav-dropdown-title">My Actions</span>}
+//         className="custom-nav-dropdown"
+//       >
+//         <NavDropdown
+//           title={<span>Students</span>}
+//           className="dropend custom-submenu"
+//         >
+//           <NavDropdown.Item as={Link} to="/student-create">
+//             Add Student
+//           </NavDropdown.Item>
+//           <NavDropdown.Item as={Link} to="/newStudentList">
+//             New Student List
+//           </NavDropdown.Item>
+//           <NavDropdown.Item as={Link} to="/manageStudent">
+//             Manage Students
+//           </NavDropdown.Item>
+//         </NavDropdown>
+
+//         <NavDropdown
+//           title={<span>Certificate</span>}
+//           className="dropend custom-submenu"
+//         >
+//           <NavDropdown.Item as={Link} to="#">
+//             Bonafide Certificate
+//           </NavDropdown.Item>
+//           <NavDropdown.Item as={Link} to="#">
+//             Caste Certificate
+//           </NavDropdown.Item>
+//         </NavDropdown>
+
+//         {/* More dropdown items here */}
+//       </NavDropdown>
+//     </>
+//   );
+// };
+
+// export default AdminNavBar;
 
 // import React from "react";
 // import { NavDropdown, Nav } from "react-bootstrap";

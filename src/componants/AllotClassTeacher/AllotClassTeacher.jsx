@@ -762,10 +762,12 @@ function AllotClassTeacher() {
   const [newDepartmentId, setNewDepartmentId] = useState("");
   const [fieldErrors, setFieldErrors] = useState({}); // For field-specific errors
   const [nameError, setNameError] = useState("");
-  const [roleId, setRoleId] = useState("");
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [teacherId, setTeacherId] = useState(""); // State for selected teacher
+  const [roleId, setRoleId] = useState("");
+  const [academicYear, setAcademicYear] = useState("");
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
 
   const pageSize = 10;
 
@@ -773,8 +775,50 @@ function AllotClassTeacher() {
     fetchClassTeacher();
     fetchTeachers();
     fetchClassNames();
+    fetchDataRoleId();
   }, []);
+  // for role_id
+  const fetchDataRoleId = async () => {
+    const token = localStorage.getItem("authToken");
 
+    if (!token) {
+      console.error("No authentication token found");
+      return;
+    }
+
+    try {
+      // Fetch session data
+      const sessionResponse = await axios.get(`${API_URL}/api/sessionData`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setRoleId(sessionResponse?.data?.user.role_id); // Store role_id
+      // setRoleId("A"); // Store role_id
+      setAcademicYear(sessionResponse?.data?.custom_claims?.academic_yr);
+      console.log("roleIDis:", sessionResponse.data);
+      // Fetch academic year data
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  // const fetchClassNames = async () => {
+  //   try {
+  //     const token = localStorage.getItem("authToken");
+  //     const response = await axios.get(`${API_URL}/api/get_class_section`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+  //     console.log("the classes are ", response.data);
+  //     setClasses(
+  //       response.data.map((classItem) => ({
+  //         value: classItem.section_id,
+  //         label: `${classItem?.get_class?.name}${" "}${classItem.name}`,
+  //       }))
+  //     );
+  //   } catch (error) {
+  //     toast.error("Error fetching class names");
+  //   }
+  // };
   const fetchClassNames = async () => {
     try {
       const token = localStorage.getItem("authToken");
@@ -784,8 +828,11 @@ function AllotClassTeacher() {
       console.log("the classes are ", response.data);
       setClasses(
         response.data.map((classItem) => ({
-          value: classItem.section_id,
-          label: `${classItem?.get_class?.name}${" "}${classItem.name}`,
+          value: {
+            class_id: classItem?.class_id,
+            section_id: classItem?.section_id,
+          },
+          label: `${classItem?.get_class?.name}${" "}${classItem?.name}`,
         }))
       );
     } catch (error) {
@@ -813,9 +860,10 @@ function AllotClassTeacher() {
   const fetchClassTeacher = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      const response = await axios.get(`${API_URL}/api/getDivision`, {
+      const response = await axios.get(`${API_URL}/api/get_Classteacherslist`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("Allot Teacher tab", response.data);
       setSections(response.data);
     } catch (error) {
       setError(error.message);
@@ -845,17 +893,37 @@ function AllotClassTeacher() {
     setNewDepartmentId("");
   };
   const handleDelete = (id) => {
-    const sectionToDelete = sections.find((sec) => sec.section_id === id);
-    setCurrentSection(sectionToDelete);
-    setShowDeleteModal(true);
+    console.log("Deleting teacher with ID:", id);
+    console.log("Available sections:", sections);
+
+    // Find the section related to the teacher
+    const sectionToDelete = sections.find((sec) => sec.teacher_id === id);
+
+    if (sectionToDelete) {
+      setCurrentSection(sectionToDelete); // Set the section to delete in state
+      setShowDeleteModal(true); // Show the delete modal
+      console.log("Section to be deleted:", sectionToDelete);
+    } else {
+      console.log("No section found for the given teacher_id");
+    }
   };
+
   const handleEdit = (section) => {
     setCurrentSection(section);
-    setNewSectionName(section.name);
-    setClassName(section?.get_class?.name); // Readonly class field
-    setNewDepartmentId(section.get_class.class_id);
+    setNewSectionName(section?.section_id);
+    setClassName(
+      `${section?.get_class?.name}${" "} ${section?.get_division?.name}`
+    ); // Readonly class field
+    setNewDepartmentId(section?.get_class?.class_id);
+    setTeacherId(section?.get_teacher?.teacher_id);
     console.log("the handleEdit ", section);
     // setTeacherId(" ");
+    // Set the teacher object for prefill (value and label)
+    setSelectedTeacher({
+      value: section?.get_teacher?.teacher_id,
+      label: section?.get_teacher?.name, // Ensure the name field is available
+    });
+
     setShowEditModal(true);
     setFieldErrors({});
   };
@@ -883,18 +951,24 @@ function AllotClassTeacher() {
       "name:",
       newSectionName,
       "class_id:",
-      newDepartmentId, // Pass class ID
+      newDepartmentId?.class_id,
+      "section_id:",
+      newDepartmentId?.section_id, // Pass class ID
       "teacher_id:",
-      teacherId
+      teacherId,
+      "academicYear:",
+      academicYear
     );
     try {
       const token = localStorage.getItem("authToken");
       await axios.post(
-        `${API_URL}/api/`,
+        `${API_URL}/api/save_ClassTeacher`,
         {
           name: newSectionName,
-          class_id: newDepartmentId, // Pass class ID
+          class_id: newDepartmentId?.class_id, // Pass class ID
+          section_id: newDepartmentId?.section_id,
           teacher_id: teacherId, // Pass teacher ID
+          academic_yr: academicYear,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -903,9 +977,10 @@ function AllotClassTeacher() {
 
       fetchClassTeacher();
       handleCloseModal();
-      toast.success("Division added successfully!");
+      toast.success(" Class Teacher added successfully!");
     } catch (error) {
-      toast.error("Error adding division. Please try again.");
+      console.log("error:", error?.response?.data?.message);
+      toast.error(error?.response?.data?.message || error?.message);
     }
   };
 
@@ -932,12 +1007,14 @@ function AllotClassTeacher() {
     }
     try {
       const token = localStorage.getItem("authToken");
+      console.log("currentSectionissss", currentSection);
       await axios.put(
-        `${API_URL}/api/getDivision/${currentSection.section_id}`,
+        `${API_URL}/api/update_ClassTeacher/${currentSection.class_id}/${currentSection.section_id}`,
         {
-          name: newSectionName,
+          section_id: newSectionName,
           class_id: newDepartmentId, // Pass class ID
           teacher_id: teacherId, // Pass teacher ID
+          // academic_yr: academicYear,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -947,9 +1024,9 @@ function AllotClassTeacher() {
       fetchClassTeacher();
       setTeacherId("");
       handleCloseModal();
-      toast.success("Division updated successfully!");
+      toast.success("Allot class teacher updated successfully!");
     } catch (error) {
-      toast.error("Error updating division. Please try again.");
+      toast.error("Error updating Class teacher. Please try again.");
     }
   };
 
@@ -959,11 +1036,11 @@ function AllotClassTeacher() {
       const academicYr = localStorage.getItem("academicYear");
 
       if (!token || !currentSection || !currentSection.section_id) {
-        throw new Error("Division ID is missing");
+        throw new Error("Class Teacher ID is missing");
       }
 
       const response = await axios.delete(
-        `${API_URL}/api//${currentSection.section_id}`,
+        `${API_URL}/api/delete_ClassTeacher/${currentSection.class_id}/${currentSection.section_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -977,12 +1054,12 @@ function AllotClassTeacher() {
         fetchClassTeacher();
         setShowDeleteModal(false);
         setCurrentSection(null);
-        toast.success("Division deleted successfully!");
+        toast.success("Allot Class Teacher deleted successfully!");
       } else {
         toast.error(response.data.message || "Failed to delete Division");
       }
     } catch (error) {
-      console.error("Error deleting Division:", error);
+      console.error("Error deleting Allot Class Teacher:", error);
       if (
         error.response &&
         error.response.data &&
@@ -996,15 +1073,25 @@ function AllotClassTeacher() {
   };
   // Filter and paginate sections
   const filteredSections = sections.filter((section) =>
-    section.name.toLowerCase().includes(searchTerm.toLowerCase())
+    section?.get_teacher?.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Calculate the total number of pages
+  useEffect(() => {
+    setPageCount(Math.ceil(filteredSections.length / pageSize));
+  }, [filteredSections.length]);
+
+  // Get the sections for the current page
   const displayedSections = filteredSections.slice(
     currentPage * pageSize,
     (currentPage + 1) * pageSize
   );
+
+  // Handle page change
   const handlePageClick = (data) => {
     setCurrentPage(data.selected);
   };
+
   const handleClassChange = (selectedOption) => {
     setNewDepartmentId(selectedOption ? selectedOption.value : "");
     // Clear class error if it was previously set
@@ -1012,6 +1099,14 @@ function AllotClassTeacher() {
   };
 
   const handleTeacherChange = (selectedOption) => {
+    if (selectedOption) {
+      setSelectedTeacher({
+        value: selectedOption.value,
+        label: selectedOption.label,
+      });
+    } else {
+      setSelectedTeacher(null); // Clear the selection if no option is selected
+    }
     setTeacherId(selectedOption ? selectedOption.value : "");
     // Clear teacher error if it was previously set
     setFieldErrors((prevErrors) => ({ ...prevErrors, teacher_id: "" }));
@@ -1092,12 +1187,13 @@ function AllotClassTeacher() {
                           </td>
                           <td className="text-center px-2  border border-gray-950 text-sm">
                             <p className="text-gray-900 whitespace-no-wrap relative top-2">
-                              {section.name}
+                              {section?.get_class?.name}{" "}
+                              {section?.get_division?.name}
                             </p>
                           </td>
                           <td className="text-center px-2 lg:px-5 border border-gray-950 text-sm">
                             <p className="text-gray-900 whitespace-no-wrap relative top-2">
-                              {section?.get_class?.name}
+                              {section?.get_teacher?.name}
                             </p>
                           </td>
 
@@ -1133,7 +1229,7 @@ function AllotClassTeacher() {
                             <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
                               <button
                                 className="text-red-600 hover:text-red-800 hover:bg-transparent "
-                                onClick={() => handleDelete(section.section_id)}
+                                onClick={() => handleDelete(section.teacher_id)}
                               >
                                 <FontAwesomeIcon icon={faTrash} />
                               </button>
@@ -1300,7 +1396,7 @@ function AllotClassTeacher() {
                     </label>
                     <input
                       type="text"
-                      className="form-control"
+                      className=" w-full shadow-md border-1 border-gray-300 outline-none rounded-md pl-3 bg-gray-200"
                       value={className}
                       readOnly
                     />
@@ -1309,12 +1405,23 @@ function AllotClassTeacher() {
                     <label htmlFor="departmentId" className="w-1/2 mt-2">
                       Teacher <span className="text-red-500">*</span>
                     </label>
+                    {console.log("selectedTeachers", selectedTeacher)}
                     <Select
                       className="w-full text-sm"
                       options={teachers}
+                      defaultValue={teacherId} // Pre-fill the selected teacher
                       isClearable
+                      // value={selectedTeacher} // Pre-fill the selected teacher
                       onChange={handleTeacherChange}
                     />
+                    {/* <Select
+                      className="w-full text-sm"
+                      options={teachers}
+                      value={selectedTeacher} // Pre-fill the selected teacher
+                      isClearable
+                      onChange={handleTeacherChange}
+                    /> */}
+
                     <div className="absolute top-9 left-1/3">
                       {fieldErrors.teacher_id && (
                         <span className="text-danger text-xs">
@@ -1425,7 +1532,7 @@ function AllotClassTeacher() {
                 <div className="modal-body">
                   <p>
                     Are you sure you want to delete Class Teacher:{" "}
-                    {currentSection?.name}?
+                    {currentSection?.get_teacher?.name}?
                   </p>
                 </div>
                 <div className=" flex justify-end p-3">
