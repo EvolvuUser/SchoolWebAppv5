@@ -180,6 +180,7 @@ const AdminNavBar = () => {
           </NavDropdown.Item>
           <NavDropdown.Item
             as={Link}
+            // to="/careTacker"
             to="#"
             className="text-sm font-bold hover:text-black"
           >
@@ -506,7 +507,7 @@ const AdminNavBar = () => {
         </NavDropdown.Item>
         <NavDropdown.Item
           as={Link}
-          to="#"
+          to="/allotMarksHeading"
           // to="/allotMarksHeading"
           className="text-sm font-bold hover:text-black"
         >
