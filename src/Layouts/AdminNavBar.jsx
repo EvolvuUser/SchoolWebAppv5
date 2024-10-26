@@ -126,7 +126,12 @@ const AdminNavBar = () => {
             display: "block",
           }}
         >
-          <NavDropdown.Item as={Link} to="#" className="text-sm font-bold">
+          <NavDropdown.Item
+            as={Link}
+            // to="/BonafiedCertificates"
+            to="#"
+            className="text-sm font-bold"
+          >
             Bonafide Certificate
           </NavDropdown.Item>
           <NavDropdown.Item
@@ -180,8 +185,8 @@ const AdminNavBar = () => {
           </NavDropdown.Item>
           <NavDropdown.Item
             as={Link}
-            // to="/careTacker"
-            to="#"
+            to="/careTacker"
+            // to="#"
             className="text-sm font-bold hover:text-black"
           >
             Manage Caretaker

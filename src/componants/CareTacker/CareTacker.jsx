@@ -153,7 +153,207 @@ function CareTacker() {
   return (
     <>
       <ToastContainer />
-      <h3 className="text-white text-center mt-[30%]">Coming Soon...</h3>
+      <div className="container md:mt-4">
+        <div className="card mx-auto lg:w-full shadow-lg">
+          <div className="p-2 px-3 bg-gray-100 flex justify-between items-center">
+            <h3 className="text-gray-700 mt-1 text-[1.2em] lg:text-xl text-nowrap">
+              Caretaker List{" "}
+            </h3>
+            <div className="box-border flex md:gap-x-2 justify-end md:h-10">
+              <div className=" w-1/2 md:w-fit mr-1">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search"
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <button
+                className="btn btn-primary btn-sm md:h-9 text-xs md:text-sm"
+                onClick={() => navigate("/CreateCareTacker")}
+              >
+                <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
+                Add
+              </button>
+            </div>
+          </div>
+          <div
+            className=" relative w-[97%]   mb-3 h-1  mx-auto bg-red-700"
+            style={{
+              backgroundColor: "#C03078",
+            }}
+          ></div>
+
+          <div className="card-body w-full box-border">
+            <div className="h-96 lg:h-96 overflow-y-scroll lg:overflow-x-hidden">
+              <div className="bg-white rounded-lg shadow-xs">
+                <table className="min-w-full leading-normal table-auto">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
+                        S.No
+                      </th>
+
+                      <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
+                        Staff Name
+                      </th>
+
+                      <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
+                        Phone no.
+                      </th>
+                      <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
+                        Designation
+                      </th>
+                      <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
+                        Edit
+                      </th>
+                      <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
+                        Delete
+                      </th>
+                      <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
+                        View
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayedStaffs.map((staffItem, index) => (
+                      <tr
+                        key={staffItem.user_id}
+                        className={`${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-100"
+                        } hover:bg-gray-50`}
+                      >
+                        {console.log(
+                          "this is inside the staflist component in the table",
+                          staffItem
+                        )}
+                        <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                          <p className="text-gray-900 whitespace-no-wrap relative top-2">
+                            {index + 1}
+                          </p>
+                        </td>
+                        <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                          <p className="text-gray-900 whitespace-no-wrap relative top-2">
+                            {staffItem?.name}{" "}
+                            {staffItem?.isDelete == "Y" && (
+                              <span className="text-red-500">
+                                (Left school)
+                              </span>
+                            )}
+                          </p>
+                        </td>
+
+                        {/* <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                          <p className="text-gray-900 whitespace-no-wrap relative top-2">
+                            {staffItem?.name}
+                          </p>
+                        </td> */}
+
+                        <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                          <p className="text-gray-900 whitespace-no-wrap relative top-2">
+                            {staffItem?.phone}
+                          </p>
+                        </td>
+                        <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                          <p className="text-gray-900 whitespace-no-wrap relative top-2">
+                            {staffItem?.designation}
+                          </p>
+                        </td>
+
+                        <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                          <button
+                            className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
+                            onClick={() => handleSubmitEdit(staffItem)}
+                          >
+                            <FontAwesomeIcon icon={faEdit} />
+                          </button>
+                        </td>
+                        <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                          <button
+                            className="text-red-600 hover:text-red-800 hover:bg-transparent "
+                            onClick={() => handleDelete(staffItem)}
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        </td>
+
+                        <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                          <button
+                            className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
+                            onClick={() => handleView(staffItem)}
+                          >
+                            <MdOutlineRemoveRedEye className="font-bold text-xl" />
+                            {/* <FontAwesomeIcon icon={faEdit} /> */}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className=" flex justify-center  pt-2 -mb-3  box-border  overflow-hidden">
+              <ReactPaginate
+                previousLabel={"Previous"}
+                nextLabel={"Next"}
+                breakLabel={"..."}
+                breakClassName={"page-item"}
+                breakLinkClassName={"page-link"}
+                pageCount={pageCount}
+                marginPagesDisplayed={1}
+                pageRangeDisplayed={1}
+                onPageChange={handlePageClick}
+                containerClassName={"pagination justify-content-center"}
+                pageClassName={"page-item"}
+                pageLinkClassName={"page-link"}
+                previousClassName={"page-item"}
+                previousLinkClassName={"page-link"}
+                nextClassName={"page-item"}
+                nextLinkClassName={"page-link"}
+                activeClassName={"active"}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50   flex items-center justify-center bg-black bg-opacity-50">
+          <div className="modal show " style={{ display: "block" }}>
+            <div className="modal-dialog  modal-dialog-centered">
+              <div className="modal-content">
+                <div className="flex justify-between p-3">
+                  <h5 className="modal-title  ">Delete Staff</h5>
+
+                  <RxCross1
+                    className="float-end relative mt-2 right-2 text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
+                    onClick={handleCloseModal}
+                  />
+                </div>
+                <div
+                  className=" relative  mb-3 h-1 w-[97%] mx-auto bg-red-700"
+                  style={{
+                    backgroundColor: "#C03078",
+                  }}
+                ></div>
+                <div className="modal-body">
+                  <p>Are you sure you want to delete: {currentStaffName}?</p>
+                  {console.log("currestStaffDelete", currentStaff)}
+                </div>
+                <div className=" flex justify-end p-3">
+                  <button
+                    type="button"
+                    className="btn btn-danger px-3 mb-2"
+                    onClick={handleSubmitDelete}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
