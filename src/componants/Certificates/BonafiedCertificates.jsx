@@ -61,7 +61,7 @@ function BonafiedCertificates() {
   }));
   console.log("teacherOptions", teacherOptions);
   const classOptions = classes.map((cls) => ({
-    value: `1${cls?.get_class?.name}-${cls.name}`,
+    value: `${cls?.get_class?.name}-${cls.name}`,
     label: `${cls?.get_class?.name} ${cls.name}`,
   }));
 
