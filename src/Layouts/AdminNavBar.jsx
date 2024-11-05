@@ -136,8 +136,8 @@ const AdminNavBar = () => {
           </NavDropdown.Item>
           <NavDropdown.Item
             as={Link}
-            to="#"
-            // to="/castCertificate"
+            // to="#"
+            to="/castCertificate"
             className="text-sm font-bold hover:text-black"
           >
             Caste Certificate
