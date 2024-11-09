@@ -1236,7 +1236,7 @@
 //                         name="sr_no"
 //                         value={formData.sr_no}
 //                         readOnly
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
 //                       />
 //                     </div>
 //                     <div>
@@ -1254,7 +1254,7 @@
 //                         maxLength={10}
 //                         value={formData.reg_no}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.reg_no && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1275,7 +1275,7 @@
 //                         name="date"
 //                         value={formData.date}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.date && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1307,7 +1307,7 @@
 //                         name="stud_name"
 //                         value={formData.stud_name}
 //                         onChange={handleChange}
-//                         className="block  border w-full border-gray-300 rounded-md py-1 px-3  bg-white shadow-inner"
+//                         className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-white shadow-inner"
 //                       />
 //                       {errors.stud_name && (
 //                         <div className="text-red-500 text-xs ml-2 ">
@@ -1329,7 +1329,7 @@
 //                         maxLength={25}
 //                         value={formData.stud_id_no}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.stud_id_no && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1351,7 +1351,7 @@
 //                         maxLength={12}
 //                         value={formData.stu_aadhaar_no}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.stu_aadhaar_no && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1384,7 +1384,7 @@
 //                         name="father_name"
 //                         value={formData.father_name}
 //                         onChange={handleChange}
-//                         className="input-field bg-white block w-full border border-gray-300 rounded-md py-1 px-3  outline-none shadow-inner"
+//                         className="input-field bg-white block w-full border border-gray-900 rounded-md py-1 px-3  outline-none shadow-inner"
 //                       />
 //                       {errors.father_name && (
 //                         <div className="text-red-500 text-xs ml-2 ">
@@ -1406,7 +1406,7 @@
 //                         maxLength={50}
 //                         value={formData.mother_name}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.mother_name && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1438,7 +1438,7 @@
 //                         value={formData.class_division}
 //                         onChange={handleChange}
 //                         readOnly
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
 //                       />
 //                       {errors.class_division && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1460,7 +1460,7 @@
 //                         maxLength={20}
 //                         value={formData.religion}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                     </div>
 //                     <div>
@@ -1477,7 +1477,7 @@
 //                         maxLength={20}
 //                         value={formData.caste}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                     </div>
 //                     <div>
@@ -1494,7 +1494,7 @@
 //                         maxLength={100}
 //                         value={formData.subcaste}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                     </div>
 //                   </div>
@@ -1521,7 +1521,7 @@
 //                         name="birth_place"
 //                         value={formData.birth_place}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.birth_place && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1543,7 +1543,7 @@
 //                         maxLength={50}
 //                         value={formData.state}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.state && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1565,7 +1565,7 @@
 //                         maxLength={50}
 //                         value={formData.mother_tongue}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.mother_tongue && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1588,7 +1588,7 @@
 //                         name="dob"
 //                         value={formData.dob}
 //                         onChange={handleChange}
-//                         className="block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.dob && (
 //                         <div className="text-red-500 text-xs ml-2 ">
@@ -1612,7 +1612,7 @@
 //                         name="dob_words"
 //                         value={formData.dob_words}
 //                         onChange={handleChange}
-//                         className="input-field resize block w-full border border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field resize block w-full border border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.dob_words && (
 //                         <div className="text-red-500 text-xs ml-2 ">
@@ -1634,7 +1634,7 @@
 //                         maxLength={100}
 //                         value={formData.nationality}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.nationality && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1668,7 +1668,7 @@
 //                         name="prev_school_class"
 //                         value={formData.prev_school_class}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.prev_school_class && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1690,7 +1690,7 @@
 //                         name="admission_date"
 //                         value={formData.admission_date}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.admission_date && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1713,7 +1713,7 @@
 //                         name="class_when_learning"
 //                         value={formData.class_when_learning}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.class_when_learning && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1735,7 +1735,7 @@
 //                         maxLength={200}
 //                         value={formData.progress}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.progress && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1757,7 +1757,7 @@
 //                         maxLength={200}
 //                         value={formData.behaviour}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.behaviour && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1780,7 +1780,7 @@
 //                         maxLength={100}
 //                         value={formData.leaving_reason}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.leaving_reason && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -1802,7 +1802,7 @@
 //                         name="lc_date_n_no"
 //                         value={formData.lc_date_n_no}
 //                         onChange={handleChange}
-//                         className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+//                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
 //                       />
 //                       {errors.lc_date_n_no && (
 //                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -2095,13 +2095,13 @@ const CreeateCastCertificate = () => {
       const params = section_id ? { section_id } : {};
       const token = localStorage.getItem("authToken");
       const response = await axios.get(
-        `${API_URL}/api/getStudentListBySection`,
+        `${API_URL}/api/getStudentListBySectionData`,
         {
           headers: { Authorization: `Bearer ${token}` },
           params,
         }
       );
-      setStudentNameWithClassId(response?.data?.students || []);
+      setStudentNameWithClassId(response?.data?.data || []);
     } catch (error) {
       toast.error("Error fetching students.");
     }
@@ -2130,7 +2130,8 @@ const CreeateCastCertificate = () => {
   );
 
   const handleClassSelect = (selectedOption) => {
-    setNameErrorForClass(""); // Reset class error on selection
+    // setNameErrorForClass(""); // Reset class error on selection
+    setNameError("");
     setSelectedClass(selectedOption);
     setSelectedStudent(null);
     setSelectedStudentId(null);
@@ -2150,20 +2151,26 @@ const CreeateCastCertificate = () => {
     setNameErrorForClass("");
     setErrors({}); // Clears all field-specific errors
 
+    if (!selectedClass && !selectedStudent) {
+      setNameError("Please select at least one of them.");
+      toast.error("Please select at least one of them!");
+      return;
+    }
+
     // Validate if class and student are selected
-    let hasError = false;
+    // let hasError = false;
 
-    if (!selectedClass) {
-      setNameErrorForClass("Please select a class.");
-      hasError = true;
-    }
-    if (!selectedStudent) {
-      setNameError("Please select a student.");
-      hasError = true;
-    }
+    // if (!selectedClass) {
+    //   setNameErrorForClass("Please select a class.");
+    //   hasError = true;
+    // }
+    // if (!selectedStudent) {
+    //   setNameError("Please select a student.");
+    //   hasError = true;
+    // }
 
-    // If there are validation errors, exit the function
-    if (hasError) return;
+    // // If there are validation errors, exit the function
+    // if (hasError) return;
     setFormData({
       sr_no: "",
       reg_no: "",
@@ -2562,12 +2569,24 @@ const CreeateCastCertificate = () => {
       if (response.status === 200) {
         toast.success("Cast Certificate updated successfully!");
 
+        // Extract filename from Content-Disposition header
+        const contentDisposition = response.headers["content-disposition"];
+        let filename = "DownloadedFile.pdf"; // Fallback name
+
+        if (contentDisposition) {
+          const match = contentDisposition.match(/filename="(.+?)"/);
+          if (match && match[1]) {
+            filename = match[1];
+          }
+        }
         // Download PDF
         const pdfBlob = new Blob([response.data], { type: "application/pdf" });
         const pdfUrl = URL.createObjectURL(pdfBlob);
         const link = document.createElement("a");
         link.href = pdfUrl;
-        link.download = "BonafideCertificate.pdf";
+        link.download = filename;
+
+        // link.download = "BonafideCertificate.pdf";
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -2814,9 +2833,9 @@ const CreeateCastCertificate = () => {
                     isClearable
                     className="text-sm"
                   />
-                  {nameErrorForClass && (
+                  {nameError && (
                     <span className="h-8  relative  ml-1 text-danger text-xs">
-                      {nameErrorForClass}
+                      {nameError}
                     </span>
                   )}
                 </div>
@@ -2951,7 +2970,7 @@ const CreeateCastCertificate = () => {
                         name="sr_no"
                         value={formData.sr_no}
                         readOnly
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                     </div>
                     <div>
@@ -2969,7 +2988,7 @@ const CreeateCastCertificate = () => {
                         maxLength={10}
                         value={formData.reg_no}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.reg_no && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -2990,7 +3009,7 @@ const CreeateCastCertificate = () => {
                         name="date"
                         value={formData.date}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.date && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3022,7 +3041,7 @@ const CreeateCastCertificate = () => {
                         name="stud_name"
                         value={formData.stud_name}
                         onChange={handleChange}
-                        className="block  border w-full border-gray-300 rounded-md py-1 px-3  bg-white shadow-inner"
+                        className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-white shadow-inner"
                       />
                       {errors.stud_name && (
                         <div className="text-red-500 text-xs ml-2 ">
@@ -3044,7 +3063,7 @@ const CreeateCastCertificate = () => {
                         maxLength={25}
                         value={formData.stud_id_no}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.stud_id_no && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3066,7 +3085,7 @@ const CreeateCastCertificate = () => {
                         maxLength={12}
                         value={formData.stu_aadhaar_no}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.stu_aadhaar_no && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3099,7 +3118,7 @@ const CreeateCastCertificate = () => {
                         name="father_name"
                         value={formData.father_name}
                         onChange={handleChange}
-                        className="input-field bg-white block w-full border border-gray-300 rounded-md py-1 px-3  outline-none shadow-inner"
+                        className="input-field bg-white block w-full border border-gray-900 rounded-md py-1 px-3  outline-none shadow-inner"
                       />
                       {errors.father_name && (
                         <div className="text-red-500 text-xs ml-2 ">
@@ -3121,7 +3140,7 @@ const CreeateCastCertificate = () => {
                         maxLength={50}
                         value={formData.mother_name}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.mother_name && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3153,7 +3172,7 @@ const CreeateCastCertificate = () => {
                         value={formData.class_division}
                         onChange={handleChange}
                         readOnly
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.class_division && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3175,7 +3194,7 @@ const CreeateCastCertificate = () => {
                         maxLength={20}
                         value={formData.religion}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                     </div>
                     <div>
@@ -3192,7 +3211,7 @@ const CreeateCastCertificate = () => {
                         maxLength={20}
                         value={formData.caste}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                     </div>
                     <div>
@@ -3209,7 +3228,7 @@ const CreeateCastCertificate = () => {
                         maxLength={100}
                         value={formData.subcaste}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                     </div>
                   </div>
@@ -3236,7 +3255,7 @@ const CreeateCastCertificate = () => {
                         name="birth_place"
                         value={formData.birth_place}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.birth_place && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3258,7 +3277,7 @@ const CreeateCastCertificate = () => {
                         maxLength={50}
                         value={formData.state}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.state && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3280,7 +3299,7 @@ const CreeateCastCertificate = () => {
                         maxLength={50}
                         value={formData.mother_tongue}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.mother_tongue && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3303,7 +3322,7 @@ const CreeateCastCertificate = () => {
                         name="dob"
                         value={formData.dob}
                         onChange={handleChange}
-                        className="block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.dob && (
                         <div className="text-red-500 text-xs ml-2 ">
@@ -3327,7 +3346,7 @@ const CreeateCastCertificate = () => {
                         name="dob_words"
                         value={formData.dob_words}
                         onChange={handleChange}
-                        className="input-field resize block w-full border border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field resize block w-full border border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.dob_words && (
                         <div className="text-red-500 text-xs ml-2 ">
@@ -3349,7 +3368,7 @@ const CreeateCastCertificate = () => {
                         maxLength={100}
                         value={formData.nationality}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.nationality && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3383,7 +3402,7 @@ const CreeateCastCertificate = () => {
                         name="prev_school_class"
                         value={formData.prev_school_class}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.prev_school_class && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3405,7 +3424,7 @@ const CreeateCastCertificate = () => {
                         name="admission_date"
                         value={formData.admission_date}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.admission_date && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3428,7 +3447,7 @@ const CreeateCastCertificate = () => {
                         name="class_when_learning"
                         value={formData.class_when_learning}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.class_when_learning && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3450,7 +3469,7 @@ const CreeateCastCertificate = () => {
                         maxLength={200}
                         value={formData.progress}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.progress && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3472,7 +3491,7 @@ const CreeateCastCertificate = () => {
                         maxLength={200}
                         value={formData.behaviour}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.behaviour && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3495,7 +3514,7 @@ const CreeateCastCertificate = () => {
                         maxLength={100}
                         value={formData.leaving_reason}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.leaving_reason && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3517,7 +3536,7 @@ const CreeateCastCertificate = () => {
                         name="lc_date_n_no"
                         value={formData.lc_date_n_no}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                       />
                       {errors.lc_date_n_no && (
                         <span className="text-red-500 text-xs ml-2 h-1">

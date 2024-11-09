@@ -218,13 +218,13 @@ const CreateSimpleBonafied = () => {
       const params = section_id ? { section_id } : {};
       const token = localStorage.getItem("authToken");
       const response = await axios.get(
-        `${API_URL}/api/getStudentListBySection`,
+        `${API_URL}/api/getStudentListBySectionData`,
         {
           headers: { Authorization: `Bearer ${token}` },
           params,
         }
       );
-      setStudentNameWithClassId(response?.data?.students || []);
+      setStudentNameWithClassId(response?.data?.data || []);
     } catch (error) {
       toast.error("Error fetching students.");
     }
@@ -253,7 +253,8 @@ const CreateSimpleBonafied = () => {
   );
 
   const handleClassSelect = (selectedOption) => {
-    setNameErrorForClass(""); // Reset class error on selection
+    // setNameErrorForClass(""); // Reset class error on selection
+    setNameError("");
     setSelectedClass(selectedOption);
     setSelectedStudent(null);
     setSelectedStudentId(null);
@@ -273,20 +274,25 @@ const CreateSimpleBonafied = () => {
     setNameErrorForClass("");
     setErrors({}); // Clears all field-specific errors
 
-    // Validate if class and student are selected
-    let hasError = false;
-
-    if (!selectedClass) {
-      setNameErrorForClass("Please select a class.");
-      hasError = true;
+    if (!selectedClass && !selectedStudent) {
+      setNameError("Please select at least one of them.");
+      toast.error("Please select at least one of them!");
+      return;
     }
-    if (!selectedStudent) {
-      setNameError("Please select a student.");
-      hasError = true;
-    }
+    // // Validate if class and student are selected
+    // let hasError = false;
 
-    // If there are validation errors, exit the function
-    if (hasError) return;
+    // if (!selectedClass) {
+    //   setNameErrorForClass("Please select a class.");
+    //   hasError = true;
+    // }
+    // if (!selectedStudent) {
+    //   setNameError("Please select a student.");
+    //   hasError = true;
+    // }
+
+    // // If there are validation errors, exit the function
+    // if (hasError) return;
     setFormData({
       sr_no: "",
       stud_name: "",
@@ -517,14 +523,24 @@ const CreateSimpleBonafied = () => {
       );
 
       if (response.status === 200) {
-        toast.success("Simple Bonafied Certificate updated successfully!");
+        toast.success("Simple Bonafide Certificate updated successfully!");
 
+        // Extract filename from Content-Disposition header
+        const contentDisposition = response.headers["content-disposition"];
+        let filename = "DownloadedFile.pdf"; // Fallback name
+
+        if (contentDisposition) {
+          const match = contentDisposition.match(/filename="(.+?)"/);
+          if (match && match[1]) {
+            filename = match[1];
+          }
+        }
         // Create a URL for the PDF blob and initiate download
         const pdfBlob = new Blob([response.data], { type: "application/pdf" });
         const pdfUrl = URL.createObjectURL(pdfBlob);
         const link = document.createElement("a");
         link.href = pdfUrl;
-        link.download = "BonafideCertificate.pdf"; // PDF file name
+        link.download = filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -553,7 +569,9 @@ const CreateSimpleBonafied = () => {
       }
     } catch (error) {
       console.error("Error:", error.response.data, error.response.sr_no);
-      toast.error("An error occurred while updating the Student information.");
+      toast.error(
+        "An error occurred while updating the Simple Bonafide Certificate."
+      );
 
       if (error.response && error.response) {
         setBackendErrors(error.response || {});
@@ -654,9 +672,9 @@ const CreateSimpleBonafied = () => {
                     isClearable
                     className="text-sm"
                   />
-                  {nameErrorForClass && (
+                  {nameError && (
                     <span className="h-8  relative  ml-1 text-danger text-xs">
-                      {nameErrorForClass}
+                      {nameError}
                     </span>
                   )}
                 </div>
@@ -785,7 +803,7 @@ const CreateSimpleBonafied = () => {
                       readOnly
                       value={formData.sr_no}
                       onChange={handleChange}
-                      className="block  border w-full border-gray-300 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
+                      className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
                     />
                     {backendErrors.sr_no && (
                       <span className="text-red-500 text-xs ml-2">
@@ -796,6 +814,28 @@ const CreateSimpleBonafied = () => {
                       <div className="text-red-500 text-xs ml-2">
                         {errors.sr_no}
                       </div>
+                    )}
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="date_of_joining"
+                      className="block font-bold  text-xs mb-2"
+                    >
+                      Issue Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      id="date_of_joining"
+                      // max={today}
+                      name="date"
+                      value={formData.date}
+                      onChange={handleChange}
+                      className="input-field block w-full border border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                    />
+                    {errors.date && (
+                      <span className="text-red-500 text-xs ml-2">
+                        {errors.date}
+                      </span>
                     )}
                   </div>
                   <div className=" ">
@@ -812,7 +852,8 @@ const CreateSimpleBonafied = () => {
                       name="stud_name"
                       value={formData.stud_name}
                       onChange={handleChange}
-                      className="block  border w-full border-gray-300 rounded-md py-1 px-3  bg-white shadow-inner"
+                      readOnly
+                      className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
                     />
                     {errors.stud_name && (
                       <div className="text-red-500 text-xs ml-2">
@@ -835,7 +876,8 @@ const CreateSimpleBonafied = () => {
                       name="father_name"
                       value={formData.father_name}
                       onChange={handleChange}
-                      className="input-field bg-white block w-full border border-gray-300 rounded-md py-1 px-3  outline-none shadow-inner"
+                      readOnly
+                      className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
                     />
                     {errors.father_name && (
                       <div className="text-red-500 text-xs ml-2">
@@ -858,7 +900,7 @@ const CreateSimpleBonafied = () => {
                       name="dob"
                       value={formData.dob}
                       onChange={handleChange}
-                      className="block border w-full border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                      className="block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                     />
                     {errors.dob && (
                       <div className="text-red-500 text-xs ml-2">
@@ -882,7 +924,7 @@ const CreateSimpleBonafied = () => {
                       name="dob_words"
                       value={formData.dob_words}
                       onChange={handleChange}
-                      className="input-field resize block w-full border border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                      className="input-field resize block w-full border border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                     />
                     {errors.dob_words && (
                       <div className="text-red-500 text-xs ml-2">
@@ -891,28 +933,6 @@ const CreateSimpleBonafied = () => {
                     )}
                   </div>
 
-                  <div>
-                    <label
-                      htmlFor="date_of_joining"
-                      className="block font-bold  text-xs mb-2"
-                    >
-                      Date <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      id="date_of_joining"
-                      // max={today}
-                      name="date"
-                      value={formData.date}
-                      onChange={handleChange}
-                      className="input-field block w-full border border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
-                    />
-                    {errors.date && (
-                      <span className="text-red-500 text-xs ml-2">
-                        {errors.date}
-                      </span>
-                    )}
-                  </div>
                   <div>
                     <label
                       htmlFor="class_division"
@@ -928,7 +948,7 @@ const CreateSimpleBonafied = () => {
                       name="class_division"
                       value={formData.class_division}
                       onChange={handleChange} // Using the handleChange function to update formData and validate
-                      className="input-field block w-full outline-none border border-gray-300 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
+                      className="input-field block w-full outline-none border border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                     />
                     {errors.class_division && (
                       <span className="text-red-500 text-xs ml-2">
@@ -951,7 +971,7 @@ const CreateSimpleBonafied = () => {
                       name="purpose"
                       value={formData.purpose}
                       onChange={handleChange}
-                      className="input-field block w-full border border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                      className="input-field block w-full border border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
                     />
                     {errors.purpose && (
                       <span className="text-red-500 text-xs ml-2">
@@ -973,7 +993,8 @@ const CreateSimpleBonafied = () => {
                       name="nationality"
                       value={formData.nationality}
                       onChange={handleChange}
-                      className="input-field block w-full border border-gray-300 rounded-md py-1 px-3 bg-white shadow-inner"
+                      readOnly
+                      className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
                     />
                     {errors.nationality && (
                       <span className="text-red-500 text-xs ml-2">

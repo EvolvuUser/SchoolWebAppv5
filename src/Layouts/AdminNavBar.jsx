@@ -144,14 +144,14 @@ const AdminNavBar = () => {
           </NavDropdown.Item>
           <NavDropdown.Item
             as={Link}
-            to="/CharacterCertificate"
+            to="/characterCertificate"
             className="text-sm font-bold hover:text-black"
           >
             Character Certificate
           </NavDropdown.Item>
           <NavDropdown.Item
             as={Link}
-            to="#"
+            to="/percentageCertificate"
             className="text-sm font-bold hover:text-black"
           >
             Percentage Certificate
@@ -215,7 +215,11 @@ const AdminNavBar = () => {
             display: "block",
           }}
         >
-          <NavDropdown.Item as={Link} to="#" className="text-sm font-bold">
+          <NavDropdown.Item
+            as={Link}
+            to="/leavingCertificate"
+            className="text-sm font-bold"
+          >
             Generate LC
           </NavDropdown.Item>
           <NavDropdown.Item

@@ -142,6 +142,8 @@ import BonafiedCertificates from "../componants/Certificates/BonafiedCertificate
 import SImpleBonafied from "../componants/Certificates/SimpleBonafied/SImpleBonafied.jsx";
 import CastCertificate from "../componants/Certificates/CastCertificate/CastCertificate.jsx";
 import CharacterCertificate from "../componants/Certificates/CharaterCertificates/CharacterCertificate.jsx";
+import PercentageCertificate from "../componants/Certificates/PercentageCertificate/PercentageCertificate.jsx";
+import LeavingCertificate from "../componants/LeavingCertificate/LeavingCertificate.jsx";
 // import Menus from "../c";
 function Index() {
   return (
@@ -161,6 +163,12 @@ function Index() {
           path="//manage-role-access/:roleId"
           element={<PrivateRoute element={ManageRoleAccess} />}
         />
+
+        {/* <Route
+          path="/TestForAllfunctionlity"
+          // path="#"
+          element={<PrivateRoute element={TestForAllfunctionlity} />}
+        /> */}
         <Route
           path="/student-create"
           element={<PrivateRoute element={CreateStudent} />}
@@ -189,9 +197,14 @@ function Index() {
           // path="#"
           element={<PrivateRoute element={CastCertificate} />}
         />
+        <Route
+          path="/percentageCertificate"
+          // path="#"
+          element={<PrivateRoute element={PercentageCertificate} />}
+        />
         {/* CharacterCertifiacte */}
         <Route
-          path="/CharacterCertificate"
+          path="/characterCertificate"
           // path="#"
           element={<PrivateRoute element={CharacterCertificate} />}
         />
@@ -201,7 +214,12 @@ function Index() {
           // path="#"
           element={<PrivateRoute element={SImpleBonafied} />}
         />
-
+        {/* leaving_certificate */}
+        <Route
+          path="/leavingCertificate"
+          // path="#"
+          element={<PrivateRoute element={LeavingCertificate} />}
+        />
         {/* Staff endPoints */}
         <Route
           path="/StaffList"
