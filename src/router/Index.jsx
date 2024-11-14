@@ -143,7 +143,14 @@ import SImpleBonafied from "../componants/Certificates/SimpleBonafied/SImpleBona
 import CastCertificate from "../componants/Certificates/CastCertificate/CastCertificate.jsx";
 import CharacterCertificate from "../componants/Certificates/CharaterCertificates/CharacterCertificate.jsx";
 import PercentageCertificate from "../componants/Certificates/PercentageCertificate/PercentageCertificate.jsx";
-import LeavingCertificate from "../componants/LeavingCertificate/LeavingCertificate.jsx";
+// import LeavingCertificate from "../componants/LeavingCertificate/LeavingCertificate.jsx";
+import ManageLC from "../componants/LeavingCertificate/ManageLC.jsx";
+import EditLeavingCertificate from "../componants/LeavingCertificate/EditLeavingCertificate.jsx";
+import EditBonafied from "../componants/Certificates/BonafiedCertificate/EditBonafied.jsx";
+import EditCastCertificate from "../componants/Certificates/CastCertificate/EditCastCertificate.jsx";
+import EditCharacter from "../componants/Certificates/CharaterCertificates/EditCharacter.jsx";
+import EditSimpleBonafied from "../componants/Certificates/SimpleBonafied/EditSimpleBonafied.jsx";
+import EditPercentage from "../componants/Certificates/PercentageCertificate/EditPercentage.jsx";
 // import Menus from "../c";
 function Index() {
   return (
@@ -191,6 +198,11 @@ function Index() {
           // path="#"
           element={<PrivateRoute element={BonafiedCertificates} />}
         />
+        <Route
+          path="/studentBonafied/edit/:id"
+          // path="#"
+          element={<PrivateRoute element={EditBonafied} />}
+        />
         {/* Cast certificate fsd */}
         <Route
           path="/castCertificate"
@@ -198,9 +210,19 @@ function Index() {
           element={<PrivateRoute element={CastCertificate} />}
         />
         <Route
+          path="/studentCast/edit/:id"
+          // path="#"
+          element={<PrivateRoute element={EditCastCertificate} />}
+        />
+        <Route
           path="/percentageCertificate"
           // path="#"
           element={<PrivateRoute element={PercentageCertificate} />}
+        />
+        <Route
+          path="/studentPercentage/edit/:id"
+          // path="#"
+          element={<PrivateRoute element={EditPercentage} />}
         />
         {/* CharacterCertifiacte */}
         <Route
@@ -208,17 +230,37 @@ function Index() {
           // path="#"
           element={<PrivateRoute element={CharacterCertificate} />}
         />
+        <Route
+          path="/studentCharacter/edit/:id"
+          // path="#"
+          element={<PrivateRoute element={EditCharacter} />}
+        />
         {/* Simple Bonafied */}
         <Route
           path="/simpleBonafied"
           // path="#"
           element={<PrivateRoute element={SImpleBonafied} />}
         />
+        <Route
+          path="/studentSimpleBonafied/edit/:id"
+          // path="#"
+          element={<PrivateRoute element={EditSimpleBonafied} />}
+        />
         {/* leaving_certificate */}
         <Route
           path="/leavingCertificate"
           // path="#"
-          element={<PrivateRoute element={LeavingCertificate} />}
+          element={<PrivateRoute element={ManageLC} />}
+        />
+
+        {/* <Route
+          path="/student/edit/:id"
+          element={<PrivateRoute element={CreateStudent} />}
+        /> */}
+        <Route
+          path="/studentLC/edit/:id"
+          // path="#"
+          element={<PrivateRoute element={EditLeavingCertificate} />}
         />
         {/* Staff endPoints */}
         <Route

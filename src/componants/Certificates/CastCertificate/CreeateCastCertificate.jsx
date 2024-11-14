@@ -2131,7 +2131,7 @@ const CreeateCastCertificate = () => {
 
   const handleClassSelect = (selectedOption) => {
     // setNameErrorForClass(""); // Reset class error on selection
-    setNameError("");
+    // setNameError("");
     setSelectedClass(selectedOption);
     setSelectedStudent(null);
     setSelectedStudentId(null);
@@ -2151,9 +2151,9 @@ const CreeateCastCertificate = () => {
     setNameErrorForClass("");
     setErrors({}); // Clears all field-specific errors
 
-    if (!selectedClass && !selectedStudent) {
-      setNameError("Please select at least one of them.");
-      toast.error("Please select at least one of them!");
+    if (!selectedStudent) {
+      setNameError("Please select Student Name.");
+      toast.error("Please select Student Name.!");
       return;
     }
 
@@ -2251,7 +2251,14 @@ const CreeateCastCertificate = () => {
           purpose: fetchedData.purpose || " ",
         });
       } else {
-        toast.error("No data found for the selected student.");
+        if (response.data && response.data.status === 403) {
+          toast.error(
+            "Cast Certificate Already Generated. Please go to manage to download the Cast Certificate."
+          );
+        } else {
+          // Show a generic error message if the error is not a 403
+          toast.error("No data found for the selected student.");
+        }
       }
     } catch (error) {
       console.log("error is", error);
@@ -2385,7 +2392,7 @@ const CreeateCastCertificate = () => {
 
     requiredFields.forEach((field) => {
       if (!formData[field]) {
-        newErrors[field] = `${field.replace(/_/g, " ")} is required`;
+        newErrors[field] = `This field is required`;
       }
     });
 
@@ -2567,7 +2574,7 @@ const CreeateCastCertificate = () => {
       );
 
       if (response.status === 200) {
-        toast.success("Cast Certificate updated successfully!");
+        toast.success("Cast Certificate Downloaded successfully!");
 
         // Extract filename from Content-Disposition header
         const contentDisposition = response.headers["content-disposition"];
@@ -2627,7 +2634,7 @@ const CreeateCastCertificate = () => {
       }
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
-      toast.error("An error occurred while updating the Cast Certificate.");
+      toast.error("An error occurred while Downloading the Cast Certificate.");
 
       if (error.response && error.response.data) {
         setBackendErrors(error.response.data);
@@ -2820,7 +2827,7 @@ const CreeateCastCertificate = () => {
                   className="text-md mt-1.5 mr-1 md:mr-0 "
                   htmlFor="classSelect"
                 >
-                  Class <span className="text-red-500 ">*</span>
+                  Class
                 </label>{" "}
                 <div className="w-full md:w-[50%] ">
                   <Select
@@ -2833,11 +2840,6 @@ const CreeateCastCertificate = () => {
                     isClearable
                     className="text-sm"
                   />
-                  {nameError && (
-                    <span className="h-8  relative  ml-1 text-danger text-xs">
-                      {nameError}
-                    </span>
-                  )}
                 </div>
               </div>
               <div className="w-full gap-x-6 relative left-0 md:-left-[5%] justify-between md:w-[98%] my-1 md:my-4 flex md:flex-row">
@@ -2986,9 +2988,10 @@ const CreeateCastCertificate = () => {
                         id="reg_no"
                         name="reg_no"
                         maxLength={10}
+                        readOnly
                         value={formData.reg_no}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.reg_no && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3001,7 +3004,7 @@ const CreeateCastCertificate = () => {
                         htmlFor="date"
                         className="block font-bold text-xs mb-2"
                       >
-                        Date <span className="text-red-500">*</span>
+                        Issue Date <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="date"
@@ -3039,9 +3042,10 @@ const CreeateCastCertificate = () => {
                         maxLength={200}
                         id="staffName"
                         name="stud_name"
+                        readOnly
                         value={formData.stud_name}
                         onChange={handleChange}
-                        className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.stud_name && (
                         <div className="text-red-500 text-xs ml-2 ">
@@ -3061,9 +3065,10 @@ const CreeateCastCertificate = () => {
                         id="stud_id_no"
                         name="stud_id_no"
                         maxLength={25}
+                        readOnly
                         value={formData.stud_id_no}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.stud_id_no && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3083,9 +3088,10 @@ const CreeateCastCertificate = () => {
                         id="stu_aadhaar_no"
                         name="stu_aadhaar_no"
                         maxLength={12}
+                        readOnly
                         value={formData.stu_aadhaar_no}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.stu_aadhaar_no && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3103,8 +3109,8 @@ const CreeateCastCertificate = () => {
                   </h5>
                   {/* </legend> */}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
+                  <div className="w-full md:w-[80%]  grid grid-cols-1 md:grid-cols-2   gap-x-6 gap-4">
+                    <div className="">
                       <label
                         htmlFor="father_name"
                         className="block font-bold  text-xs mb-2"
@@ -3116,9 +3122,10 @@ const CreeateCastCertificate = () => {
                         maxLength={50}
                         id="father_name"
                         name="father_name"
+                        readOnly
                         value={formData.father_name}
                         onChange={handleChange}
-                        className="input-field bg-white block w-full border border-gray-900 rounded-md py-1 px-3  outline-none shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.father_name && (
                         <div className="text-red-500 text-xs ml-2 ">
@@ -3138,9 +3145,10 @@ const CreeateCastCertificate = () => {
                         id="mother_name"
                         name="mother_name"
                         maxLength={50}
+                        readOnly
                         value={formData.mother_name}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.mother_name && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3157,7 +3165,7 @@ const CreeateCastCertificate = () => {
                     Academic Details
                   </h5>
                   {/* </legend> */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                       <label
                         htmlFor="class_division"
@@ -3169,9 +3177,9 @@ const CreeateCastCertificate = () => {
                         type="text"
                         id="class_division"
                         name="class_division"
+                        readOnly
                         value={formData.class_division}
                         onChange={handleChange}
-                        readOnly
                         className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.class_division && (
@@ -3192,9 +3200,10 @@ const CreeateCastCertificate = () => {
                         id="religion"
                         name="religion"
                         maxLength={20}
+                        readOnly
                         value={formData.religion}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                     </div>
                     <div>
@@ -3209,9 +3218,10 @@ const CreeateCastCertificate = () => {
                         id="caste"
                         name="caste"
                         maxLength={20}
+                        readOnly
                         value={formData.caste}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                     </div>
                     <div>
@@ -3255,7 +3265,8 @@ const CreeateCastCertificate = () => {
                         name="birth_place"
                         value={formData.birth_place}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        readOnly
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.birth_place && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3277,7 +3288,8 @@ const CreeateCastCertificate = () => {
                         maxLength={50}
                         value={formData.state}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        readOnly
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.state && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3299,7 +3311,8 @@ const CreeateCastCertificate = () => {
                         maxLength={50}
                         value={formData.mother_tongue}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        readOnly
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.mother_tongue && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3322,7 +3335,8 @@ const CreeateCastCertificate = () => {
                         name="dob"
                         value={formData.dob}
                         onChange={handleChange}
-                        className="block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        readOnly
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.dob && (
                         <div className="text-red-500 text-xs ml-2 ">
@@ -3346,7 +3360,8 @@ const CreeateCastCertificate = () => {
                         name="dob_words"
                         value={formData.dob_words}
                         onChange={handleChange}
-                        className="input-field resize block w-full border border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        readOnly
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.dob_words && (
                         <div className="text-red-500 text-xs ml-2 ">
@@ -3368,7 +3383,8 @@ const CreeateCastCertificate = () => {
                         maxLength={100}
                         value={formData.nationality}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        readOnly
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.nationality && (
                         <span className="text-red-500 text-xs ml-2 h-1">
@@ -3424,7 +3440,8 @@ const CreeateCastCertificate = () => {
                         name="admission_date"
                         value={formData.admission_date}
                         onChange={handleChange}
-                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                        readOnly
+                        className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
                       {errors.admission_date && (
                         <span className="text-red-500 text-xs ml-2 h-1">

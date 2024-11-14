@@ -117,7 +117,7 @@ const CreatePercentageCertificate = () => {
 
   const handleClassSelect = (selectedOption) => {
     // setNameErrorForClass(""); // Reset class error on selection
-    setNameError("");
+    // setNameError("");
     setSelectedClass(selectedOption);
     setSelectedStudent(null);
     setSelectedStudentId(null);
@@ -144,9 +144,9 @@ const CreatePercentageCertificate = () => {
     setNameErrorForClass("");
     setErrors({}); // Clears all field-specific errors
 
-    if (!selectedClass && !selectedStudent) {
-      setNameError("Please select at least one of them.");
-      toast.error("Please select at least one of them!");
+    if (!selectedStudent) {
+      setNameError("Please select Student Name.");
+      toast.error("Please select Student Name.!");
       return;
     }
     // Validate if class and student are selected
@@ -213,7 +213,14 @@ const CreatePercentageCertificate = () => {
           purpose: fetchedData.purpose || " ",
         });
       } else {
-        toast.error("No data found for the selected student.");
+        if (response.data && response.data.status === 403) {
+          toast.error(
+            "Percentage Certificate Already Generated. Please go to manage to download the Percentage Certificate."
+          );
+        } else {
+          // Show a generic error message if the error is not a 403
+          toast.error("No data found for the selected student.");
+        }
       }
     } catch (error) {
       console.log("error is", error);
@@ -237,7 +244,7 @@ const CreatePercentageCertificate = () => {
     // Individual field validation logic
     if (name === "stud_name") {
       if (!value) {
-        fieldErrors.stud_name = "Student name is required";
+        fieldErrors.stud_name = "This field is required";
       } else if (/^\d/.test(value)) {
         fieldErrors.stud_name = "Student name should not start with a number";
       }
@@ -254,7 +261,7 @@ const CreatePercentageCertificate = () => {
 
     // Check if the field is required and empty
     if (!value && requiredFields.includes(name)) {
-      fieldErrors[name] = `${name.replace(/_/g, " ")} is required`;
+      fieldErrors[name] = `This field is required`;
     }
 
     setErrors((prevErrors) => ({ ...prevErrors, [name]: fieldErrors[name] }));
@@ -342,7 +349,7 @@ const CreatePercentageCertificate = () => {
     // Check for empty required fields
     requiredFields.forEach((field) => {
       if (!formData[field]) {
-        newErrors[field] = `${field.replace(/_/g, " ")} is required.`;
+        newErrors[field] = `This field is required.`;
       }
     });
 
@@ -420,7 +427,7 @@ const CreatePercentageCertificate = () => {
       );
 
       if (response.status === 200) {
-        toast.success("Percentage Certificate updated successfully!");
+        toast.success("Percentage Certificate Downloaded successfully!");
         // Extract filename from Content-Disposition header
         const contentDisposition = response.headers["content-disposition"];
         let filename = "DownloadedFile.pdf"; // Fallback name
@@ -462,7 +469,7 @@ const CreatePercentageCertificate = () => {
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
       toast.error(
-        "An error occurred while updating the Percentage Certificate."
+        "An error occurred while Downloading the Percentage Certificate."
       );
 
       if (error.response && error.response.data) {
@@ -488,7 +495,7 @@ const CreatePercentageCertificate = () => {
                   className="text-md mt-1.5 mr-1 md:mr-0 "
                   htmlFor="classSelect"
                 >
-                  Class <span className="text-red-500 ">*</span>
+                  Class
                 </label>{" "}
                 <div className="w-full md:w-[50%] ">
                   <Select
@@ -501,11 +508,6 @@ const CreatePercentageCertificate = () => {
                     isClearable
                     className="text-sm"
                   />
-                  {nameError && (
-                    <span className="h-8  relative  ml-1 text-danger text-xs">
-                      {nameError}
-                    </span>
-                  )}
                 </div>
               </div>
               <div className="w-full gap-x-6 relative left-0 md:-left-[5%] justify-between md:w-[98%] my-1 md:my-4 flex md:flex-row">

@@ -252,7 +252,7 @@ const CreateCharacterCertificate = () => {
 
   const handleClassSelect = (selectedOption) => {
     // setNameErrorForClass(""); // Reset class error on selection
-    setNameError("");
+    // setNameError("");
     setSelectedClass(selectedOption);
     setSelectedStudent(null);
     setSelectedStudentId(null);
@@ -272,9 +272,9 @@ const CreateCharacterCertificate = () => {
     setNameErrorForClass("");
     setErrors({}); // Clears all field-specific errors
 
-    if (!selectedClass && !selectedStudent) {
-      setNameError("Please select at least one of them.");
-      toast.error("Please select at least one of them!");
+    if (!selectedStudent) {
+      setNameError("Please select Student Name.");
+      toast.error("Please select Student Name.!");
       return;
     }
     // Validate if class and student are selected
@@ -345,7 +345,14 @@ const CreateCharacterCertificate = () => {
           special_sub: fetchedData.special_sub || "",
         });
       } else {
-        toast.error("No data found for the selected student.");
+        if (response.data && response.data.status === 403) {
+          toast.error(
+            "Character Certificate Already Generated. Please go to manage to download the Character Certificate."
+          );
+        } else {
+          // Show a generic error message if the error is not a 403
+          toast.error("No data found for the selected student.");
+        }
       }
     } catch (error) {
       toast.error("Error fetching data for the selected student.");
@@ -358,26 +365,25 @@ const CreateCharacterCertificate = () => {
     const newErrors = {};
 
     // Validate name
-    if (!formData.stud_name) newErrors.stud_name = "Name is required";
+    if (!formData.stud_name) newErrors.stud_name = "This field is required";
     else if (!/^[^\d].*/.test(formData.stud_name))
       newErrors.stud_name = "Name should not start with a number";
 
     // Validate academic qualifications (now a single text input)
     if (!formData.class_division)
-      newErrors.class_division = "Class and Division is required";
-    if (!formData.sr_no) newErrors.sr_no = "Serial number is required";
+      newErrors.class_division = "This field is required";
+    if (!formData.sr_no) newErrors.sr_no = "This field is required";
 
     // Validate dob
-    if (!formData.dob) newErrors.dob = "Date of Birth is required";
+    if (!formData.dob) newErrors.dob = "This field is required";
 
     // Validate date of joining
-    if (!formData.date) newErrors.date = " Date is required";
+    if (!formData.date) newErrors.date = "This field is required";
 
     // Validate Employee Id
-    if (!formData.attempt) newErrors.attempt = "Attempt is required";
+    if (!formData.attempt) newErrors.attempt = "This field is required";
     // Validate address
-    if (!formData.dob_words)
-      newErrors.dob_words = "  Birth date in words is required";
+    if (!formData.dob_words) newErrors.dob_words = "This field is required";
 
     setErrors(newErrors);
     return newErrors;
@@ -409,41 +415,39 @@ const CreateCharacterCertificate = () => {
 
     // Name validation
     if (name === "stud_name") {
-      if (!newValue) fieldErrors.stud_name = "Name is required";
+      if (!newValue) fieldErrors.stud_name = "This field is required";
       else if (/^\d/.test(newValue))
         fieldErrors.stud_name = "Name should not start with a number";
     }
 
     // Academic Qualification validation
     if (name === "class_division") {
-      if (!newValue)
-        fieldErrors.class_division = "Class and Division is required";
+      if (!newValue) fieldErrors.class_division = "This field is required";
     }
 
     // Date of Birth validation
     if (name === "dob") {
-      if (!newValue) fieldErrors.dob = "Date of Birth is required";
+      if (!newValue) fieldErrors.dob = "This field is required";
     }
     // serial number
 
     if (name === "sr_no") {
-      if (!newValue) fieldErrors.sr_no = "Serial number is required";
+      if (!newValue) fieldErrors.sr_no = "This field is required";
     }
 
     // Date of Joining validation
     if (name === "date") {
-      if (!newValue) fieldErrors.date = " Date is required";
+      if (!newValue) fieldErrors.date = "This field is required";
     }
 
     // Employee ID validation
     if (name === "attempt") {
-      if (!newValue) fieldErrors.attempt = "Attempt is required";
+      if (!newValue) fieldErrors.attempt = "This field is required";
     }
 
     // Address validation
     if (name === "dob_words") {
-      if (!newValue)
-        fieldErrors.dob_words = "  Birth date in words is required";
+      if (!newValue) fieldErrors.dob_words = "This field is required";
     }
 
     // Update the errors state with the new field errors
@@ -496,7 +500,7 @@ const CreateCharacterCertificate = () => {
       );
 
       if (response.status === 200) {
-        toast.success("CharacterCertificate updated successfully!");
+        toast.success("CharacterCertificate Downloaded successfully!");
 
         // Extract filename from Content-Disposition header
         const contentDisposition = response.headers["content-disposition"];
@@ -541,7 +545,7 @@ const CreateCharacterCertificate = () => {
     } catch (error) {
       console.error("Error:", error.response.data, error.response.sr_no);
       toast.error(
-        "An error occurred while updating the Character Certificate."
+        "An error occurred while Downloading the Character Certificate."
       );
 
       if (error.response && error.response) {
@@ -630,7 +634,7 @@ const CreateCharacterCertificate = () => {
                   className="text-md mt-1.5 mr-1 md:mr-0 "
                   htmlFor="classSelect"
                 >
-                  Class <span className="text-red-500 ">*</span>
+                  Class
                 </label>{" "}
                 <div className="w-full md:w-[50%] ">
                   <Select
@@ -643,11 +647,6 @@ const CreateCharacterCertificate = () => {
                     isClearable
                     className="text-sm"
                   />
-                  {nameError && (
-                    <span className="h-8  relative  ml-1 text-danger text-xs">
-                      {nameError}
-                    </span>
-                  )}
                 </div>
               </div>
               <div className="w-full gap-x-6 relative left-0 md:-left-[5%] justify-between md:w-[98%] my-1 md:my-4 flex md:flex-row">
@@ -847,7 +846,8 @@ const CreateCharacterCertificate = () => {
                       name="dob"
                       value={formData.dob}
                       onChange={handleChange}
-                      className="block border w-full border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                      readOnly
+                      className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
                     />
                     {errors.dob && (
                       <div className="text-red-500 text-xs ml-2">
@@ -871,7 +871,8 @@ const CreateCharacterCertificate = () => {
                       name="dob_words"
                       value={formData.dob_words}
                       onChange={handleChange}
-                      className="input-field resize block w-full border border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
+                      readOnly
+                      className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
                     />
                     {errors.dob_words && (
                       <div className="text-red-500 text-xs ml-2">

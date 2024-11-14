@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { ImCheckboxChecked, ImDownload } from "react-icons/im";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -11,16 +9,16 @@ import ReactPaginate from "react-paginate";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { RxCross1 } from "react-icons/rx";
 // import AllotSubjectTab from "./AllotMarksHeadingTab";
+import { useNavigate } from "react-router-dom";
 import Select from "react-select";
-import CreateCharacterCertificate from "./CreateCharacterCertificate";
-function CharacterCertificate() {
+import LeavingCertificate from "./LeavingCertificate";
+function ManageLC() {
   const API_URL = import.meta.env.VITE_API_URL; // URL for host
   const [activeTab, setActiveTab] = useState("Manage");
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   // for allot subject tab
   const [showDownloadModal, setShowDownloadModal] = useState(false);
-
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentSection, setCurrentSection] = useState(null);
@@ -47,8 +45,9 @@ function CharacterCertificate() {
   const [newMarksHeading, setNewMarksHeading] = useState("");
   const [highestMarks, setHighestMarks] = useState("");
   const [marksError, setMarksError] = useState(""); // Error for validation
+  const [srNo, setSrNo] = useState("");
+  const [cancellationReason, setCancellationReason] = useState("");
   const navigate = useNavigate();
-
   const pageSize = 10;
   useEffect(() => {
     fetchClassNames();
@@ -114,46 +113,86 @@ function CharacterCertificate() {
     }
   };
 
-  // Listing tabs data for diffrente tabs
   const handleSearch = async () => {
-    if (!classIdForManage) {
-      setNameError("Please select the class.");
-      return;
-    }
-    try {
-      console.log(
-        "for this sectiong id in seaching inside AllotMarksHeadingTab",
-        classIdForManage
-      );
-      const token = localStorage.getItem("authToken");
-      const response = await axios.get(
-        // `${API_URL}/api/get_AllotMarkheadingslist`,
+    const token = localStorage.getItem("authToken");
+    // const currentAcademicYear = localStorage.getItem("ac");
 
-        `${API_URL}/api/get_characterbonafidecertificatelist`,
+    // const currentAcademicYear = "2023-2024"; // example, replace with dynamic value if available
+    // const params = {};
+    let params = null; // Initialize params as null
+    // Conditional logic for API query parameters
+    if (srNo && selectedClass) {
+      params = { sr_no: srNo, class_id: classIdForManage };
+    } else if (srNo) {
+      params = { sr_no: srNo };
+    } else if (selectedClass) {
+      params = { class_id: classIdForManage };
+    }
+
+    // API call
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/get_leavingcertificatelist`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          // params: { q: selectedClass },
-          params: { q: classIdForManage },
+          ...(params ? { params } : {}), // Only include params if they are defined
         }
       );
-      console.log(
-        "the response of the AllotMarksHeadingTab is *******",
-        response.data
-      );
-      if (response?.data?.data.length > 0) {
-        setSubjects(response?.data?.data);
-        setPageCount(Math.ceil(response?.data?.data.length / 10)); // Example pagination logic
+
+      if (response?.data?.data?.length > 0) {
+        setSubjects(response.data.data);
+        setPageCount(Math.ceil(response.data.data.length / 10));
       } else {
         setSubjects([]);
-        toast.error(
-          "No Character certificates Listing are found for the selected class."
-        );
+        toast.error("No Leaving Certificate records found.");
       }
     } catch (error) {
-      console.error("Error fetching Character certificates Listing:", error);
-      setError("Error fetching Character certificates");
+      toast.error("Error in fetching certificates Listing");
+      console.error("Error fetching Leaving Certificate records:", error);
+      setError("Error fetching Leaving Certificate records");
     }
   };
+
+  //   // Listing tabs data for diffrente tabs
+  //   const handleSearch = async () => {
+  //     if (!classIdForManage) {
+  //       setNameError("Please select the class.");
+  //       return;
+  //     }
+  //     try {
+  //       console.log(
+  //         "for this sectiong id in seaching inside AllotMarksHeadingTab",
+  //         classIdForManage
+  //       );
+  //       const token = localStorage.getItem("authToken");
+  //       const response = await axios.get(
+  //         // `${API_URL}/api/get_AllotMarkheadingslist`,
+
+  //         `${API_URL}/api/get_leavingcertificatelist`,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //           // params: { q: selectedClass },
+  //           params: { q: classIdForManage },
+  //         }
+  //       );
+  //       console.log(
+  //         "the response of the AllotMarksHeadingTab is *******",
+  //         response.data
+  //       );
+  //       if (response?.data?.data.length > 0) {
+  //         setSubjects(response?.data?.data);
+  //         setPageCount(Math.ceil(response?.data?.data.length / 10)); // Example pagination logic
+  //       } else {
+  //         setSubjects([]);
+  //         toast.error(
+  //           "No Cast certificates Listing are found for the selected class."
+  //         );
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching Cast certificates Listing:", error);
+  //       setError("Error fetching Cast certificates");
+  //     }
+  //   };
 
   // Handle division checkbox change
 
@@ -161,22 +200,39 @@ function CharacterCertificate() {
     setCurrentPage(data.selected);
     // Handle page change logic
   };
-  const handleDownload = (section) => {
+
+  const handleEdit = (section) => {
     setCurrentSection(section);
     console.log("currentedit", section);
-    setShowDownloadModal(true);
+    setShowEditModal(true);
   };
 
   const handleEditForm = (section) => {
     setCurrentSection(section);
     navigate(
-      `/studentCharacter/edit/${section?.sr_no}`,
+      `/studentLC/edit/${section?.sr_no}`,
 
       {
         state: { student: section },
       }
     );
     // console.log("the currecne t section", currentSection);
+  };
+
+  const handleDownload = (section) => {
+    setCurrentSection(section);
+    console.log("currentedit", section);
+
+    // // Set values for the edit modal
+    // setNewClassName(section?.get_class?.name);
+    // setNewSubjectName(section?.get_subject?.name);
+    // setNewExamName(section?.get_exam?.name); // Assuming exam details are available
+    // setNewMarksHeading(section?.get_marksheading?.name || ""); // Set marks heading if available
+
+    // setHighestMarks(section?.highest_marks || ""); // Set highest marks or empty
+    // setMarksError(""); // Reset the error message when opening the modal
+
+    setShowDownloadModal(true);
   };
 
   const handleDownloadSumbit = async () => {
@@ -189,7 +245,7 @@ function CharacterCertificate() {
       }
 
       const response = await axios.get(
-        `${API_URL}/api/get_characterisDownload/${currentSection.sr_no}`,
+        `${API_URL}/api/get_pdfleavingcertificate/${currentSection.sr_no}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob", // Important for downloading files
@@ -197,7 +253,7 @@ function CharacterCertificate() {
       );
 
       if (response.status === 200) {
-        toast.success("Character certificate downloaded successfully!");
+        toast.success("Leaving certificate downloaded successfully!");
 
         // Extract filename from Content-Disposition header if available
         const contentDisposition = response.headers["content-disposition"];
@@ -211,9 +267,7 @@ function CharacterCertificate() {
         }
 
         // Create a blob URL for the PDF file
-        const pdfBlob = new Blob([response.data], {
-          type: "application/pdf",
-        });
+        const pdfBlob = new Blob([response.data], { type: "application/pdf" });
         const pdfUrl = URL.createObjectURL(pdfBlob);
 
         // Create a link to initiate the download
@@ -233,34 +287,18 @@ function CharacterCertificate() {
     } catch (error) {
       if (error.response && error.response.data) {
         toast.error(
-          `Error in Downloading Character Certificate: ${error.response.data.error}`
+          `Error in Downloading Leaving Certificate: ${error.response.data.error}`
         );
       } else {
         toast.error(
-          `Error in Downloading Character Certificate: ${error.message}`
+          `Error in Downloading Leaving Certificate: ${error.message}`
         );
       }
-      console.error("Error in Downloading Character Certificate:", error);
+      console.error("Error in Downloading Leaving Certificate:", error);
     }
     //    finally {
     //      setLoading(false); // Stop loading indicator
     //    }
-  };
-
-  const handleEdit = (section) => {
-    setCurrentSection(section);
-    console.log("currentedit", section);
-
-    // // Set values for the edit modal
-    // setNewClassName(section?.get_class?.name);
-    // setNewSubjectName(section?.get_subject?.name);
-    // setNewExamName(section?.get_exam?.name); // Assuming exam details are available
-    // setNewMarksHeading(section?.get_marksheading?.name || ""); // Set marks heading if available
-
-    // setHighestMarks(section?.highest_marks || ""); // Set highest marks or empty
-    // setMarksError(""); // Reset the error message when opening the modal
-
-    setShowEditModal(true);
   };
 
   const handleDelete = (sectionId) => {
@@ -272,7 +310,7 @@ function CharacterCertificate() {
       setCurrestSubjectNameForDelete(classToDelete?.stud_name); // Set subject name for display
       setShowDeleteModal(true); // Show the delete modal
     } else {
-      console.error("Character Certificate not found for deletion");
+      console.error("Cast certificate not found for deletion");
     }
   };
 
@@ -299,7 +337,7 @@ function CharacterCertificate() {
       );
 
       await axios.put(
-        `${API_URL}/api/update_characterisIssued/${currentSection.sr_no}`,
+        `${API_URL}/api/update_leavingcertificateisIssued/${currentSection.sr_no}`,
         {}, // Pass empty object for no payload
         {
           headers: {
@@ -309,17 +347,19 @@ function CharacterCertificate() {
       );
 
       handleSearch(); // Refresh the list or data
-      toast.success("Character issue status updated successfully!");
+      toast.success("Leaving certificate issue status updated successfully!");
       handleCloseModal(); // Close the modal
     } catch (error) {
       if (error.response && error.response.data) {
         toast.error(
-          `Error updating Character issue status: ${error.response.data.error}`
+          `Error updating Leaving Certificate issue status: ${error.response.data.error}`
         );
       } else {
-        toast.error(`Error updating Character issue status: ${error.message}`);
+        toast.error(
+          `Error updating Leaving Certificate issue status: ${error.message}`
+        );
       }
-      console.error("Error Character issue status:", error);
+      console.error("Error Leaving Certificate issue status:", error);
     }
   };
 
@@ -334,10 +374,13 @@ function CharacterCertificate() {
 
       // Send the delete request to the backend
       await axios.delete(
-        `${API_URL}/api/delete_characterisDeleted/${subReportCardId}`,
+        `${API_URL}/api/delete_leavingcertificateisDeleted/${subReportCardId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+          },
+          data: {
+            cancel_reason: cancellationReason, // Pass reason in the body
           },
           withCredentials: true,
         }
@@ -345,20 +388,22 @@ function CharacterCertificate() {
 
       handleSearch(); // Refresh the data (this seems like the method to refetch data)
       setShowDeleteModal(false); // Close the modal
-      toast.success("Character deleted successfully!");
+      toast.success("Leaving Certificate deleted successfully!");
     } catch (error) {
       if (error.response && error.response.data) {
-        toast.error(`Error deleting Character: ${error.response.data.message}`);
+        toast.error(
+          `Error deleting Leaving Certificate: ${error.response.data.message}`
+        );
       } else {
-        toast.error(`Error deleting Character: ${error.message}`);
+        toast.error(`Error deleting Leaving Certificate: ${error.message}`);
       }
-      console.error("Error deleting Character:", error);
+      console.error("Error deleting Leaving Certificate:", error);
     }
   };
 
   const handleCloseModal = () => {
+    setCancellationReason("");
     setShowDownloadModal(false);
-
     setShowEditModal(false);
     setShowDeleteModal(false);
   };
@@ -381,9 +426,9 @@ function CharacterCertificate() {
   return (
     <>
       {/* <ToastContainer /> */}
-      <div className="md:mx-auto md:w-3/4 p-4 bg-white mt-4 ">
+      <div className="md:mx-auto md:w-[90%] p-4 bg-white mt-4 ">
         <h3 className="text-gray-700 mt-1 text-[1.2em] lg:text-xl text-nowrap">
-          Character Certificate
+          Leaving Certificate
         </h3>
         <div
           className=" relative  mb-8   h-1  mx-auto bg-red-700"
@@ -391,18 +436,18 @@ function CharacterCertificate() {
             backgroundColor: "#C03078",
           }}
         ></div>
-        <ul className="grid grid-cols-2 gap-x-10 relative -left-6 md:left-0 md:flex md:flex-row relative -top-4">
+        <ul className=" w-full md:w-[30%]   grid grid-cols-2 -gap-x-4 px- md:px-10  md:gap-x-2 relative   md:flex md:flex-row  -top-4">
           {/* Tab Navigation */}
-          {["Manage", "CreateCharacterCertificate"].map((tab) => (
+          {["Manage", "CreateLeavingCertificate"].map((tab) => (
             <li
               key={tab}
-              className={`md:-ml-7 shadow-md ${
+              className={` shadow-md ${
                 activeTab === tab ? "text-blue-500 font-bold" : ""
               }`}
             >
               <button
                 onClick={() => handleTabChange(tab)}
-                className="px-2 md:px-4 py-1 hover:bg-gray-200 text-[1em] md:text-sm text-nowrap"
+                className="px-1 md:px-4 py-1 hover:bg-gray-200 text-[1em] md:text-sm text-nowrap"
               >
                 {tab.replace(/([A-Z])/g, " $1")}
               </button>
@@ -416,45 +461,76 @@ function CharacterCertificate() {
               <ToastContainer />
               <div className="mb-4">
                 <div className="md:w-[80%] mx-auto">
-                  <div className="form-group mt-4 w-full md:w-[80%] flex justify-start gap-x-1 md:gap-x-6">
-                    <label
-                      htmlFor="classSection"
-                      className="w-1/4 pt-2 items-center text-center"
-                    >
-                      Select Class <span className="text-red-500">*</span>
-                    </label>
-                    <div className="w-full">
-                      <Select
-                        value={selectedClass}
-                        onChange={handleClassSelect}
-                        options={classOptions}
-                        placeholder="Select Class"
-                        isSearchable
-                        isClearable
-                        className=" text-sm w-full md:w-[60%] item-center relative left-0 md:left-4"
-                      />
-                      {nameError && (
-                        <div className=" relative top-0.5 left-3 ml-1 text-danger text-xs">
-                          {nameError}
+                  <div className="w-full md:w-[80%] flex md:flex-row justify-between items-center">
+                    {/* LC Number Input */}
+                    <div className="w-full md:w-[98%] mt-4  gap-x-0 md:gap-x-12 mx-auto   flex flex-col gap-y-2 md:gap-y-0 md:flex-row ">
+                      <div className="w-full md:w-[30%] gap-x-14 md:gap-x-6 md:justify-start my-1 md:my-4 flex md:flex-row">
+                        <label
+                          className="text-md mt-1.5 mr-1 md:mr-0 w-[40%] md:w-[29%]"
+                          htmlFor="classSelect"
+                        >
+                          LC No. <span className="text-red-500">*</span>
+                        </label>{" "}
+                        <div className="w-full md:w-[50%]">
+                          <input
+                            type="text"
+                            value={srNo}
+                            onChange={(e) => {
+                              // Allow only positive numbers
+                              const value = e.target.value;
+                              if (/^\d*$/.test(value)) {
+                                setSrNo(value);
+                              }
+                            }}
+                            placeholder="Enter LC No."
+                            className="text-sm w-full h-9 mr-0 md:mr-8 px-2 py-1 border rounded-md"
+                          />
                         </div>
-                      )}{" "}
-                    </div>
-                    <button
-                      onClick={handleSearch}
-                      type="button"
-                      className="btn h-10  w-18 md:w-auto relative  right-0 md:right-[15%] btn-primary"
-                    >
-                      Search
-                    </button>
+                      </div>
+
+                      <div className="w-full md:w-[50%]  gap-x-4  justify-between  my-1 md:my-4 flex md:flex-row">
+                        <label
+                          className=" ml-0 md:ml-4 w-[59%] md:w-[55%]  text-md mt-1.5 "
+                          htmlFor="studentSelect"
+                        >
+                          Select Class <span className="text-red-500 ">*</span>
+                        </label>{" "}
+                        <div className="w-full">
+                          <Select
+                            value={selectedClass}
+                            onChange={handleClassSelect}
+                            options={classOptions}
+                            placeholder="Select Class"
+                            isSearchable
+                            isClearable
+                            className="text-sm w-full md:w-[70%] item-center relative left-0 md:left-4"
+                          />
+                          {nameError && (
+                            <div className="relative top-0.5 left-3 ml-1 text-danger text-xs">
+                              {nameError}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={handleSearch}
+                        type="button"
+                        className="btn h-10 w-18 mt-1.5 md:w-auto relative  btn-primary "
+                      >
+                        Search
+                      </button>
+                    </div>{" "}
                   </div>
                 </div>
               </div>
+
               {subjects.length > 0 && (
                 <div className="container mt-4">
                   <div className="card mx-auto lg:w-full shadow-lg">
                     <div className="p-2 px-3 bg-gray-100 border-none flex justify-between items-center">
                       <h3 className="text-gray-700 mt-1 text-[1.2em] lg:text-xl text-nowrap">
-                        Manage Character Certificate{" "}
+                        Manage Leaving Certificate
                       </h3>
                       <div className="w-1/2 md:w-fit mr-1 ">
                         <input
@@ -479,6 +555,9 @@ function CharacterCertificate() {
                             <tr className="bg-gray-100">
                               <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
                                 S.No
+                              </th>
+                              <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
+                                LC No.
                               </th>
                               <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
                                 Student Name
@@ -536,16 +615,18 @@ function CharacterCertificate() {
                                     {index + 1}
                                   </td>
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                    {subject?.sr_no}
+                                  </td>
+                                  <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                     {subject?.stud_name}
                                   </td>
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                    {subject?.class_division}
+                                    {subject?.classname} {subject?.sectionname}
                                   </td>
-
                                   {/* Status column */}
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                     {statusText}
-                                  </td>
+                                  </td>{" "}
                                   {/* Download button */}
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                     {showDownloadButton && (
@@ -557,7 +638,6 @@ function CharacterCertificate() {
                                       </button>
                                     )}
                                   </td>
-
                                   {/* Edit button */}
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                     {showEditButton && (
@@ -569,7 +649,6 @@ function CharacterCertificate() {
                                       </button>
                                     )}
                                   </td>
-
                                   {/* Delete button */}
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                     {showDeleteButton && (
@@ -583,7 +662,6 @@ function CharacterCertificate() {
                                       </button>
                                     )}
                                   </td>
-
                                   {/* Issue button */}
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                     {showIssueButton && (
@@ -628,9 +706,9 @@ function CharacterCertificate() {
               )}
             </div>
           )}
-          {activeTab === "CreateCharacterCertificate" && (
+          {activeTab === "CreateLeavingCertificate" && (
             <div>
-              <CreateCharacterCertificate />
+              <LeavingCertificate />
             </div>
           )}
         </div>
@@ -680,6 +758,7 @@ function CharacterCertificate() {
           </div>
         </div>
       )}
+      {/* Edit Modal */}
       {showDownloadModal && (
         <div className="fixed inset-0 z-50   flex items-center justify-center bg-black bg-opacity-50">
           <div className="modal fade show" style={{ display: "block" }}>
@@ -723,9 +802,10 @@ function CharacterCertificate() {
           </div>
         </div>
       )}
+
       {/* Delete Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50   flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="modal fade show" style={{ display: "block" }}>
             <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
@@ -734,29 +814,53 @@ function CharacterCertificate() {
                   <RxCross1
                     className="float-end relative mt-2 right-2 text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
                     type="button"
-                    // className="btn-close text-red-600"
                     onClick={handleCloseModal}
                   />
-                  {console.log(
-                    "the currecnt section inside delete of the managesubjhect",
-                    currentSection
-                  )}
                 </div>
                 <div
-                  className=" relative  mb-3 h-1 w-[97%] mx-auto bg-red-700"
+                  className="relative mb-3 h-1 w-[97%] mx-auto bg-red-700"
                   style={{
                     backgroundColor: "#C03078",
                   }}
                 ></div>
                 <div className="modal-body">
-                  Are you sure you want to delete this certificate of{" "}
-                  {` ${currestSubjectNameForDelete} `} ?
+                  {/* <p>
+                    Are you sure you want to delete this certificate of{" "}
+                    {` ${currestSubjectNameForDelete} `}?
+                  </p> */}
+
+                  {/* Reason for Cancellation Input */}
+                  <div className="">
+                    <label
+                      className="block text-md font-semibold mb-1"
+                      htmlFor="reason"
+                    >
+                      Reason For Cancellation:{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      id="reason"
+                      value={cancellationReason}
+                      maxLength={200}
+                      onChange={(e) => setCancellationReason(e.target.value)}
+                      placeholder="Enter reason for cancellation"
+                      className="text-sm w-full h-20 px-2 py-1 border rounded-md"
+                      required
+                    />
+                    {!cancellationReason && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Reason for cancellation is required.
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className=" flex justify-end p-3">
+
+                <div className="flex justify-end p-3">
                   <button
                     type="button"
                     className="btn btn-danger px-3 mb-2"
                     onClick={handleSubmitDelete}
+                    disabled={!cancellationReason} // Disable button if reason is empty
                   >
                     Delete
                   </button>
@@ -770,4 +874,4 @@ function CharacterCertificate() {
   );
 }
 
-export default CharacterCertificate;
+export default ManageLC;
