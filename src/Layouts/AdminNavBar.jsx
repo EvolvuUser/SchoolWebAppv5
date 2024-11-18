@@ -49,13 +49,6 @@ const AdminNavBar = () => {
         >
           <NavDropdown.Item
             as={Link}
-            to="/student-create"
-            className="text-sm font-bold hover:text-black"
-          >
-            Add Student
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
             to="/newStudentList"
             className="text-sm font-bold hover:text-black"
           >
@@ -71,16 +64,16 @@ const AdminNavBar = () => {
           <NavDropdown.Item
             className="text-sm font-bold hover:text-black"
             as={Link}
-            to="#"
+            to="/manageStudentLC"
           >
             LC Students
           </NavDropdown.Item>
           <NavDropdown.Item
             className="text-sm font-bold hover:text-black"
             as={Link}
-            to="#"
+            to="/deleteStudent"
           >
-            Deleted Student Lists
+            Deleted Students Lists
           </NavDropdown.Item>
           <NavDropdown.Item
             className="text-sm font-bold hover:text-black"

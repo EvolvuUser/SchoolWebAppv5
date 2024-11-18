@@ -151,6 +151,12 @@ import EditCastCertificate from "../componants/Certificates/CastCertificate/Edit
 import EditCharacter from "../componants/Certificates/CharaterCertificates/EditCharacter.jsx";
 import EditSimpleBonafied from "../componants/Certificates/SimpleBonafied/EditSimpleBonafied.jsx";
 import EditPercentage from "../componants/Certificates/PercentageCertificate/EditPercentage.jsx";
+import ManageLCStudent from "../componants/LCStudent/ManageLCStudent.jsx";
+import ViewStudentLC from "../componants/LCStudent/ViewStudentLC.jsx";
+import DeleteStudent from "../componants/DeleteStudent/DeleteStudent.jsx";
+import ViewDeletedStudent from "../componants/DeleteStudent/ViewDeletedStudent.jsx";
+import EditLCforDeleteStudent from "../componants/DeleteStudent/EditLCforDeleteStudent.jsx";
+import LeavingCertificate from "../componants/LeavingCertificate/LeavingCertificate.jsx";
 // import Menus from "../c";
 function Index() {
   return (
@@ -246,11 +252,40 @@ function Index() {
           // path="#"
           element={<PrivateRoute element={EditSimpleBonafied} />}
         />
-        {/* leaving_certificate */}
+
+        {/* LC Student */}
         <Route
           path="/leavingCertificate"
           // path="#"
           element={<PrivateRoute element={ManageLC} />}
+        />
+        <Route
+          path="/studentLC/view/:id"
+          // path="#"
+          element={<PrivateRoute element={ViewStudentLC} />}
+        />
+        {/* Deleted Student Module */}
+        {/* LC Student */}
+        <Route
+          path="/manageStudentLC"
+          // path="#"
+          element={<PrivateRoute element={ManageLCStudent} />}
+        />
+        {/* leaving_certificate */}
+        <Route
+          path="/deleteStudent"
+          // path="#"
+          element={<PrivateRoute element={DeleteStudent} />}
+        />
+        <Route
+          path="/deletedStudent/view/:id"
+          // path="#"
+          element={<PrivateRoute element={ViewDeletedStudent} />}
+        />
+        <Route
+          path="/editLCforDeleteStudent/edit/:id"
+          // path="#"
+          element={<PrivateRoute element={EditLCforDeleteStudent} />}
         />
 
         {/* <Route
