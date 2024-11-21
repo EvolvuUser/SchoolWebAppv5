@@ -29,13 +29,13 @@ const LeavingCertificate = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     sr_no: "",
-    grn_no: "",
+    reg_no: "",
     date: "",
     first_name: "",
     mid_name: "",
     last_name: "",
     udise_pen_no: "",
-    student_id_no: "",
+    stud_id_no: "",
     promoted_to: " ",
     last_exam: "",
     stud_id: "",
@@ -52,7 +52,7 @@ const LeavingCertificate = () => {
     dob_words: "",
     nationality: "",
     prev_school_class: "",
-    date_of_admission: "",
+    admission_date: "",
     admission_class: "",
     attendance: "",
     subjectsFor: [],
@@ -64,7 +64,7 @@ const LeavingCertificate = () => {
     standard_studying: "",
     dob_proof: "",
     class_id_for_subj: "",
-    aadhar_no: "",
+    stu_aadhaar_no: "",
     teacher_image_name: null,
     academicStudent: [],
     academic_yr: "", // Add this to track selected academic year
@@ -219,35 +219,51 @@ const LeavingCertificate = () => {
 
   // for student and class dropdown
 
+  // State for loading indicators
+  const [loadingClasses, setLoadingClasses] = useState(false);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+
   useEffect(() => {
-    fetchInitialData(); // Fetch classes on component mount
-    fetchStudentNameWithClassId();
+    // Fetch both classes and student names on component mount
+    fetchInitialDataAndStudents();
   }, []);
 
-  const fetchInitialData = async () => {
-    // setLoading(true);
+  const fetchInitialDataAndStudents = async () => {
     try {
+      setLoadingClasses(true);
+      setLoadingStudents(true);
+
       const token = localStorage.getItem("authToken");
-      const classResponse = await axios.get(
-        `${API_URL}/api/getallClassWithStudentCount`,
-        {
+
+      // Fetch classes and students concurrently
+      const [classResponse, studentResponse] = await Promise.all([
+        axios.get(`${API_URL}/api/getallClassWithStudentCount`, {
           headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+        }),
+        axios.get(`${API_URL}/api/getStudentListBySectionData`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      // Set the fetched data
       setClassesforForm(classResponse.data || []);
+      setStudentNameWithClassId(studentResponse?.data?.data || []);
     } catch (error) {
-      toast.error("Error fetching initial data.");
+      toast.error("Error fetching data.");
+    } finally {
+      // Stop loading for both dropdowns
+      setLoadingClasses(false);
+      setLoadingStudents(false);
     }
-    // finally {
-    //   setLoading(false);
-    // }
   };
 
   const fetchStudentNameWithClassId = async (section_id = null) => {
-    // setLoading(true);
     try {
+      setLoadingStudents(true);
+
       const params = section_id ? { section_id } : {};
       const token = localStorage.getItem("authToken");
+
       const response = await axios.get(
         `${API_URL}/api/getStudentListBySectionData`,
         {
@@ -255,15 +271,30 @@ const LeavingCertificate = () => {
           params,
         }
       );
+
       setStudentNameWithClassId(response?.data?.data || []);
     } catch (error) {
       toast.error("Error fetching students.");
+    } finally {
+      setLoadingStudents(false);
     }
-    // finally {
-    //   setLoading(false);
-    // }
   };
 
+  const handleClassSelect = (selectedOption) => {
+    setSelectedClass(selectedOption);
+    setSelectedStudent(null);
+    setSelectedStudentId(null);
+    setClassIdForSearch(selectedOption?.value);
+    fetchStudentNameWithClassId(selectedOption?.value);
+  };
+
+  const handleStudentSelect = (selectedOption) => {
+    setNameError(""); // Reset student error on selection
+    setSelectedStudent(selectedOption);
+    setSelectedStudentId(selectedOption?.value);
+  };
+
+  // Dropdown options
   const classOptions = useMemo(
     () =>
       classesforForm.map((cls) => ({
@@ -278,32 +309,10 @@ const LeavingCertificate = () => {
     () =>
       studentNameWithClassId.map((stu) => ({
         value: stu.student_id,
-        label: `${stu?.first_name} ${stu?.mid_name} ${stu.last_name}`,
+        label: `${stu?.first_name} ${stu?.mid_name} ${stu?.last_name}`,
       })),
     [studentNameWithClassId]
   );
-
-  const handleClassSelect = (selectedOption) => {
-    // setNameErrorForClass(""); // Reset class error on selection
-    // setNameError("");
-    setSelectedClass(selectedOption);
-    setSelectedStudent(null);
-    setSelectedStudentId(null);
-    setClassIdForSearch(selectedOption.value);
-    console.log(
-      "classIdForSearch",
-      classIdForSearch,
-      "setSelectedClass",
-      selectedClass
-    );
-    fetchStudentNameWithClassId(selectedOption.value);
-  };
-
-  const handleStudentSelect = (selectedOption) => {
-    setNameError(""); // Reset student error on selection
-    setSelectedStudent(selectedOption);
-    setSelectedStudentId(selectedOption.value);
-  };
 
   const handleSearch = async () => {
     // Reset error messages
@@ -331,10 +340,10 @@ const LeavingCertificate = () => {
     // // If there are validation errors, exit the function
     // if (hasError) return;
     setFormData({
-      grn_no: "",
+      reg_no: "",
       issue_date: "",
-      student_id_no: "",
-      aadhar_no: "",
+      stud_id_no: "",
+      stu_aadhaar_no: "",
       first_name: "",
       mid_name: "",
       last_name: "",
@@ -351,7 +360,7 @@ const LeavingCertificate = () => {
       dob_proof: "",
       prev_school_class: "",
       // previous_school_attended: "",
-      date_of_admission: "",
+      admission_date: "",
       admission_class: "",
       leaving_date: "",
       standard_studying: "",
@@ -396,7 +405,7 @@ const LeavingCertificate = () => {
         setFormData({
           sr_no: fetchedData.sr_no || "",
           class_id_for_subj: fetchedData.studentinformation.class_id || "",
-          grn_no: fetchedData.studentinformation.grn_no || "",
+          reg_no: fetchedData.studentinformation.reg_no || "",
           date: today || "", // Directly from the fetched data
           subjectsFor: fetchedData.classsubject || [],
           academicStudent: fetchedData.academicStudent || [],
@@ -407,7 +416,7 @@ const LeavingCertificate = () => {
           // first_name: `${fetchedData.studentinformation?.first_name || ""} ${
           //   fetchedData.studentinformation?.mid_name || ""
           // } ${fetchedData.studentinformation?.last_name || ""}`,
-          student_id_no: fetchedData.studentinformation.student_id_no || "",
+          stud_id_no: fetchedData.studentinformation.stud_id_no || "",
           first_name: fetchedData.studentinformation.first_name || "",
           mid_name: fetchedData.studentinformation.mid_name || "",
           last_name: fetchedData.studentinformation.last_name || "",
@@ -419,8 +428,7 @@ const LeavingCertificate = () => {
           father_name: fetchedData.studentinformation.father_name || "",
           mother_name: fetchedData.studentinformation.mother_name || "",
 
-          date_of_admission:
-            fetchedData.studentinformation.date_of_admission || "",
+          admission_date: fetchedData.studentinformation.admission_date || "",
           religion: fetchedData.studentinformation.religion || "",
           caste: fetchedData.studentinformation.caste || "",
           subcaste: fetchedData.studentinformation.subcaste || "",
@@ -432,7 +440,7 @@ const LeavingCertificate = () => {
           dob_words: convertDateToWords(fetchedData.studentinformation.dob),
           attendance: fetchedData.total_attendance || "",
           nationality: fetchedData.studentinformation.nationality || "",
-          aadhar_no: fetchedData.studentinformation.aadhar_no || "",
+          stu_aadhaar_no: fetchedData.studentinformation.stu_aadhaar_no || "",
           teacher_image_name:
             fetchedData.studentinformation.father_image_name || null, // Assuming this is for a teacher image
           purpose: fetchedData.purpose || " ",
@@ -459,7 +467,7 @@ const LeavingCertificate = () => {
   //   const newErrors = {};
 
   //   // Validate General Register No
-  //   if (!formData.grn_no) newErrors.grn_no = "General Register No is required";
+  //   if (!formData.reg_no) newErrors.reg_no = "General Register No is required";
 
   //   // Validate Date
   //   if (!formData.date) newErrors.date = "Date is required";
@@ -470,7 +478,7 @@ const LeavingCertificate = () => {
   //     newErrors.first_name = "Student Name should not start with a number";
 
   //   // Validate Student ID
-  //   if (!formData.student_id_no) newErrors.student_id_no = "Student ID is required";
+  //   if (!formData.stud_id_no) newErrors.stud_id_no = "Student ID is required";
 
   //   // Validate Father's Name
   //   if (!formData.father_name)
@@ -513,8 +521,8 @@ const LeavingCertificate = () => {
   //       "Previous School and Class is required";
 
   //   // Validate Date of Admission
-  //   if (!formData.date_of_admission)
-  //     newErrors.date_of_admission = "Date of Admission is required";
+  //   if (!formData.admission_date)
+  //     newErrors.admission_date = "Date of Admission is required";
 
   //   // Validate Learning History
   //   if (!formData.admission_class)
@@ -537,8 +545,8 @@ const LeavingCertificate = () => {
   //       "Date of Leaving Certificate is required";
 
   //   // Validate Aadhar Card Number
-  //   if (!formData.aadhar_no)
-  //     newErrors.aadhar_no = "Aadhar Card No is required";
+  //   if (!formData.stu_aadhaar_no)
+  //     newErrors.stu_aadhaar_no = "Aadhar Card No is required";
 
   //   // Validate Purpose
   //   if (!formData.purpose || formData.purpose.trim() === "")
@@ -554,11 +562,11 @@ const LeavingCertificate = () => {
 
     // Required fields validation
     const requiredFields = [
-      "grn_no",
+      "reg_no",
       "issue_date",
       "first_name",
 
-      "student_id_no",
+      "stud_id_no",
       "promoted_to",
       "last_exam",
       "father_name",
@@ -570,14 +578,14 @@ const LeavingCertificate = () => {
       "dob_words",
       "nationality",
       "prev_school_class",
-      "date_of_admission",
+      "admission_date",
       "admission_class",
       "reason_leaving",
       "application_date",
       "leaving_date",
       "standard_studying",
       "dob_proof",
-      "aadhar_no",
+      "stu_aadhaar_no",
       "attendance",
       "fee_month",
       "remark",
@@ -718,10 +726,10 @@ const LeavingCertificate = () => {
 
     // Reset form data to ensure it updates with fresh data
     setFormData({
-      grn_no: "",
+      reg_no: "",
       issue_date: "",
-      student_id_no: "",
-      aadhar_no: "",
+      stud_id_no: "",
+      stu_aadhaar_no: "",
       first_name: "",
       mid_name: "",
       last_name: "",
@@ -738,7 +746,7 @@ const LeavingCertificate = () => {
       dob_proof: "",
       prev_school_class: "",
       // previous_school_attended: "",
-      date_of_admission: "",
+      admission_date: "",
       admission_class: "",
       leaving_date: "",
       standard_studying: "",
@@ -780,7 +788,7 @@ const LeavingCertificate = () => {
           academic_yr: selectedAcademicYear, // Make sure to retain the selected academic year
           sr_no: fetchedData.sr_no || "",
           class_id_for_subj: fetchedData.studentinformation.class_id || "",
-          grn_no: fetchedData.studentinformation.grn_no || "",
+          reg_no: fetchedData.studentinformation.reg_no || "",
           issue_date: today || "",
           subjectsFor: fetchedData.classsubject || [],
           academicStudent: fetchedData.academicStudent || [],
@@ -790,7 +798,7 @@ const LeavingCertificate = () => {
           // subjects: allSubjectNames,
 
           // subjects:selectedSubjects || [],
-          student_id_no: fetchedData.studentinformation.student_id_no || "",
+          stud_id_no: fetchedData.studentinformation.stud_id_no || "",
           first_name: fetchedData.studentinformation.first_name || "",
           mid_name: fetchedData.studentinformation.mid_name || "",
           last_name: fetchedData.studentinformation.last_name || "",
@@ -800,8 +808,7 @@ const LeavingCertificate = () => {
           stud_id: fetchedData.studentinformation.student_id || " ",
           father_name: fetchedData.studentinformation.father_name || "",
           mother_name: fetchedData.studentinformation.mother_name || "",
-          date_of_admission:
-            fetchedData.studentinformation.date_of_admission || "",
+          admission_date: fetchedData.studentinformation.admission_date || "",
           religion: fetchedData.studentinformation.religion || "",
           caste: fetchedData.studentinformation.caste || "",
           subcaste: fetchedData.studentinformation.subcaste || "",
@@ -812,7 +819,7 @@ const LeavingCertificate = () => {
           dob_words: convertDateToWords(fetchedData.studentinformation.dob),
           attendance: fetchedData.total_attendance || "",
           nationality: fetchedData.studentinformation.nationality || "",
-          aadhar_no: fetchedData.studentinformation.aadhar_no || "",
+          stu_aadhaar_no: fetchedData.studentinformation.stu_aadhaar_no || "",
           teacher_image_name:
             fetchedData.studentinformation.father_image_name || null,
           purpose: fetchedData.purpose || " ",
@@ -935,10 +942,10 @@ const LeavingCertificate = () => {
 
     // Format the form data before submission
     const formattedFormData = {
-      grn_no: formData.grn_no || "",
+      reg_no: formData.reg_no || "",
       issue_date: formatDateString(formData.issue_date),
-      student_id_no: formData.student_id_no || "",
-      aadhar_no: formData.aadhar_no || "",
+      stud_id_no: formData.stud_id_no || "",
+      stu_aadhaar_no: formData.stu_aadhaar_no || "",
       first_name: formData.first_name || "",
       mid_name: formData.mid_name || "",
       last_name: formData.last_name || "",
@@ -954,7 +961,7 @@ const LeavingCertificate = () => {
       dob_words: formData.dob_words || "",
       dob_proof: formData.dob_proof || "",
       previous_school_attended: formData.prev_school_class || "",
-      date_of_admission: formatDateString(formData.date_of_admission),
+      admission_date: formatDateString(formData.admission_date),
       admission_class: formData.admission_class || "",
       leaving_date: formatDateString(formData.leaving_date),
       standard_studying: formData.standard_studying || "",
@@ -1013,13 +1020,13 @@ const LeavingCertificate = () => {
         // Reset form data
         setFormData({
           sr_no: "",
-          grn_no: "",
+          reg_no: "",
           date: "",
           first_name: "",
           mid_name: "",
           last_name: "",
           udise_pen_no: "",
-          student_id_no: "",
+          stud_id_no: "",
           promoted_to: " ",
           last_exam: "",
           stud_id: "",
@@ -1036,7 +1043,7 @@ const LeavingCertificate = () => {
           dob_words: "",
           nationality: "",
           prev_school_class: "",
-          date_of_admission: "",
+          admission_date: "",
           admission_class: "",
           attendance: "",
           subjectsFor: [],
@@ -1049,7 +1056,7 @@ const LeavingCertificate = () => {
           standard_studying: "",
           dob_proof: "",
           class_id_for_subj: "",
-          aadhar_no: "",
+          stu_aadhaar_no: "",
           teacher_image_name: null,
           academicStudent: [],
           academic_yr: "", // Add this to track selected academic year
@@ -1124,49 +1131,56 @@ const LeavingCertificate = () => {
         {/* Search Section */}
         <div className="w-[95%] flex justify-center flex-col md:flex-row gap-x-1  bg-white rounded-lg border border-gray-900 shadow-md mx-auto mt-10 p-6">
           <div className="w-full md:w-[99%] flex md:flex-row justify-between items-center">
-            <div className="w-full md:w-[90%] gap-x-0 md:gap-x-12 mx-auto   flex flex-col gap-y-2 md:gap-y-0 md:flex-row ">
-              <div className="w-full md:w-[40%]   gap-x-14 md:gap-x-6 md:justify-start  my-1 md:my-4 flex md:flex-row">
+            <div className="w-full flex flex-col gap-y-2 md:gap-y-0 md:flex-row">
+              <div className="w-full gap-x-14 md:gap-x-6 md:justify-start my-1 md:my-4 flex md:flex-row">
                 <label
-                  className="text-md mt-1.5 mr-1 md:mr-0 "
+                  className="text-md mt-1.5 mr-1 md:mr-0"
                   htmlFor="classSelect"
                 >
                   Class
-                </label>{" "}
-                <div className="w-full md:w-[55%] ">
+                </label>
+                <div className="w-full md:w-[50%]">
                   <Select
                     id="classSelect"
                     value={selectedClass}
                     onChange={handleClassSelect}
                     options={classOptions}
-                    placeholder="Select"
+                    placeholder={
+                      loadingClasses ? "Loading classes..." : "Select"
+                    }
                     isSearchable
                     isClearable
                     className="text-sm"
+                    isDisabled={loadingClasses}
                   />
                 </div>
               </div>
-              <div className="w-full md:w-[50%] gap-x-4  justify-between  my-1 md:my-4 flex md:flex-row">
+
+              <div className="w-full gap-x-6 relative left-0 md:-left-[5%] justify-between md:w-[98%] my-1 md:my-4 flex md:flex-row">
                 <label
-                  className=" ml-0 md:ml-4 md:w-[30%]  text-md mt-1.5 "
+                  className="md:w-[50%] text-md mt-1.5"
                   htmlFor="studentSelect"
                 >
-                  Student Name <span className="text-red-500 ">*</span>
-                </label>{" "}
-                <div className="w-full md:w-[60%]">
+                  Student Name <span className="text-red-500">*</span>
+                </label>
+                <div className="w-full md:w-[80%]">
                   <Select
                     id="studentSelect"
                     value={selectedStudent}
                     onChange={handleStudentSelect}
                     options={studentOptions}
-                    placeholder="Select"
+                    placeholder={
+                      loadingStudents ? "Loading students..." : "Select"
+                    }
                     isSearchable
                     isClearable
                     className="text-sm"
+                    isDisabled={loadingStudents}
                   />
                   {nameError && (
-                    <span className="h-8  relative  ml-1 text-danger text-xs">
+                    <div className="h-8 relative ml-1 text-danger text-xs">
                       {nameError}
-                    </span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -1175,7 +1189,7 @@ const LeavingCertificate = () => {
                 type="search"
                 onClick={handleSearch}
                 style={{ backgroundColor: "#2196F3" }}
-                className={` my-1 md:my-4 btn h-10 w-18 md:w-auto btn-primary   text-white font-bold py-1 border-1 border-blue-500 px-4 rounded ${
+                className={`my-1 md:my-4 btn h-10 w-18 md:w-auto btn-primary text-white font-bold py-1 border-1 border-blue-500 px-4 rounded ${
                   loadingForSearch ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 disabled={loadingForSearch}
@@ -1208,14 +1222,6 @@ const LeavingCertificate = () => {
                   "Search"
                 )}
               </button>
-
-              {/* <button
-                onClick={handleSearch}
-                type="button"
-                className="my-1 md:my-4 btn h-10 w-18 md:w-auto btn-primary"
-              >
-                Search
-              </button> */}
             </div>
           </div>
         </div>
@@ -1283,7 +1289,7 @@ const LeavingCertificate = () => {
                     </div>
                     <div>
                       <label
-                        htmlFor="grn_no"
+                        htmlFor="reg_no"
                         className="block font-bold text-xs mb-2"
                       >
                         General Register No.{" "}
@@ -1291,17 +1297,17 @@ const LeavingCertificate = () => {
                       </label>
                       <input
                         type="text"
-                        id="grn_no"
-                        name="grn_no"
+                        id="reg_no"
+                        name="reg_no"
                         maxLength={10}
-                        value={formData.grn_no}
+                        value={formData.reg_no}
                         onChange={handleChange}
                         readOnly
                         className="input-field block border w-full border-1 border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
-                      {errors.grn_no && (
+                      {errors.reg_no && (
                         <span className="text-red-500 text-xs ml-1 h-1">
-                          {errors.grn_no}
+                          {errors.reg_no}
                         </span>
                       )}
                     </div>
@@ -1397,24 +1403,24 @@ const LeavingCertificate = () => {
                     </div>
                     <div>
                       <label
-                        htmlFor="student_id_no"
+                        htmlFor="stud_id_no"
                         className="block font-bold text-xs mb-2"
                       >
                         STUDENT ID NO <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
-                        id="student_id_no"
-                        name="student_id_no"
+                        id="stud_id_no"
+                        name="stud_id_no"
                         maxLength={25}
-                        value={formData.student_id_no}
+                        value={formData.stud_id_no}
                         onChange={handleChange}
                         readOnly
                         className="input-field block border w-full border-1 border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
-                      {errors.student_id_no && (
+                      {errors.stud_id_no && (
                         <span className="text-red-500 text-xs ml-1 h-1">
-                          {errors.student_id_no}
+                          {errors.stud_id_no}
                         </span>
                       )}
                     </div>
@@ -1448,7 +1454,7 @@ const LeavingCertificate = () => {
                     )}
                     <div>
                       <label
-                        htmlFor="aadhar_no"
+                        htmlFor="stu_aadhaar_no"
                         className="block font-bold text-xs mb-2"
                       >
                         UDI NO.(Aadhar Card No.){" "}
@@ -1456,17 +1462,17 @@ const LeavingCertificate = () => {
                       </label>
                       <input
                         type="text"
-                        id="aadhar_no"
-                        name="aadhar_no"
+                        id="stu_aadhaar_no"
+                        name="stu_aadhaar_no"
                         maxLength={12}
-                        value={formData.aadhar_no}
+                        value={formData.stu_aadhaar_no}
                         onChange={handleChange}
                         readOnly
                         className="input-field block border w-full border-1 border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
-                      {errors.aadhar_no && (
+                      {errors.stu_aadhaar_no && (
                         <span className="text-red-500 text-xs ml-1 h-1">
-                          {errors.aadhar_no}
+                          {errors.stu_aadhaar_no}
                         </span>
                       )}
                     </div>
@@ -1891,7 +1897,7 @@ const LeavingCertificate = () => {
                     </div>
                     <div>
                       <label
-                        htmlFor="date_of_admission"
+                        htmlFor="admission_date"
                         className="block font-bold text-xs mb-2"
                       >
                         Date of Admission{" "}
@@ -1899,16 +1905,16 @@ const LeavingCertificate = () => {
                       </label>
                       <input
                         type="date"
-                        id="date_of_admission"
-                        name="date_of_admission"
-                        value={formData.date_of_admission}
+                        id="admission_date"
+                        name="admission_date"
+                        value={formData.admission_date}
                         onChange={handleChange}
                         readOnly
                         className="input-field block border w-full border-1 border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
                       />
-                      {errors.date_of_admission && (
+                      {errors.admission_date && (
                         <span className="text-red-500 text-xs ml-1 h-1">
-                          {errors.date_of_admission}
+                          {errors.admission_date}
                         </span>
                       )}
                     </div>
