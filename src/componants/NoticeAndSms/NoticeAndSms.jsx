@@ -7,11 +7,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactPaginate from "react-paginate";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { RxCross1 } from "react-icons/rx";
-import Select from "react-select";
+// import Select from "react-select";
+import { IoMdSend } from "react-icons/io";
 
 import CreateShortSMS from "./CreateShortSms";
 import CreateNotice from "./CreateNotice";
-import { PiCertificateBold } from "react-icons/pi";
+// import { PiCertificateBold } from "react-icons/pi";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { FaCheck } from "react-icons/fa";
 import { ImDownload } from "react-icons/im";
@@ -58,6 +59,7 @@ function NoticeAndSms() {
   const [subjectError, setSubjectError] = useState("");
   const [noticeDescError, setNoticeDescError] = useState("");
   const [imageUrls, setImageUrls] = useState([]);
+  const [selectedFile, setSelectedFile] = useState([]);
 
   // for react-search of manage tab teacher Edit and select class
   const pageSize = 10;
@@ -89,28 +91,63 @@ function NoticeAndSms() {
   };
 
   // Listing tabs data for diffrente tabs
+  // const handleSearch = async () => {
+  //   try {
+  //     // Get token from local storage
+  //     const token = localStorage.getItem("authToken");
+
+  //     // Prepare query parameters
+  //     const params = {};
+  //     if (status) params.status = status; // Include status if selected
+  //     if (selectedDate) params.notice_date = selectedDate; // Include date if selected
+
+  //     // Make API request
+  //     const response = await axios.get(`${API_URL}/api/get_smsnoticelist`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //       params,
+  //     });
+
+  //     // Handle response data
+  //     if (response.data?.data?.length > 0) {
+  //       setNotices(response.data.data); // Update notice list with response data
+  //       setPageCount(Math.ceil(response.data.data.length / pageSize));
+  //     } else {
+  //       setNotices([]); // Clear notices if no data
+  //       toast.error("No notices found for the selected criteria.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching SMS notices:", error);
+  //     toast.error("Error fetching SMS notices. Please try again.");
+  //   }
+  // };
   const handleSearch = async () => {
     try {
-      // Get token from local storage
       const token = localStorage.getItem("authToken");
-
-      // Prepare query parameters
       const params = {};
-      if (status) params.status = status; // Include status if selected
-      if (selectedDate) params.notice_date = selectedDate; // Include date if selected
+      if (status) params.status = status;
+      if (selectedDate) params.notice_date = selectedDate;
 
-      // Make API request
       const response = await axios.get(`${API_URL}/api/get_smsnoticelist`, {
         headers: { Authorization: `Bearer ${token}` },
         params,
       });
 
-      // Handle response data
       if (response.data?.data?.length > 0) {
-        setNotices(response.data.data); // Update notice list with response data
-        setPageCount(Math.ceil(response.data.data.length / pageSize));
+        const smscount = response.data["0"]?.smscount || {};
+
+        const updatedNotices = response.data.data.map((notice) => {
+          const count = smscount[notice.unq_id] || 0;
+          return {
+            ...notice,
+            showSendButton: notice.publish === "Y" && count > 0,
+            count,
+          };
+        });
+
+        setNotices(updatedNotices); // Update the state with enriched data
+        setPageCount(Math.ceil(updatedNotices.length / pageSize));
       } else {
-        setNotices([]); // Clear notices if no data
+        setNotices([]);
         toast.error("No notices found for the selected criteria.");
       }
     } catch (error) {
@@ -146,7 +183,8 @@ function NoticeAndSms() {
           },
         }
       );
-      const { imageurl } = response.data;
+      const { imageurl } = response.data.data;
+      console.log("imageURL", imageurl);
       setImageUrls(imageurl); // Store image URLs for download links
     } catch (error) {
       console.error("Error fetching notice data:", error);
@@ -308,13 +346,43 @@ function NoticeAndSms() {
     console.log("currestSubjectNameForDelete", currestSubjectNameForDelete);
     setShowDeleteModal(true);
   };
-  const handleEdit = (section) => {
-    setCurrentSection(section);
-    setCurrestSubjectNameForDelete(currentSection?.classToDelete?.notice_type);
+  const [preselectedFiles, setPreselectedFiles] = useState([]); // Files fetched from API
 
-    setSubject(section?.subject || ""); // Pre-fill subject
-    setNoticeDesc(section?.notice_desc || ""); // Pre-fill notice description
-    setnewclassnames(section?.classnames);
+  const handleEdit = async (section) => {
+    setCurrentSection(section);
+    setSubject(section?.subject || "");
+    setNoticeDesc(section?.notice_desc || "");
+    setnewclassnames(section?.classnames || "");
+
+    if (section?.notice_type === "NOTICE") {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          throw new Error("No authentication token found");
+        }
+        const response = await axios.get(
+          `${API_URL}/api/get_smsnoticedata/${section.unq_id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (response.data.success) {
+          const noticedata = response.data.data.noticedata[0];
+          const imageUrls = response.data.data.imageurl || [];
+
+          setSubject(noticedata.subject || "");
+          setNoticeDesc(noticedata.notice_desc || "");
+          setnewclassnames(noticedata.classnames || "");
+          setPreselectedFiles(imageUrls); // Set preselected files
+        }
+      } catch (error) {
+        console.error("Error fetching notice data:", error);
+        toast.error("Failed to fetch notice data.");
+      }
+    } else {
+      setPreselectedFiles([]); // Clear preselected files for non-NOTICE types
+    }
+
     setShowEditModal(true);
   };
 
@@ -338,17 +406,20 @@ function NoticeAndSms() {
 
     try {
       const token = localStorage.getItem("authToken");
+      if (!token) throw new Error("Authentication token is missing");
 
-      if (!token) {
-        throw new Error("Authentication token is missing");
-      }
+      const formData = new FormData();
+      formData.append("subject", subject);
+      formData.append("notice_desc", noticeDesc);
+      if (selectedFile) formData.append("attachment", selectedFile);
 
-      await axios.put(
+      await axios.post(
         `${API_URL}/api/update_smsnotice/${currentSection?.unq_id}`,
-        { subject, notice_desc: noticeDesc },
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
           },
           withCredentials: true,
         }
@@ -356,7 +427,6 @@ function NoticeAndSms() {
 
       toast.success("Notice updated successfully!");
       handleSearch();
-
       handleCloseModal();
     } catch (error) {
       toast.error("Error updating notice. Please try again.");
@@ -472,6 +542,12 @@ function NoticeAndSms() {
   };
 
   const handleCloseModal = () => {
+    setSubject("");
+    setNoticeDesc("");
+    setnewclassnames("");
+    setPreselectedFiles([]);
+    setUploadedFiles([]);
+    // removeUploadedFile;
     setShowPublishModal(false);
     setShowViewModal(false);
     setShowEditModal(false);
@@ -504,6 +580,65 @@ function NoticeAndSms() {
   //       handleSearch();
   //     }
   //   }, [activeTab]); // Dependency array ensures it runs when activeTab changes
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+
+  const handleFileUpload = (e) => {
+    const newFiles = Array.from(e.target.files);
+    setUploadedFiles([...uploadedFiles, ...newFiles]);
+  };
+
+  const removePreselectedFile = (index) => {
+    const updatedFiles = preselectedFiles.filter((_, i) => i !== index);
+    setPreselectedFiles(updatedFiles);
+  };
+
+  const removeUploadedFile = (index) => {
+    const updatedFiles = uploadedFiles.filter((_, i) => i !== index);
+    setUploadedFiles(updatedFiles);
+  };
+
+  // const handleSend = (uniqueId) => {
+  //   // Logic to handle the send button click
+  //   console.log(`Sending SMS for Unique ID: ${uniqueId}`);
+  //   toast.success(`SMS sent for Unique ID: ${uniqueId}`);
+  // };
+  const handleSend = async (uniqueId) => {
+    try {
+      // Get auth token from localStorage
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+
+      // Construct the API URL with the unique ID as a query parameter
+      // const apiUrl = `http://103.159.85.174:8500/api/save_sendsms/${uniqueId}`;
+
+      // Make the POST request
+      const response = await axios.post(
+        `${API_URL}/api/save_sendsms/${uniqueId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Handle success response
+      if (response.status === 200 && response.data.success) {
+        toast.success(`SMS sent successfully for Unique ID: ${uniqueId}`);
+        handleSearch();
+      } else {
+        toast.error("Failed to send SMS. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error sending SMS:", error);
+      toast.error("An error occurred while sending SMS. Please try again.");
+    }
+  };
+
   //   This is tab
   const tabs = [
     { id: "Manage", label: "Manage" },
@@ -584,8 +719,8 @@ function NoticeAndSms() {
                         onChange={(e) => setStatus(e.target.value)}
                       >
                         <option value="All">All</option>
-                        <option value="Publish">Publish</option>
-                        <option value="Unpublish">Unpublish</option>
+                        <option value="Y">Publish</option>
+                        <option value="N">Unpublish</option>
                       </select>
                     </div>
                   </div>
@@ -728,10 +863,26 @@ function NoticeAndSms() {
                                     <FontAwesomeIcon icon={faTrash} />
                                   </button>
                                 ) : (
-                                  ""
+                                  " "
                                 )}
                               </td>
                               <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                {subject.showSendButton ? (
+                                  <div className="flex flex-col gap-y-0.5">
+                                    <span className="text-nowrap text-red-600 font-bold">{`${subject.count}`}</span>
+                                    <span className="text-bule-600 text-nowrap font-medium ">{`SMS Pending`}</span>
+                                    <button
+                                      className=" flex felx-row items-center justify-center p-2 gap-x-1 bg-blue-500 text-nowrap hover:bg-blue-600 text-white font-medium rounded-md"
+                                      //  onClick={() => handleEdit(subject)}
+                                      onClick={() => handleSend(subject.unq_id)}
+                                    >
+                                      Send <IoMdSend />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  " "
+                                )}
+
                                 {subject.publish === "N" ? (
                                   <button
                                     onClick={() => handlePublish(subject)}
@@ -740,7 +891,7 @@ function NoticeAndSms() {
                                     <FaCheck icon={faTrash} />
                                   </button>
                                 ) : (
-                                  ""
+                                  " "
                                 )}
                               </td>
                             </tr>
@@ -819,10 +970,18 @@ function NoticeAndSms() {
                     <label htmlFor="className" className="w-1/2 mt-2">
                       Class:
                     </label>
-                    <div className="input-field block border w-full border-1 border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner">
+                    <div
+                      className="input-field block border w-full border-1 border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner break-words"
+                      style={{
+                        maxWidth: "262px", // Set maximum width for text wrapping
+                        height: "auto", // Allow height to grow dynamically
+                        wordWrap: "break-word", // Ensure text wraps within the box
+                      }}
+                    >
                       {newclassnames}
                     </div>
                   </div>
+
                   <div className="relative mb-3 flex justify-center mx-4 gap-x-7">
                     <label htmlFor="subject" className="w-1/2 mt-2">
                       Subject:
@@ -839,13 +998,14 @@ function NoticeAndSms() {
                       <p className="text-red-500 text-sm h-3">{subjectError}</p>
                     )}
                   </div>
+
                   <div className="relative mb-3 flex justify-center mx-4 gap-x-7">
                     <label htmlFor="noticeDesc" className="w-1/2 mt-2">
                       Description:
                     </label>
                     <textarea
                       id="noticeDesc"
-                      rows="4"
+                      rows="2"
                       maxLength={1000}
                       className="form-control shadow-md mb-2 w-full"
                       value={noticeDesc}
@@ -857,7 +1017,74 @@ function NoticeAndSms() {
                       </p>
                     )}
                   </div>
+
+                  {currentSection?.notice_type === "NOTICE" && (
+                    <>
+                      {/* File Upload */}
+                      <div className="modal-body">
+                        {/* Attachments */}
+
+                        <div className="  relative -top-5 w-full  flex flex-row justify-between gap-x-2 ">
+                          <label className="px-2 mt-2 lg:px-3 py-2 ">
+                            Upload Files
+                          </label>
+                          <input
+                            className="mt-3 relative right-0 md:right-[11%] text-xs bg-gray-50 "
+                            type="file"
+                            multiple
+                            onChange={handleFileUpload}
+                          />
+                        </div>
+                        <label className="px-2 block  mb-2">Attachment:</label>
+                        <div className="">
+                          {uploadedFiles.map((file, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-x-2"
+                            >
+                              <span className="bg-gray-100 border-1 text-[.8em] p-0.5 shadow-sm">
+                                {file.name}
+                              </span>
+                              <div>
+                                <RxCross1
+                                  className="text-xl relative  w-4 h-4 text-red-600 hover:cursor-pointer hover:bg-red-100"
+                                  type="button"
+                                  onClick={() => removeUploadedFile(index)}
+                                />
+                              </div>
+                            </div>
+                          ))}
+
+                          <div>
+                            {preselectedFiles.map((url, index) => {
+                              const fileName = url.substring(
+                                url.lastIndexOf("/") + 1
+                              );
+                              return (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-x-2"
+                                >
+                                  <span className="bg-gray-100 border-1 p-0.5 text-[.8em] shadow-sm">
+                                    {fileName}
+                                  </span>
+                                  <RxCross1
+                                    className=" text-xl relative - w-4 h-4 text-red-600 hover:cursor-pointer hover:bg-red-100"
+                                    type="button"
+                                    onClick={() => removePreselectedFile(index)}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Uploaded Files */}
+                    </>
+                  )}
                 </div>
+
                 <div className="flex justify-end p-3">
                   <button
                     type="button"
@@ -896,7 +1123,15 @@ function NoticeAndSms() {
                     <label htmlFor="newSectionName" className="w-1/2 mt-2">
                       Class:{" "}
                     </label>
-                    <div className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner">
+
+                    <div
+                      className="input-field block border w-full border-1 border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner break-words"
+                      style={{
+                        maxWidth: "262px", // Set maximum width for text wrapping
+                        height: "auto", // Allow height to grow dynamically
+                        wordWrap: "break-word", // Ensure text wraps within the box
+                      }}
+                    >
                       {newclassnames}
                     </div>
                   </div>
@@ -925,7 +1160,7 @@ function NoticeAndSms() {
                     </label>
                     <textarea
                       id="noticeDesc"
-                      rows="4"
+                      rows="2"
                       maxLength={1000}
                       readOnly
                       className="input-field block border w-full border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
@@ -949,10 +1184,10 @@ function NoticeAndSms() {
                           return (
                             <div
                               key={index}
-                              className=" font-semibold flex flex-row text-[.58em] items-center gap-x-2"
+                              className=" font-semibold flex flex-row text-[.58em]  items-center gap-x-2"
                             >
                               {/* Display file name */}
-                              <span>{fileName}</span>
+                              <span className=" ">{fileName}</span>
                               <button
                                 className=" text-blue-600 hover:text-blue-800 hover:bg-transparent"
                                 onClick={() => downloadFile(url, fileName)}
