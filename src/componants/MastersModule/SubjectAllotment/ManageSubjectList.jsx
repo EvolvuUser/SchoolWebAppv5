@@ -1255,7 +1255,6 @@
 
 // // This is the 100% working
 import { useState, useEffect, useRef } from "react";
-import { IoSettingsSharp } from "react-icons/io5";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -1264,12 +1263,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactPaginate from "react-paginate";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-import { IoMdAdd } from "react-icons/io";
-import { CgAddR } from "react-icons/cg";
-import { FaRegSquarePlus } from "react-icons/fa6";
 import { RxCross1 } from "react-icons/rx";
-import AllotSubjectTab from "./AllotSubjectTab"; // Import the new component
-import ManageSubjectsTab from "./ManageSubjectsTab.jsx";
+
 import AllotTeachersForCLass from "./AllotTeachersForCLass.jsx";
 import AllotTeachersTab from "./AllotTeachersTab.jsx";
 import Select from "react-select";
@@ -1341,6 +1336,7 @@ function ManageSubjectList() {
     setNewDepartmentId(selectedOption.value); // Assuming value is the teacher's ID
     console.log("setNewDepartmentId", newDepartmentId);
   };
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleClassSelect = (selectedOption) => {
     setSelectedClass(selectedOption);
@@ -1475,8 +1471,11 @@ function ManageSubjectList() {
   }, []);
   // Listing tabs data for diffrente tabs
   const handleSearch = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     if (!classIdForManage) {
       setNameError("Please select the class.");
+      setIsSubmitting(false);
       return;
     }
     try {
@@ -1512,6 +1511,8 @@ function ManageSubjectList() {
     } catch (error) {
       console.error("Error fetching subjects:", error);
       setError("Error fetching subjects");
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
     }
   };
 
@@ -1762,6 +1763,8 @@ function ManageSubjectList() {
   };
 
   const handleSubmitEdit = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     console.log(
       "inside the edit model of the subjectallotment",
       currentSection.subject_id
@@ -1778,6 +1781,7 @@ function ManageSubjectList() {
         throw new Error("Subject ID is missing");
       }
       if (!nameAvailable) {
+        setIsSubmitting(false);
         return;
       }
 
@@ -1809,11 +1813,14 @@ function ManageSubjectList() {
       }
       console.error("Error editing subject Record:", error);
     } finally {
+      setIsSubmitting(false);
       setShowEditModal(false);
     }
   };
 
   const handleSubmitDelete = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     // Handle delete submission logic
     try {
       const token = localStorage.getItem("authToken");
@@ -1858,8 +1865,10 @@ function ManageSubjectList() {
       }
       console.error("Error deleting subject:", error);
       // setError(error.message);
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
+      setShowDeleteModal(false);
     }
-    setShowDeleteModal(false);
   };
 
   const handleCloseModal = () => {
@@ -2151,7 +2160,7 @@ function ManageSubjectList() {
                         className=" text-sm w-full md:w-[60%] item-center relative left-0 md:left-4"
                       />
                       {nameError && (
-                        <div className=" relative top-0.5 ml-1 text-danger text-xs">
+                        <div className=" relative top-0.5 left-3  ml-1 text-danger text-xs">
                           {nameError}
                         </div>
                       )}{" "}
@@ -2160,8 +2169,9 @@ function ManageSubjectList() {
                       onClick={handleSearch}
                       type="button"
                       className="btn h-10  w-18 md:w-auto relative  right-0 md:right-[15%] btn-primary"
+                      disabled={isSubmitting}
                     >
-                      Search
+                      {isSubmitting ? "Searching..." : "Search"}
                     </button>
                   </div>
                 </div>
@@ -2193,7 +2203,7 @@ function ManageSubjectList() {
                     <div className="h-96 lg:h-96 overflow-y-scroll lg:overflow-x-hidden">
                       <table className="min-w-full leading-normal table-auto">
                         <thead>
-                          <tr className="bg-gray-100">
+                          <tr className="bg-gray-200">
                             <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
                               S.No
                             </th>
@@ -2568,8 +2578,9 @@ function ManageSubjectList() {
                     type="button"
                     className="btn btn-primary px-3 mb-2"
                     onClick={handleSubmitEdit}
+                    disabled={isSubmitting}
                   >
-                    Update
+                    {isSubmitting ? "Updating..." : "Update"}
                   </button>
                 </div>
               </div>
@@ -2612,8 +2623,9 @@ function ManageSubjectList() {
                     type="button"
                     className="btn btn-danger px-3 mb-2"
                     onClick={handleSubmitDelete}
+                    disabled={isSubmitting}
                   >
-                    Delete
+                    {isSubmitting ? "Deleting..." : "Delete"}
                   </button>
                 </div>
               </div>

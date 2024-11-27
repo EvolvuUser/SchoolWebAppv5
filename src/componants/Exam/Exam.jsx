@@ -33,6 +33,8 @@ function Exam() {
   const [endDate, setEndDate] = useState(""); // New state for End Date
   const [openDay, setOpenDay] = useState(""); // New state for Open Day
   const [comment, setComment] = useState(""); // New state for Comment
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const pageSize = 10;
 
   useEffect(() => {
@@ -108,8 +110,10 @@ function Exam() {
   };
 
   // Filter and paginate sections
-  const filteredSections = sections.filter((section) =>
-    section.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSections = sections.filter(
+    (section) =>
+      section.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      section.comment.toLowerCase().includes(searchTerm.toLowerCase())
   );
   const displayedSections = filteredSections.slice(
     currentPage * pageSize,
@@ -125,36 +129,31 @@ function Exam() {
     departmentId,
     startDate,
     endDate,
-    openDay,
-    comment
+    openDay
   ) => {
     const errors = {};
     // const alphabetRegex = /^[A-Za-z]+$/;
 
     if (!name || name.trim() === "") {
-      errors.name = "Please enter Exam name.";
+      errors.name = "Please enter exam name.";
     } else if (name.length > 50) {
       errors.name = "The name field must not exceed 50 character.";
     }
 
     if (!departmentId) {
-      errors.department_id = "Please select a Terms.";
+      errors.department_id = "Please select a terms.";
     }
 
     if (!startDate) {
-      errors.startDate = "Start Date is required.";
+      errors.startDate = "Start date is required.";
     }
 
     if (!endDate) {
-      errors.endDate = "End Date is required.";
+      errors.endDate = "End date is required.";
     }
 
     if (!openDay) {
-      errors.openDay = "Open Day is required.";
-    }
-
-    if (!comment || comment.trim() === "") {
-      errors.comment = "Comment is required.";
+      errors.openDay = "Open day is required.";
     }
 
     return errors;
@@ -198,16 +197,18 @@ function Exam() {
   };
 
   const handleSubmitAdd = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     const validationErrors = validateFormFields(
       newSectionName,
       newDepartmentId,
       startDate,
       endDate,
-      openDay,
-      comment
+      openDay
     );
     if (Object.keys(validationErrors).length > 0) {
       setFieldErrors(validationErrors);
+      setIsSubmitting(false);
       return;
     }
     console.log("terId for add", newDepartmentId);
@@ -236,20 +237,24 @@ function Exam() {
     } catch (error) {
       console.error("Error adding Exam:", error);
       toast.error("Server error. Please try again later.");
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
     }
   };
 
   const handleSubmitEdit = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     const validationErrors = validateFormFields(
       newSectionName,
       newDepartmentId,
       startDate,
       endDate,
-      openDay,
-      comment
+      openDay
     );
     if (Object.keys(validationErrors).length > 0) {
       setFieldErrors(validationErrors);
+      setIsSubmitting(false);
       return;
     }
     console.log("terId for edit", newDepartmentId);
@@ -277,6 +282,8 @@ function Exam() {
     } catch (error) {
       console.error("Error editing Exam:", error);
       toast.error("Server error. Please try again later.");
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
     }
   };
 
@@ -287,6 +294,8 @@ function Exam() {
   };
 
   const handleSubmitDelete = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem("authToken");
 
@@ -323,6 +332,8 @@ function Exam() {
       } else {
         toast.error("Server error. Please try again later.");
       }
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
     }
   };
 
@@ -411,7 +422,7 @@ function Exam() {
               <div className="bg-white rounded-lg shadow-xs ">
                 <table className="min-w-full leading-normal table-auto ">
                   <thead>
-                    <tr className="bg-gray-100">
+                    <tr className="bg-gray-200">
                       <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
                         S.No
                       </th>
@@ -448,10 +459,12 @@ function Exam() {
                               {section?.name}
                             </p>
                           </td>
-                          <td className="text-center px-2 lg:px-5 border border-gray-950 text-sm">
-                            <p className="text-gray-900 whitespace-no-wrap relative top-2">
-                              {section?.comment}
-                            </p>
+                          <td className="text-center  border border-gray-950 text-sm">
+                            <div className="overflow-y-auto max-w-full max-h-[90px] whitespace-pre-wrap">
+                              <p className="px-1 text-gray-900">
+                                {section?.comment}
+                              </p>
+                            </div>
                           </td>
 
                           {roleId === "M" ? (
@@ -718,8 +731,9 @@ function Exam() {
                       className="btn btn-primary px-3 mb-2 "
                       style={{}}
                       onClick={handleSubmitAdd}
+                      disabled={isSubmitting}
                     >
-                      Add
+                      {isSubmitting ? "Saving..." : "Add"}
                     </button>
                   </div>
                 </div>
@@ -904,8 +918,9 @@ function Exam() {
                     className="btn btn-primary px-3 mb-2 "
                     style={{}}
                     onClick={handleSubmitEdit}
+                    disabled={isSubmitting}
                   >
-                    Update
+                    {isSubmitting ? "Updating..." : "Update"}
                   </button>
                 </div>
               </div>
@@ -947,8 +962,9 @@ function Exam() {
                     className="btn btn-danger px-3 mb-2"
                     style={{}}
                     onClick={handleSubmitDelete}
+                    disabled={isSubmitting}
                   >
-                    Delete
+                    {isSubmitting ? "Deleting..." : "Delete"}
                   </button>
                 </div>
               </div>

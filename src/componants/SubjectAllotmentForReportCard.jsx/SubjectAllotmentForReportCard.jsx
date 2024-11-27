@@ -12,8 +12,6 @@ import AllotSubjectTab from "./AllotSubjectTab.jsx";
 import Select from "react-select";
 function SubjectAllotmentForReportCard() {
   const API_URL = import.meta.env.VITE_API_URL; // URL for host
-  const [loading, setLoading] = useState(true);
-  const [classSection, setClassSection] = useState("");
   const [activeTab, setActiveTab] = useState("Manage");
   const [classes, setClasses] = useState([]);
   const [classesforsubjectallot, setclassesforsubjectallot] = useState([]);
@@ -25,44 +23,28 @@ function SubjectAllotmentForReportCard() {
   const [currentSection, setCurrentSection] = useState(null);
   const [currestSubjectNameForDelete, setCurrestSubjectNameForDelete] =
     useState("");
-  const [newSection, setnewSectionName] = useState("");
   const [newSubject, setnewSubjectnName] = useState("");
   const [newclassnames, setnewclassnames] = useState("");
-  const [teacherIdIs, setteacherIdIs] = useState("");
   const [teacherNameIs, setTeacherNameIs] = useState("");
-  const [ClassNameDropdown, setClassNameDropdown] = useState("");
-  const [classId, setclassId] = useState("");
+
   // This is hold the allot subjet api response
   const [classIdForManage, setclassIdForManage] = useState("");
   //   This is for the subject id in the dropdown
   const [newDepartmentId, setNewDepartmentId] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
   //   For the dropdown of Teachers name api
   const [departments, setDepartments] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [pageCount, setPageCount] = useState(0);
-  const [fieldErrors, setFieldErrors] = useState({}); // For field-specific errors
-  // validations state for unique name
-  const [nameAvailable, setNameAvailable] = useState(true);
-  //   variable to store the respone of the allot subject tab
-  const [allotSubjectTabData, setAllotSubjectTabData] = useState([]); //
-  // const [nameError, setNameError] = useState("");
-  //   for dropdown seletect
-  //   const [newDepartmentId, setNewDepartmentId] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmittingForSearch, setIsSubmittingForSearch] = useState(false);
 
   const dropdownRef = useRef(null);
-  const [countSN, setCountSN0] = useState(0);
   //   for allot subject checkboxes
-  const [selectedDivisions, setSelectedDivisions] = useState([]);
-  const [selectedSubjects, setSelectedSubjects] = useState([]);
+
   const [error, setError] = useState(null);
   const [nameError, setNameError] = useState(null);
-  const [division, setDivisions] = useState([]);
-  // errors messages for allot subject tab
-  const [classError, setClassError] = useState("");
-  const [divisionError, setDivisionError] = useState("");
-  const [subjectError, setSubjectError] = useState("");
+
   // for react-search of manage tab teacher Edit and select class
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [selectedClass, setSelectedClass] = useState(null);
@@ -76,7 +58,7 @@ function SubjectAllotmentForReportCard() {
   const handleClassSelect = (selectedOption) => {
     setNameError("");
     setSelectedClass(selectedOption);
-    setclassIdForManage(selectedOption.value); // Assuming value is the class ID
+    setclassIdForManage(selectedOption ? selectedOption.value : null); // Set to null if cleared
   };
 
   const teacherOptions = departments.map((dept) => ({
@@ -164,8 +146,12 @@ function SubjectAllotmentForReportCard() {
   }, []);
   // Listing tabs data for diffrente tabs
   const handleSearch = async () => {
+    if (isSubmittingForSearch) return; // Prevent re-submitting
+    setIsSubmittingForSearch(true);
     if (!classIdForManage) {
+      setIsSubmittingForSearch(false);
       setNameError("Please select the class.");
+
       return;
     }
     try {
@@ -196,6 +182,8 @@ function SubjectAllotmentForReportCard() {
     } catch (error) {
       console.error("Error fetching subjects:", error);
       setError("Error fetching subjects");
+    } finally {
+      setIsSubmittingForSearch(false); // Re-enable the button after the operation
     }
   };
 
@@ -256,6 +244,9 @@ function SubjectAllotmentForReportCard() {
   //   };
 
   const handleSubmitEdit = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
+
     try {
       const token = localStorage.getItem("authToken");
 
@@ -266,6 +257,8 @@ function SubjectAllotmentForReportCard() {
       // Ensure that the subject type is not empty
       if (!teacherNameIs) {
         toast.error("Please select a subject type.");
+        setIsSubmitting(false); // Reset submitting state if validation fails
+
         return;
       }
 
@@ -294,11 +287,15 @@ function SubjectAllotmentForReportCard() {
       }
       console.error("Error editing subject record:", error);
     } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
       setShowEditModal(false);
     }
   };
 
   const handleSubmitDelete = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
+
     try {
       const token = localStorage.getItem("authToken");
       const subReportCardId = currentSection?.sub_reportcard_id; // Get the correct ID
@@ -328,6 +325,8 @@ function SubjectAllotmentForReportCard() {
         toast.error(`Error deleting subject: ${error.message}`);
       }
       console.error("Error deleting subject:", error);
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
     }
   };
 
@@ -470,8 +469,9 @@ function SubjectAllotmentForReportCard() {
                       onClick={handleSearch}
                       type="button"
                       className="btn h-10  w-18 md:w-auto relative  right-0 md:right-[15%] btn-primary"
+                      disabled={isSubmittingForSearch}
                     >
-                      Search
+                      {isSubmittingForSearch ? "Searching..." : "Search"}
                     </button>
                   </div>
                 </div>
@@ -503,7 +503,7 @@ function SubjectAllotmentForReportCard() {
                       <div className="h-96 lg:h-96 overflow-y-scroll lg:overflow-x-hidden">
                         <table className="min-w-full leading-normal table-auto">
                           <thead>
-                            <tr className="bg-gray-100">
+                            <tr className="bg-gray-200">
                               <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
                                 S.No
                               </th>
@@ -676,8 +676,9 @@ function SubjectAllotmentForReportCard() {
                     type="button"
                     className="btn btn-primary px-3 mb-2"
                     onClick={handleSubmitEdit}
+                    disabled={isSubmitting}
                   >
-                    Update
+                    {isSubmitting ? "Updating..." : "Update"}
                   </button>
                 </div>
               </div>
@@ -720,8 +721,9 @@ function SubjectAllotmentForReportCard() {
                     type="button"
                     className="btn btn-danger px-3 mb-2"
                     onClick={handleSubmitDelete}
+                    disabled={isSubmitting}
                   >
-                    Delete
+                    {isSubmitting ? "Deleting..." : "Delete"}
                   </button>
                 </div>
               </div>
