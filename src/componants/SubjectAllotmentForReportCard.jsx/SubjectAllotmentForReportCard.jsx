@@ -383,6 +383,7 @@ function SubjectAllotmentForReportCard() {
     setShowEditModal(false);
     setShowDeleteModal(false);
   };
+
   const filteredSections = subjects.filter((section) => {
     // Convert values to lowercase for case-insensitive comparison
     const className = section?.get_clases?.name?.toLowerCase() || ""; // Class name
