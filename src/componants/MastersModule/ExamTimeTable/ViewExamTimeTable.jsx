@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { RxCross1 } from "react-icons/rx";
 import Loader from "../../common/LoaderFinal/LoaderStyle";
 import { FiPrinter } from "react-icons/fi";
-// this is
+
 const ViewExamTimeTable = () => {
   const API_URL = import.meta.env.VITE_API_URL; // API base URL
   const location = useLocation();
