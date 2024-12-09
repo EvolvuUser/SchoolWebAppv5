@@ -35,6 +35,7 @@ function Grade() {
   const [openDay, setOpenDay] = useState(""); // New state for Open Day
   const [comment, setComment] = useState(""); // New state for Comment
   const pageSize = 10;
+  const [nameErrorForGrade, setNameErrorForGrade] = useState(""); // New state for
   const [classes, setClasses] = useState([]);
   const [selectedClasses, setSelectedClasses] = useState([]); // Store selected class_ids
   const [errorMessage, setErrorMessage] = useState("");
@@ -268,6 +269,7 @@ function Grade() {
   const handleSubmitAdd = async () => {
     if (isSubmitting) return; // Prevent re-submitting
     setIsSubmitting(true);
+
     const validationErrors = validateFormFields(
       newSectionName,
       newDepartmentId,
@@ -284,6 +286,7 @@ function Grade() {
 
     if (selectedClasses.length === 0) {
       setErrorMessage("Please select at least one class.");
+      setIsSubmitting(false);
       return;
     }
 
@@ -292,7 +295,8 @@ function Grade() {
 
     try {
       const token = localStorage.getItem("authToken");
-      await axios.post(
+
+      const response = await axios.post(
         `${API_URL}/api/save_Grades`,
         {
           name: newSectionName,
@@ -309,11 +313,34 @@ function Grade() {
       );
 
       fetchGrades();
-      handleCloseModal();
-      toast.success("Grade added successfully!");
+
+      console.log("this is response", response);
+      console.log("this is response", response?.data?.status);
+      if (response?.data?.status === 400 && response?.data?.message) {
+        // Handle the "Grade already exists" error
+        const error = response?.data?.message;
+        console.log("error", error);
+        setNameErrorForGrade(error);
+
+        toast.error(response.data.message); // Display the specific error message
+      } else {
+        handleCloseModal();
+        toast.success("Grade added successfully!");
+      }
     } catch (error) {
       console.error("Error adding Grade:", error);
-      toast.error("Server error. Please try again later.");
+
+      if (error.response?.status === 400 && error.response?.data?.message) {
+        // Handle the "Grade already exists" error
+        console.log("nameErrorForGrade", nameErrorForGrade);
+
+        const error = error?.response?.data?.message;
+        console.log("error is that", error);
+        console.log("nameErrorForGrade", nameErrorForGrade);
+        toast.error(error); // Display the specific error message
+      } else {
+        toast.error("Server error. Please try again later.");
+      }
     } finally {
       setIsSubmitting(false); // Re-enable the button after the operation
     }
@@ -474,6 +501,7 @@ function Grade() {
 
   const handleChangeSectionName = (e) => {
     const { value } = e.target;
+    setNameErrorForGrade("");
     setNewSectionName(value);
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
@@ -714,6 +742,11 @@ function Grade() {
                           {nameError}
                         </span>
                       )}
+
+                      <span className=" block text-danger text-xs">
+                        {nameErrorForGrade}
+                      </span>
+
                       {fieldErrors.name && (
                         <span className="text-danger text-xs">
                           {fieldErrors.name}
