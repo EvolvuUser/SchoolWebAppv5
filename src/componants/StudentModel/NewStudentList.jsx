@@ -408,22 +408,43 @@ function NewStudentList() {
       console.error("Error uploading file:", showErrorForUploading);
     }
   };
+const filteredSections = subjects.filter((section) => {
+  // Convert the search term to lowercase for case-insensitive comparison
+  const searchLower = searchTerm.toLowerCase();
 
-  const filteredSections = subjects.filter((section) => {
-    // Convert the teacher's name and subject's name to lowercase for case-insensitive comparison
-    const studentFullName =
-      `${section?.first_name} ${section?.mid_name} ${section?.last_name}`?.toLowerCase() ||
-      "";
-    const UserId =
-      `${section?.get_class?.name} ${section?.get_division?.name}`?.toLowerCase() ||
-      "";
+  // Get the student's full name, class name, and user ID for filtering
+  const studentName =
+    `${section?.first_name} ${section?.mid_name} ${section?.last_name}`?.toLowerCase() ||
+    "";
+  const studentClass = section?.get_class?.name?.toLowerCase() || "";
+  
 
-    // Check if the search term is present in either the teacher's name or the subject's name
-    return (
-      studentFullName.includes(searchTerm.toLowerCase()) ||
-      UserId.includes(searchTerm.toLowerCase())
-    );
-  });
+  // Check if the search term is present in Roll No, Name, Class, or UserId
+  return (
+   
+    studentName.includes(searchLower) ||
+    studentClass.includes(searchLower) 
+   
+  );
+});
+
+
+
+  // const filteredSections = subjects.filter((section) => {
+  //   // Convert the teacher's name and subject's name to lowercase for case-insensitive comparison
+  //   const studentFullName =
+  //     `${section?.first_name} ${section?.mid_name} ${section?.last_name}`?.toLowerCase() ||
+  //     "";
+  //   const UserId =
+  //     `${section?.get_class?.name} ${section?.get_division?.name}`?.toLowerCase() ||
+  //     "";
+
+  //   // Check if the search term is present in either the teacher's name or the subject's name
+  //   return (
+  //     studentFullName.includes(searchTerm.toLowerCase()) ||
+  //     UserId.includes(searchTerm.toLowerCase())
+  //   );
+  // });
   const displayedSections = filteredSections.slice(
     currentPage * pageSize,
     (currentPage + 1) * pageSize
@@ -673,7 +694,7 @@ function NewStudentList() {
                           {displayedSections.map((subject, index) => (
                             <tr key={subject.student_id} className=" text-sm ">
                               <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                {index + 1}
+                              {currentPage * pageSize + index + 1}
                               </td>
 
                               <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
@@ -829,8 +850,9 @@ function NewStudentList() {
                     type="button"
                     className="btn btn-primary px-3 mb-2"
                     onClick={handleSubmitResetPassword}
+                    disabled={isSubmitting}
                   >
-                    Update
+                    {isSubmitting ? "Updating..." : "Update"}
                   </button>
                 </div>
               </div>

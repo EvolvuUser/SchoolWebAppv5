@@ -24,6 +24,7 @@ function ManageLC() {
   const [currentSection, setCurrentSection] = useState(null);
   const [currestSubjectNameForDelete, setCurrestSubjectNameForDelete] =
     useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // This is hold the allot subjet api response
   const [classIdForManage, setclassIdForManage] = useState("");
@@ -184,6 +185,8 @@ function ManageLC() {
   };
 
   const handleDownloadSumbit = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     try {
       //  setLoading(true); // Show loading indicator if you have one
       const token = localStorage.getItem("authToken");
@@ -243,6 +246,8 @@ function ManageLC() {
         );
       }
       console.error("Error in Downloading Leaving Certificate:", error);
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
     }
     //    finally {
     //      setLoading(false); // Stop loading indicator
@@ -263,6 +268,8 @@ function ManageLC() {
   };
 
   const handleSubmitEdit = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem("authToken");
 
@@ -308,10 +315,14 @@ function ManageLC() {
         );
       }
       console.error("Error Leaving Certificate issue status:", error);
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
     }
   };
 
   const handleSubmitDelete = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem("authToken");
       const subReportCardId = currentSection?.sr_no; // Get the correct ID
@@ -337,6 +348,7 @@ function ManageLC() {
       handleSearch(); // Refresh the data (this seems like the method to refetch data)
       setShowDeleteModal(false); // Close the modal
       toast.success("Leaving Certificate deleted successfully!");
+      setCancellationReason("");
     } catch (error) {
       if (error.response && error.response.data) {
         toast.error(
@@ -346,6 +358,9 @@ function ManageLC() {
         toast.error(`Error deleting Leaving Certificate: ${error.message}`);
       }
       console.error("Error deleting Leaving Certificate:", error);
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
+      setShowDeleteModal(false);
     }
   };
 
@@ -557,7 +572,7 @@ function ManageLC() {
                               return (
                                 <tr key={subject.sr_no} className=" text-sm ">
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                    {index + 1}
+                                    {currentPage * pageSize + index + 1}
                                   </td>
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                     {subject?.sr_no}
@@ -694,8 +709,9 @@ function ManageLC() {
                     style={{ backgroundColor: "#2196F3" }}
                     className="btn text-white px-3 mb-2"
                     onClick={handleSubmitEdit}
+                    disabled={isSubmitting}
                   >
-                    Issue
+                    {isSubmitting ? "Issuing..." : "Issue"}
                   </button>
                 </div>
               </div>
@@ -738,8 +754,9 @@ function ManageLC() {
                     style={{ backgroundColor: "#2196F3" }}
                     className="btn text-white px-3 mb-2"
                     onClick={handleDownloadSumbit}
+                    disabled={isSubmitting}
                   >
-                    Download
+                    {isSubmitting ? "Downloading..." : "Download"}
                   </button>
                 </div>
               </div>

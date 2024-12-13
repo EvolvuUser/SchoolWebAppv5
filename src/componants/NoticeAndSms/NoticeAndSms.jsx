@@ -797,7 +797,7 @@ function NoticeAndSms() {
                           {displayedSections.map((subject, index) => (
                             <tr key={subject.notice_id} className="text-sm ">
                               <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                {index + 1}
+                                {currentPage * pageSize + index + 1}
                               </td>
                               <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                 {subject?.notice_type}

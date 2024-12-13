@@ -370,6 +370,7 @@ function CharacterCertificate() {
       console.error("Error deleting Character:", error);
     } finally {
       setIsSubmitting(false); // Re-enable the button after the operation
+      setShowDeleteModal(false); // Close the modal
     }
   };
 
@@ -548,7 +549,7 @@ function CharacterCertificate() {
                               return (
                                 <tr key={subject.sr_no} className=" text-sm ">
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                    {index + 1}
+                                    {currentPage * pageSize + index + 1}
                                   </td>
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                     {subject?.stud_name}

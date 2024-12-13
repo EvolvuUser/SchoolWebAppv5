@@ -19,6 +19,7 @@ function ClassList() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentClass, setCurrentClass] = useState(null);
+
   const [newClassName, setNewClassName] = useState("");
   const [newDepartmentId, setNewDepartmentId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
