@@ -408,27 +408,21 @@ function NewStudentList() {
       console.error("Error uploading file:", showErrorForUploading);
     }
   };
-const filteredSections = subjects.filter((section) => {
-  // Convert the search term to lowercase for case-insensitive comparison
-  const searchLower = searchTerm.toLowerCase();
+  const filteredSections = subjects.filter((section) => {
+    // Convert the search term to lowercase for case-insensitive comparison
+    const searchLower = searchTerm.toLowerCase();
 
-  // Get the student's full name, class name, and user ID for filtering
-  const studentName =
-    `${section?.first_name} ${section?.mid_name} ${section?.last_name}`?.toLowerCase() ||
-    "";
-  const studentClass = section?.get_class?.name?.toLowerCase() || "";
-  
+    // Get the student's full name, class name, and user ID for filtering
+    const studentName =
+      `${section?.first_name} ${section?.mid_name} ${section?.last_name}`?.toLowerCase() ||
+      "";
+    const studentClass = section?.get_class?.name?.toLowerCase() || "";
 
-  // Check if the search term is present in Roll No, Name, Class, or UserId
-  return (
-   
-    studentName.includes(searchLower) ||
-    studentClass.includes(searchLower) 
-   
-  );
-});
-
-
+    // Check if the search term is present in Roll No, Name, Class, or UserId
+    return (
+      studentName.includes(searchLower) || studentClass.includes(searchLower)
+    );
+  });
 
   // const filteredSections = subjects.filter((section) => {
   //   // Convert the teacher's name and subject's name to lowercase for case-insensitive comparison
@@ -667,12 +661,12 @@ const filteredSections = subjects.filter((section) => {
                   ></div>
 
                   <div className="card-body w-full">
-                    <div className="h-96 lg:h-96 overflow-y-scroll lg:overflow-x-hidden">
+                    <div className="h-96 lg:h-96 overflow-y-scroll lg:overflow-x-hidden w-full  md:w-[80%] mx-auto">
                       <table className="min-w-full leading-normal table-auto">
                         <thead>
                           <tr className="bg-gray-200">
                             <th className="px-2 w-full md:w-[10%] text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
-                              S.No
+                              Sr.No
                             </th>
 
                             <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
@@ -691,47 +685,58 @@ const filteredSections = subjects.filter((section) => {
                           </tr>
                         </thead>
                         <tbody>
-                          {displayedSections.map((subject, index) => (
-                            <tr key={subject.student_id} className=" text-sm ">
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                              {currentPage * pageSize + index + 1}
-                              </td>
+                          {displayedSections.length ? (
+                            displayedSections.map((subject, index) => (
+                              <tr
+                                key={subject.student_id}
+                                className=" text-sm "
+                              >
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                  {currentPage * pageSize + index + 1}
+                                </td>
 
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                {`${subject?.first_name ?? ""} ${
-                                  subject?.mid_name
-                                    ? subject.mid_name + " "
-                                    : ""
-                                }${subject?.last_name ?? ""}`.trim()}
-                              </td>
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                  {`${subject?.first_name ?? ""} ${
+                                    subject?.mid_name
+                                      ? subject.mid_name + " "
+                                      : ""
+                                  }${subject?.last_name ?? ""}`.trim()}
+                                </td>
 
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm text-nowrap">
-                                {`${subject?.get_class?.name ?? ""}${
-                                  subject?.get_division?.name
-                                    ? " " + subject.get_division.name
-                                    : ""
-                                }`.trim()}
-                              </td>
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm text-nowrap">
+                                  {`${subject?.get_class?.name ?? ""}${
+                                    subject?.get_division?.name
+                                      ? " " + subject.get_division.name
+                                      : ""
+                                  }`.trim()}
+                                </td>
 
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                <button
-                                  onClick={() => handleEdit(subject)}
-                                  className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
-                                >
-                                  <FontAwesomeIcon icon={faEdit} />
-                                </button>
-                              </td>
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                  <button
+                                    onClick={() => handleEdit(subject)}
+                                    className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
+                                  >
+                                    <FontAwesomeIcon icon={faEdit} />
+                                  </button>
+                                </td>
 
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                <button
-                                  onClick={() => handleDelete(subject)}
-                                  className="text-red-600 hover:text-red-800 hover:bg-transparent "
-                                >
-                                  <FontAwesomeIcon icon={faTrash} />
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                  <button
+                                    onClick={() => handleDelete(subject)}
+                                    className="text-red-600 hover:text-red-800 hover:bg-transparent "
+                                  >
+                                    <FontAwesomeIcon icon={faTrash} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <div className=" absolute left-[1%] w-[100%]  text-center flex justify-center items-center mt-14">
+                              <div className=" text-center text-xl text-red-700">
+                                Oops! No data found..
+                              </div>
+                            </div>
+                          )}
                         </tbody>
                       </table>
                     </div>

@@ -672,7 +672,7 @@ function ManageSubjectList() {
                         <thead>
                           <tr className="bg-gray-100">
                             <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
-                              S.No
+                              Sr.No
                             </th>
                             <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
                               Roll No
@@ -718,131 +718,141 @@ function ManageSubjectList() {
                           </tr>
                         </thead>
                         <tbody>
-                          {displayedSections.map((subject, index) => (
-                            <tr key={subject.student_id} className="text-sm ">
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                {currentPage * pageSize + index + 1}
-                              </td>
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                {subject?.roll_no}
-                              </td>
-                              {/* <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                          {displayedSections.length ? (
+                            displayedSections.map((subject, index) => (
+                              <tr key={subject.student_id} className="text-sm ">
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                  {currentPage * pageSize + index + 1}
+                                </td>
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                  {subject?.roll_no}
+                                </td>
+                                {/* <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                 {subject?.photo}
                               </td>{" "} */}
-                              <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm py-1">
-                                {console.log(
-                                  "the teacher image",
-                                  `${subject?.image_url}`
-                                )}
+                                <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm py-1">
+                                  {console.log(
+                                    "the teacher image",
+                                    `${subject?.image_url}`
+                                  )}
 
-                                <img
-                                  src={
-                                    subject?.image_name
-                                      ? `${subject?.image_name}`
-                                      : "https://via.placeholder.com/50"
-                                  }
-                                  alt={subject?.name}
-                                  className="rounded-full w-8 h-8 lg:w-10 lg:h-10 object-cover"
-                                />
-                              </td>
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                {`${subject?.first_name ?? ""} ${
-                                  subject?.mid_name
-                                    ? subject.mid_name + " "
-                                    : ""
-                                }${subject?.last_name ?? ""}`.trim()}
-                              </td>
+                                  <img
+                                    src={
+                                      subject?.image_name
+                                        ? `${subject?.image_name}`
+                                        : "https://via.placeholder.com/50"
+                                    }
+                                    alt={subject?.name}
+                                    className="rounded-full w-8 h-8 lg:w-10 lg:h-10 object-cover"
+                                  />
+                                </td>
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                  {`${subject?.first_name ?? ""} ${
+                                    subject?.mid_name
+                                      ? subject.mid_name + " "
+                                      : ""
+                                  }${subject?.last_name ?? ""}`.trim()}
+                                </td>
 
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm text-nowrap">
-                                {`${subject?.get_class?.name}${" "}${
-                                  subject?.get_division?.name
-                                }`}
-                              </td>
-                              {/* <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm text-nowrap">
+                                  {`${subject?.get_class?.name}${" "}${
+                                    subject?.get_division?.name
+                                  }`}
+                                </td>
+                                {/* <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                 {subject?.get_division?.name}
                               </td> */}
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                {subject?.user_master?.user_id}
-                              </td>
-                              {(roleId === "A" || roleId === "M") && (
-                                <>
-                                  <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                    <button
-                                      onClick={() => handleEdit(subject)}
-                                      className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
-                                    >
-                                      <FontAwesomeIcon icon={faEdit} />
-                                    </button>
-                                  </td>
-                                  {subject.isPromoted !== "Y" ? (
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                  {subject?.user_master?.user_id}
+                                </td>
+                                {(roleId === "A" || roleId === "M") && (
+                                  <>
                                     <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                       <button
-                                        onClick={() => handleDelete(subject)}
-                                        className="text-red-600 hover:text-red-800 hover:bg-transparent "
+                                        onClick={() => handleEdit(subject)}
+                                        className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
                                       >
-                                        <FontAwesomeIcon icon={faTrash} />
+                                        <FontAwesomeIcon icon={faEdit} />
                                       </button>
                                     </td>
-                                  ) : (
-                                    <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                    {subject.isPromoted !== "Y" ? (
+                                      <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                        <button
+                                          onClick={() => handleDelete(subject)}
+                                          className="text-red-600 hover:text-red-800 hover:bg-transparent "
+                                        >
+                                          <FontAwesomeIcon icon={faTrash} />
+                                        </button>
+                                      </td>
+                                    ) : (
+                                      <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                        <button
+                                          // onClick={() => ()}
+                                          className="text-green-500-600 hover:text-green-800 hover:bg-transparent "
+                                        >
+                                          {/* <FontAwesomeIcon icon={faTrash} /> */}
+                                        </button>
+                                      </td>
+                                    )}
+                                    <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm hover:bg-none">
                                       <button
-                                        // onClick={() => ()}
-                                        className="text-green-500-600 hover:text-green-800 hover:bg-transparent "
+                                        onClick={() =>
+                                          handleActiveAndInactive(subject)
+                                        }
+                                        className={`  font-bold hover:bg-none ${
+                                          subject.isActive === "Y"
+                                            ? "text-green-600 hover:text-green-800 hover:bg-transparent"
+                                            : "text-red-700 hover:text-red-900  hover:bg-transparent"
+                                        }`}
                                       >
-                                        {/* <FontAwesomeIcon icon={faTrash} /> */}
+                                        {subject.isActive === "Y" ? (
+                                          <FaCheck className="text-xl" />
+                                        ) : (
+                                          <FontAwesomeIcon
+                                            icon={faXmark}
+                                            className="text-xl"
+                                          />
+                                        )}
                                       </button>
                                     </td>
-                                  )}
-                                  <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm hover:bg-none">
-                                    <button
-                                      onClick={() =>
-                                        handleActiveAndInactive(subject)
-                                      }
-                                      className={`  font-bold hover:bg-none ${
-                                        subject.isActive === "Y"
-                                          ? "text-green-600 hover:text-green-800 hover:bg-transparent"
-                                          : "text-red-700 hover:text-red-900  hover:bg-transparent"
-                                      }`}
-                                    >
-                                      {subject.isActive === "Y" ? (
-                                        <FaCheck className="text-xl" />
-                                      ) : (
-                                        <FontAwesomeIcon
-                                          icon={faXmark}
-                                          className="text-xl"
-                                        />
-                                      )}
-                                    </button>
-                                  </td>
-                                </>
-                              )}
+                                  </>
+                                )}
 
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                <button
-                                  onClick={() => handleView(subject)}
-                                  className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
-                                >
-                                  <MdOutlineRemoveRedEye className="font-bold text-xl" />
-                                </button>
-                              </td>
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                <button
-                                  onClick={() => handleCertificateView(subject)}
-                                  className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
-                                >
-                                  <TbFileCertificate className="font-bold text-xl" />
-                                </button>
-                              </td>
-                              <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                <button
-                                  onClick={() => handleResetPassword(subject)}
-                                  className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
-                                >
-                                  <MdLockReset className="font-bold text-xl" />
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                  <button
+                                    onClick={() => handleView(subject)}
+                                    className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
+                                  >
+                                    <MdOutlineRemoveRedEye className="font-bold text-xl" />
+                                  </button>
+                                </td>
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                  <button
+                                    onClick={() =>
+                                      handleCertificateView(subject)
+                                    }
+                                    className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
+                                  >
+                                    <TbFileCertificate className="font-bold text-xl" />
+                                  </button>
+                                </td>
+                                <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
+                                  <button
+                                    onClick={() => handleResetPassword(subject)}
+                                    className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
+                                  >
+                                    <MdLockReset className="font-bold text-xl" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <div className=" absolute left-[1%] w-[100%]  text-center flex justify-center items-center mt-14">
+                              <div className=" text-center text-xl text-red-700">
+                                Oops! No data found..
+                              </div>
+                            </div>
+                          )}
                         </tbody>
                       </table>
                     </div>

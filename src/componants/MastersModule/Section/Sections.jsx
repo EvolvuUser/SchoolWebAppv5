@@ -476,12 +476,12 @@ function Sections() {
           <div className="card-body w-full">
             <div className="h-96 lg:h-96 overflow-y-auto lg:overflow-x-hidden">
               {" "}
-              <div className="bg-white rounded-lg shadow-xs  w-[80%] mx-auto">
+              <div className="bg-white rounded-lg shadow-xs  w-full md:w-[80%] mx-auto">
                 <table className="min-w-full  leading-normal table-auto">
                   <thead>
                     <tr className="bg-gray-200">
                       <th className="px-2 text-center  lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
-                        S.No
+                        Sr.No
                       </th>
                       <th className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
                         Section name
@@ -497,11 +497,14 @@ function Sections() {
                   </thead>
                   <tbody>
                     {loading ? (
-                      <div className=" relative left-[40%] w-[100%]  text-center flex justify-center items-center mt-14">
-                        <div className=" text-center text-xl text-blue-700">
+                      <tr>
+                        <td
+                          colSpan="6"
+                          className="text-center text-blue-700 text-xl py-10"
+                        >
                           Please wait while data is loading...
-                        </div>
-                      </div>
+                        </td>
+                      </tr>
                     ) : displayedSections.length ? (
                       displayedSections.map((section, index) => (
                         <tr
@@ -565,11 +568,14 @@ function Sections() {
                         </tr>
                       ))
                     ) : (
-                      <div className=" absolute left-[1%] w-[100%]  text-center flex justify-center items-center mt-14">
-                        <div className=" text-center text-xl text-red-700">
-                          Oops! No data found..
-                        </div>
-                      </div>
+                      <tr>
+                        <td
+                          colSpan="6"
+                          className="text-center text-red-700 text-xl py-10"
+                        >
+                          Oops! No data found.
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
