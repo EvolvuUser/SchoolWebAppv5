@@ -25,7 +25,7 @@
 .custom-submenu .dropdown-item {
   color: white; /* Text color inside dropdown */
   background-color: #89939e; /* Background remains dark */
-  border: 2px solid black;
+  /* border: 2px solid black; */
 }
 
 .custom-submenu .dropdown-item:hover {
