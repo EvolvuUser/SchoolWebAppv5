@@ -438,7 +438,7 @@ const LeavingCertificate = () => {
           dob: fetchedData.studentinformation.dob || "",
           admission_class: fetchedData.studentinformation.admission_class || "",
           // dob_words: fetchedData.dobinwords || "", // Directly from fetched data
-          dob_words: convertDateToWords(fetchedData.studentinformation.dob),
+          dob_words: fetchedData.dobinwords || " ",
           attendance: fetchedData.total_attendance || "",
           nationality: fetchedData.studentinformation.nationality || "",
           stu_aadhaar_no: fetchedData.studentinformation.stu_aadhaar_no || "",

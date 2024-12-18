@@ -248,13 +248,18 @@ function NoticeAndSms() {
 
       if (!token) throw new Error("No authentication token found");
 
-      const response = await fetch(fileUrl, {
-        method: "GET",
-        headers: {
-          // Add headers if needed, e.g., Authorization
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        // `https://sms.evolvu.in/storage/app/public/notice/${fileUrl}`,
+        `${fileUrl}`,
+
+        {
+          method: "GET",
+          headers: {
+            // Add headers if needed, e.g., Authorization
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
