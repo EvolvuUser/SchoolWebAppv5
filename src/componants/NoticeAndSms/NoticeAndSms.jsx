@@ -393,6 +393,8 @@ function NoticeAndSms() {
   };
 
   const handleSubmitEdit = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     let hasError = false;
 
     if (!subject.trim()) {
@@ -408,7 +410,10 @@ function NoticeAndSms() {
     } else {
       setNoticeDescError("");
     }
-    if (hasError) return;
+    if (hasError) {
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const token = localStorage.getItem("authToken");
@@ -417,8 +422,23 @@ function NoticeAndSms() {
       const formData = new FormData();
       formData.append("subject", subject);
       formData.append("notice_desc", noticeDesc);
-      if (selectedFile) formData.append("attachment", selectedFile);
+      // if (uploadedFiles) {
+      //   uploadedFiles.forEach((file) => formData.append("userfile[]", file));
+      // } else {
+      //   preselectedFiles.forEach((fileUrl) =>
+      //     formData.append("userfile[]", fileUrl)
+      //   );
+      // }
+      // Append newly uploaded files
+      uploadedFiles.forEach((file) => formData.append("userfile[]", file));
+      console.log("preselectedFiles", preselectedFiles);
+      // Append preselected files (assuming preselectedFiles contains their URLs or identifiers)
+      preselectedFiles.forEach((fileUrl) =>
+        formData.append("userfile[]", fileUrl)
+      );
 
+      console.log("formated data of the edit sms part", formData);
+      console.log("seletd files", uploadedFiles);
       await axios.post(
         `${API_URL}/api/update_smsnotice/${currentSection?.unq_id}`,
         formData,
@@ -437,6 +457,8 @@ function NoticeAndSms() {
     } catch (error) {
       toast.error("Error updating notice. Please try again.");
       console.error(error);
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
     }
   };
 
@@ -450,6 +472,8 @@ function NoticeAndSms() {
     setShowPublishModal(true);
   };
   const handleSubmitPublish = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     // Handle delete submission logic
     try {
       const token = localStorage.getItem("authToken");
@@ -495,10 +519,14 @@ function NoticeAndSms() {
       }
       console.error("Error In Publishing:", error);
       // setError(error.message);
+    } finally {
+      setShowPublishModal(false);
+      setIsSubmitting(false); // Re-enable the button after the operation
     }
-    setShowPublishModal(false);
   };
   const handleSubmitDelete = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     // Handle delete submission logic
     try {
       const token = localStorage.getItem("authToken");
@@ -543,8 +571,10 @@ function NoticeAndSms() {
       }
       console.error("Error In Deleting:", error);
       // setError(error.message);
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
+      setShowDeleteModal(false);
     }
-    setShowDeleteModal(false);
   };
 
   const handleCloseModal = () => {
@@ -592,7 +622,7 @@ function NoticeAndSms() {
     const newFiles = Array.from(e.target.files);
     setUploadedFiles([...uploadedFiles, ...newFiles]);
   };
-
+  console.log("handleFileUpload", handleFileUpload);
   const removePreselectedFile = (index) => {
     const updatedFiles = preselectedFiles.filter((_, i) => i !== index);
     setPreselectedFiles(updatedFiles);
@@ -1105,8 +1135,9 @@ function NoticeAndSms() {
                     type="button"
                     className="btn btn-primary px-3 mb-2"
                     onClick={handleSubmitEdit}
+                    disabled={isSubmitting}
                   >
-                    Update
+                    {isSubmitting ? "Updating..." : "Update"}
                   </button>
                 </div>
               </div>
@@ -1249,15 +1280,16 @@ function NoticeAndSms() {
                 ></div>
                 <div className="modal-body">
                   Are you sure you want to delete this{" "}
-                  {` ${currestSubjectNameForDelete} `} ?
+                  {` ${currentSection?.classToDelete?.notice_type} `} ?
                 </div>
                 <div className=" flex justify-end p-3">
                   <button
                     type="button"
                     className="btn btn-danger px-3 mb-2"
                     onClick={handleSubmitDelete}
+                    disabled={isSubmitting}
                   >
-                    Delete
+                    {isSubmitting ? "Deleting..." : "Delete"}
                   </button>
                 </div>
               </div>
@@ -1300,8 +1332,9 @@ function NoticeAndSms() {
                     type="button"
                     className="btn btn-primary px-3 mb-2"
                     onClick={handleSubmitPublish}
+                    disabled={isSubmitting}
                   >
-                    Publish
+                    {isSubmitting ? "Publishing..." : "Publish"}
                   </button>
                 </div>
               </div>

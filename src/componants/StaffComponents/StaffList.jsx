@@ -21,6 +21,7 @@ function StaffList() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentStaff, setCurrentStaff] = useState(null);
   const [currentStaffName, setCurrentStaffName] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [newStaffName, setNewStaffName] = useState("");
   const [newDesignation, setNewDesignation] = useState("");
@@ -241,6 +242,8 @@ function StaffList() {
   };
 
   const handleSubmitDelete = async () => {
+    if (isSubmitting) return; // Prevent re-submitting
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem("authToken");
 
@@ -268,6 +271,9 @@ function StaffList() {
     } catch (error) {
       console.error("Error deleting staff:", error);
       toast.error("Failed to delete staff");
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the operation
+      setShowDeleteModal(false);
     }
   };
 
@@ -680,8 +686,9 @@ function StaffList() {
                     type="button"
                     className="btn btn-danger px-3 mb-2"
                     onClick={handleSubmitDelete}
+                    disabled={isSubmitting}
                   >
-                    Delete
+                    {isSubmitting ? "Deleting..." : "Delete"}
                   </button>
                 </div>
               </div>
