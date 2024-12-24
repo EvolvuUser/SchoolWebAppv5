@@ -216,25 +216,49 @@ export default function Sidebar({ isSidebar, setIsSidebar }) {
             : "relative transform translate-x-0 transition-all duration-500"
         }`}
       >
-        <h2 className="text-lg font-semibold pt-1 bg-gray-200 pr-2">
+        <h2 className="text-[1.1em] font-semibold pt-2 bg-gray-200 text-gray-900 pr-2">
           Recent Tabs
+          {/* fjsd */}
         </h2>
-
-        <ul className="space-y-2">
+        <div
+          className=" relative w-[100%]  left-2 mb-2 h-1  mx-auto bg-red-700"
+          style={{
+            backgroundColor: "#C03078",
+          }}
+        ></div>
+        <ul className="space-y-1">
           {console.log("tabvisitednow", tabVisits)}
           {tabVisits.map((tab, index) => (
-            <li key={index} className="text-sm text-center underline-none">
+            <li
+              key={index}
+              className="text-sm w-[132%] relative -left-6    text-center underline-none"
+            >
               <Link
                 to={tab}
-                className=" overflow-hidden relative -left-2 block  py-2 rounded-md bg-blue-500 text-white hover:bg-blue-700 transition duration-300"
+                className="overflow-hidden block no-underline font-semibold text-[.9em] py-2 rounded-md bg-blue-500 text-pink-200 hover:text-pink-100 hover:bg-blue-600 shadow-md hover:drop-shadow-lg hover:font-bold transition duration-300"
               >
-                {tab}
+                {tab
+                  .split("/")
+                  .map((segment, index, arr) => {
+                    const isLastSegmentNumeric =
+                      !isNaN(segment) && index === arr.length - 1;
+                    return isLastSegmentNumeric
+                      ? `-${segment}` // Add a dash before numeric ID
+                      : `${segment.charAt(0).toUpperCase()}${segment
+                          .slice(1)
+                          .toLowerCase()}`;
+                  })
+                  .join("")}
+                {/* Remove any leading dash */}
+                {/* {tab.split("/").pop().charAt(0).toUpperCase() +
+                  tab.split("/").pop().slice(1).toLowerCase()} */}
               </Link>
             </li>
           ))}
         </ul>
+
         <RxCross2
-          className="absolute right-2 top-2 text-2xl text-red-500 hover:cursor-pointer"
+          className="absolute right-2 top-3 text-xl text-red-500 hover:cursor-pointer"
           onClick={() => setIsSidebar(false)}
         />
       </div>
