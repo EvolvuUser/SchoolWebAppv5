@@ -436,10 +436,10 @@ function NoticeAndSms() {
       // }
       // Append newly uploaded files
       uploadedFiles.forEach((file) => formData.append("userfile[]", file));
-      console.log("preselectedFiles", preselectedFiles);
+      console.log("filenottobedeleted[]", preselectedFiles);
       // Append preselected files (assuming preselectedFiles contains their URLs or identifiers)
       preselectedFiles.forEach((fileUrl) =>
-        formData.append("userfile[]", fileUrl)
+        formData.append("filenottobedeleted[]", fileUrl)
       );
 
       console.log("formated data of the edit sms part", formData);
