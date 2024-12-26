@@ -249,7 +249,7 @@ export default function Sidebar({ isSidebar, setIsSidebar }) {
                           .toLowerCase()}`;
                   })
                   .join("")}
-                {/* Remove any leading dash and cahnges in someting */}
+                {/* Remove any leading dash */}
                 {/* {tab.split("/").pop().charAt(0).toUpperCase() +
                   tab.split("/").pop().slice(1).toLowerCase()} */}
               </Link>
