@@ -661,8 +661,8 @@ const PromotedStudent = () => {
                       <div className="h-96 lg:h-96 overflow-y-scroll lg:overflow-x-hidden w-full mx-auto">
                         <div className="bg-white rounded-lg shadow-xs">
                           <table className="min-w-full leading-normal table-auto">
-                            <thead className=" bg-gray-300 ">
-                              <tr className="bg-gray-200">
+                            <thead className=" ">
+                              <tr className="bg-gray-200 ">
                                 <th className="px-2 text-center w-full md:w-[10%] lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
                                   Sr.No
                                 </th>
@@ -741,8 +741,16 @@ const PromotedStudent = () => {
                             </tbody>
                           </table>
                         </div>
+                      </div>{" "}
+                      <div className="text-center">
+                        <p className="text-blue-500 font-semibold mt-1">
+                          Selected Students:{" "}
+                          <h6 className=" inline text-pink-600">
+                            {selectedStudents.length}
+                          </h6>
+                        </p>
                       </div>
-                      <div className="col-span-3 my-2 mt-4 text-right">
+                      <div className="col-span-3 mb-2  text-right">
                         <button
                           type="submit"
                           onClick={handleSubmit}
@@ -785,13 +793,6 @@ const PromotedStudent = () => {
                   </div>
                 </div>
                 ;{/* Selected Students */}
-                {selectedStudents.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-gray-600">
-                      Selected Students: {selectedStudents.length}
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           )}
