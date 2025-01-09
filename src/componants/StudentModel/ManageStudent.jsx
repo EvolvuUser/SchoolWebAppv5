@@ -212,11 +212,13 @@ function ManageSubjectList() {
       // if (Object.keys(queryParams).length === 0) {
       //   throw new Error("No valid search parameters.");
       // }
-
+      // previour api:
+      // https://sms.evolvu.in/public/api/getStudentListBySection?section_id=440
       const response = await axios.get(`${API_URL}/api/get_students`, {
         headers: { Authorization: `Bearer ${token}` },
         params: queryParams,
       });
+
       // if (selectedStudentId) {
       //   response = await axios.get(
       //     `${API_URL}/api/students/${selectedStudentId}`,
@@ -455,7 +457,9 @@ function ManageSubjectList() {
         setErrorMessage("Invalid user ID");
         return;
       }
-      toast.success("Password updated successfully!");
+      toast.success(
+        `Password for user id "${userIdset}" is reset to arnolds successfully!`
+      );
       setShowEditModal(false); // Close modal after success
       setErrorMessage(""); // Clear error message on success
     } catch (error) {
@@ -1092,7 +1096,11 @@ function ManageSubjectList() {
               <div className="modal-content">
                 <div className="flex justify-between p-3">
                   <h5 className="modal-title">
-                    Confirm Activate or Deactivate
+                    {/* Confirm Activate or Deactivate */}
+                    {currentStudentDataForActivate?.studentToActiveOrDeactive
+                      ?.isActive === "Y"
+                      ? `Confirm Deactivate`
+                      : `Confirm Activate`}
                   </h5>
                   <RxCross1
                     className="float-end relative mt-2 right-2 text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
@@ -1112,10 +1120,17 @@ function ManageSubjectList() {
                   }}
                 ></div>
                 <div className="modal-body">
+                  {currentStudentDataForActivate?.studentToActiveOrDeactive
+                    ?.isActive === "Y"
+                    ? `Are you sure you want to deactivate this student ${currentStudentDataForActivate?.studentToActiveOrDeactive?.student_name}?`
+                    : `Are you sure you want to activate this student ${currentStudentDataForActivate?.studentToActiveOrDeactive?.student_name}?`}
+                </div>
+
+                {/* <div className="modal-body">
                   Are you sure you want to Activate or Deactivate this student{" "}
                   {` ${currentStudentDataForActivate?.studentToActiveOrDeactive?.student_name} `}{" "}
                   ?
-                </div>
+                </div> */}
                 <div className=" flex justify-end p-3">
                   <button
                     type="button"

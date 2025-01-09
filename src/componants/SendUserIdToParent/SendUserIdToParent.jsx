@@ -37,7 +37,7 @@ const SendUserIdToParent = () => {
 
   // Get today's date in YYYY-MM-DD format
   // Calculate today's date
-  const today = new Date().toISOString().split("T")[0];
+  //   const today = new Date().toISOString().split("T")[0];
   // State for loading indicators
   const [loadingClasses, setLoadingClasses] = useState(false);
   const [loadingStudents, setLoadingStudents] = useState(false);
@@ -96,14 +96,32 @@ const SendUserIdToParent = () => {
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   console.log("seletedStudents[]", selectedStudents);
+  //   const handleSelectAll = () => {
+  //     setSelectAll(!selectAll);
+  //     if (!selectAll) {
+  //       // Select all students
+  //       const allStudentIds = parentInformation.map(
+  //         (student) => student.student_id
+  //       );
+  //       setSelectedStudents(allStudentIds);
+  //     } else {
+  //       // Deselect all students
+  //       setSelectedStudents([]);
+  //     }
+  //   };
+
   const handleSelectAll = () => {
     setSelectAll(!selectAll);
+
     if (!selectAll) {
-      // Select all students
-      const allStudentIds = parentInformation.map(
-        (student) => student.student_id
-      );
-      setSelectedStudents(allStudentIds);
+      // Select only students with at least one parent email
+      const validStudentIds = parentInformation
+        .filter(
+          (student) => student?.parents?.f_email || student?.parents?.m_emailid
+        )
+        .map((student) => student.student_id);
+
+      setSelectedStudents(validStudentIds);
     } else {
       // Deselect all students
       setSelectedStudents([]);
@@ -147,13 +165,10 @@ const SendUserIdToParent = () => {
       setLoadingForSearch(true); // Start loading
       const token = localStorage.getItem("authToken");
 
-      const response = await axios.get(
-        `${API_URL}/api/getStudentListBySection`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { section_id: classIdForSearch }, // Pass query parameters here
-        }
-      );
+      const response = await axios.get(`${API_URL}/api/get_students`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { section_id: classIdForSearch }, // Pass query parameters here
+      });
 
       // Check if data was received and update the form state
       if (response?.data?.students) {
@@ -164,7 +179,7 @@ const SendUserIdToParent = () => {
       } else {
         console.log("reponse", response.data.status);
 
-        toast.error("No data found for the selected class and divisoin.");
+        toast.error("No data found for the selected class.");
       }
     } catch (error) {
       console.log("error is", error);
@@ -182,16 +197,18 @@ const SendUserIdToParent = () => {
     // Validate if `selectedStudents` array is empty
 
     // Validate if `selectedClassForStudent` or `selectedStudentForStudent` are missing
-    if (!selectedClassForStudent.value) {
-      setNameErrorForClassForStudent("Please select a class.");
-      hasError = true;
-    }
-    if (!selectedStudentForStudent.value) {
-      setNameErrorForStudent("Please select a student.");
-      hasError = true;
-    }
+    // if (!selectedClassForStudent.value) {
+    //   setNameErrorForClassForStudent("Please select a class.");
+    //   hasError = true;
+    // }
+    // if (!selectedStudentForStudent.value) {
+    //   setNameErrorForStudent("Please select a student.");
+    //   hasError = true;
+    // }
     if (selectedStudents.length === 0) {
-      toast.error("Please select at least one student to promote.");
+      toast.error(
+        "Please select at least one student to send their User ID to the parents."
+      );
       hasError = true;
     }
     // Exit if there are validation errors
@@ -207,21 +224,25 @@ const SendUserIdToParent = () => {
 
       // Prepare data for the API request
       const postData = {
-        selector: selectedStudents,
-        tclass_id: selectedClassForStudent.value, // Replace with actual target class ID
-        tsection_id: selectedStudentForStudent.value, // Replace with actual target section ID
+        studentId: selectedStudents,
+        // tclass_id: selectedClassForStudent.value, // Replace with actual target class ID
+        // tsection_id: selectedStudentForStudent.value, // Replace with actual target section ID
       };
 
       // Make the API call
-      const response = await axios.post(`${API_URL}/api/`, postData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.post(
+        `${API_URL}/api/send_user_id_toparents`,
+        postData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       // Handle successful response
       if (response.status === 200) {
-        toast.success("Students promoted successfully!");
+        toast.success("Send Use ID to parents successfully!");
         setSelectedClass(null); // Reset class selection
         // setSelectedClassForStudent(null);
         // selectedStudentForStudent(null);
@@ -245,7 +266,7 @@ const SendUserIdToParent = () => {
       console.error("Error:", error.response?.data);
 
       // Display error message
-      toast.error("An error occurred while promoting students.");
+      toast.error("An error occurred while sending use ID to parents.");
 
       if (error.response && error.response.data) {
         setBackendErrors(error.response.data || {});
@@ -399,7 +420,7 @@ const SendUserIdToParent = () => {
           </div>
           {/* Form Section - Displayed when parentInformation is fetched */}
           {parentInformation && (
-            <div className="w-full md:container mx-auto py-4 px-4 mt-8">
+            <div className="w-full md:container mx-auto py-4 px-4 ">
               <div className="card mx-auto w-full shadow-lg">
                 <div className="p-1 px-3 bg-gray-100 flex justify-between items-center">
                   <h6 className="text-gray-700 mt-1   text-nowrap">
@@ -471,7 +492,7 @@ const SendUserIdToParent = () => {
                                     {index + 1}
                                   </p>
                                 </td>
-                                <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                                {/* <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
                                   <p className="text-gray-900 whitespace-no-wrap relative top-2">
                                     <input
                                       type="checkbox"
@@ -484,7 +505,27 @@ const SendUserIdToParent = () => {
                                       className="cursor-pointer"
                                     />
                                   </p>
+                                </td> */}
+                                <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                                  <p className="text-gray-900 whitespace-no-wrap relative top-2">
+                                    {(student?.parents?.f_email ||
+                                      student?.parents?.m_emailid) && (
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedStudents.includes(
+                                          student.student_id
+                                        )}
+                                        onChange={() =>
+                                          handleCheckboxChange(
+                                            student.student_id
+                                          )
+                                        }
+                                        className="cursor-pointer"
+                                      />
+                                    )}
+                                  </p>
                                 </td>
+
                                 <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
                                   <p className="text-gray-900 whitespace-no-wrap relative top-2">
                                     {student.roll_no === 0
