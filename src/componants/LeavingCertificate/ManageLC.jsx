@@ -66,14 +66,15 @@ function ManageLC() {
   }));
   console.log("teacherOptions", teacherOptions);
   const classOptions = classes.map((cls) => ({
-    value: `${cls?.get_class?.name}-${cls.name}`,
-    label: `${cls?.get_class?.name} ${cls.name}`,
+    // value: `${cls?.get_class?.name}-${cls.name}`,
+    value: `${cls.class_id}`,
+    label: `${cls?.name}`,
   }));
 
   const fetchClassNames = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      const response = await axios.get(`${API_URL}/api/get_class_section`, {
+      const response = await axios.get(`${API_URL}/api/getClassList`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (Array.isArray(response.data)) {
