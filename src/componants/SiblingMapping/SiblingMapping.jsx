@@ -5,196 +5,96 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { RxCross1 } from "react-icons/rx";
+import LoaderStyle from "../../componants/common/LoaderFinal/LoaderStyle";
 
 const SiblingMapping = () => {
   const API_URL = import.meta.env.VITE_API_URL;
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedStudentForSecond, setSelectedStudentForSecond] =
+    useState(null);
   const [classesforForm, setClassesforForm] = useState([]);
   const [studentNameWithClassId, setStudentNameWithClassId] = useState([]);
+  const [classesforFormForSecond, setClassesforFormForSecond] = useState([]);
+  const [studentNameWithClassIdForSecond, setStudentNameWithClassIdForSecond] =
+    useState([]);
   const [classIdForSearch, setClassIdForSearch] = useState(null);
+  const [classIdForSearchForSecond, setClassIdForSearchForSecond] =
+    useState(null);
+
   const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [selectedStudentIdForSecond, setSelectedStudentIdForSecond] =
+    useState(null);
+
   const [nameError, setNameError] = useState("");
   const [nameErrorForClass, setNameErrorForClass] = useState("");
+  const [nameErrorForSecond, setNameErrorForSecond] = useState("");
+  const [nameErrorForClassForSecond, setNameErrorForClassForSecond] =
+    useState("");
   const [selectedClass, setSelectedClass] = useState(null);
+  const [selectedClassForSecond, setSelectedClassForSecond] = useState(null);
+
   const [parentInformation, setParentInformation] = useState(null);
+  const [parentInformationForSecond, setParentInformationForSecond] =
+    useState(null);
+
   const [loading, setLoading] = useState(false);
   const [loadingForSearch, setLoadingForSearch] = useState(false);
+  const [loadingForSearchForSecond, setLoadingForSearchForSecond] =
+    useState(false);
 
   const navigate = useNavigate();
+  const customStyles = {
+    option: (provided, state) => ({
+      ...provided,
+      fontSize: "0.8rem",
+      backgroundColor: state.isFocused ? "rgba(59, 130, 246, 0.1)" : "white",
+      color: state.isSelected ? "blue" : "inherit", // Ensures selected value is black
+    }),
+    menu: (provided) => ({
+      ...provided,
+      zIndex: 50, // To ensure proper stacking
+    }),
+  };
+
   const [formData, setFormData] = useState({
-    sr_no: "",
-    stud_name: "",
-    dob: "",
-    date: "",
+    stud_name: "", // Combined name with class and division
     father_name: "",
-    class_division: "",
-    professional_qual: "",
-    trained: "",
-    experience: "",
-    sex: "",
-    blood_group: "",
-    religion: "",
-    dob_words: "",
-    nationality: "",
-    phone: "",
-    email: "",
-    aadhar_card_no: "",
-    stud_id: "",
-
-    purpose: " ",
-    teacher_image_name: null,
+    mother_name: "", // Added mother's name
+    father_email: "",
+    father_phone: "",
+    mother_email: "",
+    mother_phone: "",
+    user_id: "", // User ID set as Parent (Father Phone here)
   });
-
-  const getYearInWords = (year) => {
-    if (year < 1000 || year > 9999) return "Year Out of Range"; // Optional range limit
-
-    const thousands = [
-      "",
-      "One Thousand",
-      "Two Thousand",
-      "Three Thousand",
-      "Four Thousand",
-      "Five Thousand",
-      "Six Thousand",
-      "Seven Thousand",
-      "Eight Thousand",
-      "Nine Thousand",
-    ];
-    const hundreds = [
-      "",
-      "One Hundred",
-      "Two Hundred",
-      "Three Hundred",
-      "Four Hundred",
-      "Five Hundred",
-      "Six Hundred",
-      "Seven Hundred",
-      "Eight Hundred",
-      "Nine Hundred",
-    ];
-    const units = [
-      "",
-      "One",
-      "Two",
-      "Three",
-      "Four",
-      "Five",
-      "Six",
-      "Seven",
-      "Eight",
-      "Nine",
-    ];
-    const teens = [
-      "Ten",
-      "Eleven",
-      "Twelve",
-      "Thirteen",
-      "Fourteen",
-      "Fifteen",
-      "Sixteen",
-      "Seventeen",
-      "Eighteen",
-      "Nineteen",
-    ];
-    const tens = [
-      "",
-      "",
-      "Twenty",
-      "Thirty",
-      "Forty",
-      "Fifty",
-      "Sixty",
-      "Seventy",
-      "Eighty",
-      "Ninety",
-    ];
-
-    const thousandDigit = Math.floor(year / 1000);
-    const hundredDigit = Math.floor((year % 1000) / 100);
-    const lastTwoDigits = year % 100;
-
-    const thousandsPart = thousands[thousandDigit];
-    const hundredsPart = hundreds[hundredDigit];
-
-    let lastTwoWords;
-    if (lastTwoDigits < 10) {
-      lastTwoWords = units[lastTwoDigits];
-    } else if (lastTwoDigits < 20) {
-      lastTwoWords = teens[lastTwoDigits - 10];
-    } else {
-      lastTwoWords = `${tens[Math.floor(lastTwoDigits / 10)]} ${
-        units[lastTwoDigits % 10]
-      }`;
-    }
-
-    return `${thousandsPart} ${hundredsPart} ${lastTwoWords}`.trim();
-  };
-
-  const getDayInWords = (day) => {
-    const dayWords = [
-      "First",
-      "Second",
-      "Third",
-      "Fourth",
-      "Fifth",
-      "Sixth",
-      "Seventh",
-      "Eighth",
-      "Ninth",
-      "Tenth",
-      "Eleventh",
-      "Twelfth",
-      "Thirteenth",
-      "Fourteenth",
-      "Fifteenth",
-      "Sixteenth",
-      "Seventeenth",
-      "Eighteenth",
-      "Nineteenth",
-      "Twentieth",
-      "Twenty-First",
-      "Twenty-Second",
-      "Twenty-Third",
-      "Twenty-Fourth",
-      "Twenty-Fifth",
-      "Twenty-Sixth",
-      "Twenty-Seventh",
-      "Twenty-Eighth",
-      "Twenty-Ninth",
-      "Thirtieth",
-      "Thirty-First",
-    ];
-    return dayWords[day];
-  };
-
-  const convertDateToWords = (dateString) => {
-    if (!dateString) return "";
-
-    const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.toLocaleString("en-US", { month: "long" });
-    const year = date.getFullYear();
-
-    return `${getDayInWords(day)} ${month} ${getYearInWords(year)}`;
-  };
+  const [formDataForSecond, setFormDataForSecond] = useState({
+    stud_name: "", // Combined name with class and division
+    father_name: "",
+    mother_name: "", // Added mother's name
+    father_email: "",
+    father_phone: "",
+    mother_email: "",
+    mother_phone: "",
+    user_id: "", // User ID set as Parent (Father Phone here)
+  });
 
   // for form
   const [errors, setErrors] = useState({});
   const [backendErrors, setBackendErrors] = useState({});
 
-  // Maximum date for date_of_birth
-  const MAX_DATE = "2030-12-31";
-  const MIN_DATE = "1996-01-01";
   // Get today's date in YYYY-MM-DD format
   // Calculate today's date
   const today = new Date().toISOString().split("T")[0];
   // State for loading indicators
   const [loadingClasses, setLoadingClasses] = useState(false);
   const [loadingStudents, setLoadingStudents] = useState(false);
+  const [loadingClassesForSecond, setLoadingClassesForSecond] = useState(false);
+  const [loadingStudentsForSecond, setLoadingStudentsForSecond] =
+    useState(false);
 
   useEffect(() => {
     // Fetch both classes and student names on component mount
     fetchInitialDataAndStudents();
+    fetchInitialDataAndStudentsForSecond();
   }, []);
 
   const fetchInitialDataAndStudents = async () => {
@@ -249,6 +149,58 @@ const SiblingMapping = () => {
     }
   };
 
+  const fetchInitialDataAndStudentsForSecond = async () => {
+    try {
+      setLoadingClassesForSecond(true);
+      setLoadingStudentsForSecond(true);
+
+      const token = localStorage.getItem("authToken");
+
+      // Fetch classes and students concurrently
+      const [classResponse, studentResponse] = await Promise.all([
+        axios.get(`${API_URL}/api/getallClassWithStudentCount`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${API_URL}/api/getStudentListBySectionData`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      // Set the fetched data
+      setClassesforFormForSecond(classResponse.data || []);
+      setStudentNameWithClassIdForSecond(studentResponse?.data?.data || []);
+    } catch (error) {
+      toast.error("Error fetching data.");
+    } finally {
+      // Stop loading for both dropdowns
+      setLoadingClassesForSecond(false);
+      setLoadingStudentsForSecond(false);
+    }
+  };
+
+  const fetchStudentNameWithClassIdForSecond = async (section_id = null) => {
+    try {
+      setLoadingStudentsForSecond(true);
+
+      const params = section_id ? { section_id } : {};
+      const token = localStorage.getItem("authToken");
+
+      const response = await axios.get(
+        `${API_URL}/api/getStudentListBySectionData`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params,
+        }
+      );
+
+      setStudentNameWithClassIdForSecond(response?.data?.data || []);
+    } catch (error) {
+      toast.error("Error fetching students.");
+    } finally {
+      setLoadingStudentsForSecond(false);
+    }
+  };
+
   const handleClassSelect = (selectedOption) => {
     setSelectedClass(selectedOption);
     setSelectedStudent(null);
@@ -256,11 +208,25 @@ const SiblingMapping = () => {
     setClassIdForSearch(selectedOption?.value);
     fetchStudentNameWithClassId(selectedOption?.value);
   };
+  const handleClassSelectForSecond = (selectedOption) => {
+    setSelectedClassForSecond(selectedOption);
+    setSelectedStudentForSecond(null);
+    setSelectedStudentIdForSecond(null);
+    setClassIdForSearchForSecond(selectedOption?.value);
+    fetchStudentNameWithClassIdForSecond(selectedOption?.value);
+  };
 
   const handleStudentSelect = (selectedOption) => {
     setNameError(""); // Reset student error on selection
     setSelectedStudent(selectedOption);
     setSelectedStudentId(selectedOption?.value);
+    handleSearch(selectedOption?.value);
+  };
+  const handleStudentSelectForSecond = (selectedOption) => {
+    setNameErrorForSecond(""); // Reset student error on selection
+    setSelectedStudentForSecond(selectedOption);
+    setSelectedStudentIdForSecond(selectedOption?.value);
+    handleSearchForSecond(selectedOption?.value);
   };
 
   // Dropdown options
@@ -268,7 +234,9 @@ const SiblingMapping = () => {
     () =>
       classesforForm.map((cls) => ({
         value: cls.section_id,
-        label: `${cls?.get_class?.name} ${cls.name} (${cls.students_count})`,
+        label: `${cls?.get_class?.name || ""} ${cls?.name || ""} (${
+          cls?.students_count || ""
+        })`,
         key: `${cls.class_id}-${cls.section_id}`,
       })),
     [classesforForm]
@@ -278,18 +246,42 @@ const SiblingMapping = () => {
     () =>
       studentNameWithClassId.map((stu) => ({
         value: stu.student_id,
-        label: `${stu?.first_name} ${stu?.mid_name} ${stu?.last_name}`,
+        label: `${stu?.first_name || ""} ${stu?.mid_name || ""} ${
+          stu?.last_name || ""
+        }`,
       })),
     [studentNameWithClassId]
   );
+  // Dropdown options
+  const classOptionsForSecond = useMemo(
+    () =>
+      classesforFormForSecond.map((cls) => ({
+        value: cls.section_id,
+        label: `${cls?.get_class?.name || ""} ${cls.name || ""} (${
+          cls.students_count || ""
+        })`,
+        key: `${cls.class_id}-${cls.section_id}`,
+      })),
+    [classesforFormForSecond]
+  );
 
-  const handleSearch = async () => {
+  const studentOptionsForSecond = useMemo(
+    () =>
+      studentNameWithClassIdForSecond.map((stu) => ({
+        value: stu.student_id,
+        label: `${stu?.first_name || ""} ${stu?.mid_name || ""} ${
+          stu?.last_name || ""
+        }`,
+      })),
+    [studentNameWithClassIdForSecond]
+  );
+  const handleSearch = async (selectedStudent1) => {
     // Reset error messages
     setNameError("");
     setNameErrorForClass("");
     setErrors({}); // Clears all field-specific errors
 
-    if (!selectedStudent) {
+    if (!selectedStudent1) {
       setNameError("Please select Student Name.");
       toast.error("Please select Student Name.!");
       return;
@@ -308,63 +300,55 @@ const SiblingMapping = () => {
     // If there are validation errors, exit the function
     // if (hasError) return;
     // Reset form data and selected values after successful submission
+    setParentInformation(null);
     setFormData({
-      sr_no: "",
-      stud_name: "",
+      stud_name: "", // Combined name with class and division
       father_name: "",
-      dob: "",
-      dob_words: "",
-      date: "",
-      class_division: "",
-      purpose: "",
-      nationality: "",
-
-      // Add other fields here if needed
+      mother_name: "", // Added mother's name
+      father_email: "",
+      father_phone: "",
+      mother_email: "",
+      mother_phone: "",
+      user_id: "", // User ID set as Parent (Father Phone here)
     });
     try {
       setLoadingForSearch(true); // Start loading
       const token = localStorage.getItem("authToken");
-      const response = await axios.get(
-        `${API_URL}/api/get_srnobonafide/${selectedStudentId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await axios.get(`${API_URL}/api/get_students`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { student_id: selectedStudent1 }, // Pass query parameters here
+      });
 
       // Check if data was received and update the form state
-      if (response?.data?.data) {
-        const fetchedData = response?.data?.data; // Extract the data
-        setParentInformation(response?.data?.data); // Assuming response data contains form data
+      if (response?.data?.students) {
+        const fetchedData = response?.data?.students; // Extract the data
+        setParentInformation(fetchedData); // Assuming response data contains form data
+        console.log("fetchedData", fetchedData);
 
-        // Populate formData with the fetched data
-        setFormData({
-          sr_no: fetchedData.sr_no || "",
-          stud_name: `${fetchedData?.studentinformation?.first_name || ""} ${
-            fetchedData?.studentinformation?.mid_name || ""
-          } ${fetchedData?.studentinformation?.last_name || ""}`,
-          dob: fetchedData.studentinformation.dob || "",
-          dob_words: fetchedData.dobinwords || " ",
+        // Check if the fetchedData array is not empty
+        if (fetchedData && fetchedData.length > 0) {
+          const student = fetchedData[0]; // Access the first student in the array (or handle multiple students if needed)
 
-          date: today || "",
-          father_name: fetchedData.parentinformation.father_name || "",
-          class_division:
-            `${fetchedData.classname.name}-${fetchedData.sectionname.name}` ||
-            "",
-          professional_qual: fetchedData.professional_qual || "",
-          trained: fetchedData.trained || "",
-          experience: fetchedData.experience || "",
-          sex: fetchedData.sex || "",
-          blood_group: fetchedData.blood_group || "",
-          religion: fetchedData.religion || "",
-          // address: fetchedData.studentinformation.address || "",
-          nationality: fetchedData.studentinformation.nationality || "",
-          phone: fetchedData.phone || "",
-          email: fetchedData.email || "",
-          aadhar_card_no: fetchedData.aadhar_card_no || "",
-          stud_id: fetchedData.studentinformation.student_id || "",
-          teacher_image_name: fetchedData.teacher_image_name || null,
-          special_sub: fetchedData.special_sub || "",
-        });
+          // Populate formData with the fetched student data
+          setFormData({
+            stud_name: `${student?.first_name || ""} ${
+              student?.mid_name || ""
+            } ${student?.last_name || ""} (${student?.get_class?.name || ""}-${
+              student?.get_division?.name || ""
+            })`, // Combined name with class and division
+            father_name: student?.parents?.father_name || "",
+            mother_name: student?.parents?.mother_name || "", // Mother's name
+            father_email: student?.parents?.f_email || "",
+            father_phone: student?.parents?.f_mobile || "",
+            mother_email: student?.parents?.m_emailid || "",
+            mother_phone: student?.parents?.m_mobile || "",
+            user_id: student?.user_master?.user_id || "", // User ID set as Parent (Father Email here)
+          });
+        } else {
+          console.error("No students found in the response.");
+        }
+
+        console.log("setFormData", formData);
       } else {
         console.log("reponse", response.data.status);
         if (response.data && response.data.status === 403) {
@@ -384,6 +368,86 @@ const SiblingMapping = () => {
       console.log("error is", error.response);
     } finally {
       setLoadingForSearch(false);
+    }
+  };
+  const handleSearchForSecond = async (selectedStudent1) => {
+    // Reset error messages
+    setNameErrorForSecond("");
+    setNameErrorForClassForSecond("");
+    setErrors({}); // Clears all field-specific errors
+
+    if (!selectedStudent1) {
+      setNameErrorForSecond("Please select Student Name.");
+      toast.error("Please select Student Name.!");
+      return;
+    }
+    setParentInformationForSecond(null); // Assuming response data contains form data
+
+    setFormDataForSecond({
+      stud_name: "", // Combined name with class and division
+      father_name: "",
+      mother_name: "", // Added mother's name
+      father_email: "",
+      father_phone: "",
+      mother_email: "",
+      mother_phone: "",
+      user_id: "", // User ID set as Parent (Father Phone here)
+    });
+    try {
+      setLoadingForSearchForSecond(true); // Start loading
+      const token = localStorage.getItem("authToken");
+      const response = await axios.get(`${API_URL}/api/get_students`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { student_id: selectedStudent1 }, // Pass query parameters here
+      });
+
+      // Check if data was received and update the form state
+      if (response?.data?.students) {
+        const fetchedData = response?.data?.students; // Extract the data
+        setParentInformationForSecond(fetchedData); // Assuming response data contains form data
+        console.log("fetchedData", fetchedData);
+
+        // Check if the fetchedData array is not empty
+        if (fetchedData && fetchedData.length > 0) {
+          const student = fetchedData[0]; // Access the first student in the array (or handle multiple students if needed)
+
+          // Populate formData with the fetched student data
+          setFormDataForSecond({
+            stud_name: `${student?.first_name || ""} ${
+              student?.mid_name || ""
+            } ${student?.last_name || ""} (${student?.get_class?.name || ""}-${
+              student?.get_division?.name || ""
+            })`, // Combined name with class and division
+            father_name: student?.parents?.father_name || "",
+            mother_name: student?.parents?.mother_name || "", // Mother's name
+            father_email: student?.parents?.f_email || "",
+            father_phone: student?.parents?.f_mobile || "",
+            mother_email: student?.parents?.m_emailid || "",
+            mother_phone: student?.parents?.m_mobile || "",
+            user_id: student?.user_master?.user_id || "", // User ID set as Parent (Father Email here)
+          });
+        } else {
+          console.error("No students found in the response.");
+        }
+      } else {
+        console.log("reponse", response.data.status);
+        if (response.data && response.data.status === 403) {
+          toast.error(
+            "Bonafide Certificate Already Generated. Please go to manage to download the Bonafide Certificate."
+          );
+        } else {
+          // Show a generic error message if the error is not a 403
+          toast.error("No data found for the selected student.");
+        }
+        // toast.error("No data found for the selected student.");
+      }
+    } catch (error) {
+      console.log("error is", error);
+      // toast.error(error.message);
+      // Check if response has a 403 status and the specific error message
+      console.log("error is", error.response);
+    } finally {
+      setLoadingForSearchForSecond(false);
     }
   };
   // For FOrm
@@ -584,10 +648,13 @@ const SiblingMapping = () => {
         });
         setSelectedClass(null); // Reset class selection
         setSelectedStudent(null); // Reset student selection
+        setSelectedClassForSecond(null); // Reset class selection
+        setSelectedStudentForSecond(null); // Reset student selection
         setErrors({});
         setBackendErrors({});
         setTimeout(() => {
           setParentInformation(null);
+          setParentInformationForSecond(null);
         }, 3000);
       }
     } catch (error) {
@@ -607,392 +674,471 @@ const SiblingMapping = () => {
   return (
     <div>
       <ToastContainer />
-      <div className="     w-full md:container mt-4">
-        {/* Search Section */}
-        <div className=" w-[95%] border-3  flex justify-center flex-col md:flex-row gap-x-1  bg-white rounded-lg border border-gray-400 shadow-md mx-auto mt-10 p-6 ">
-          <div className="w-[99%] flex md:flex-row justify-between items-center">
-            <div className="w-full flex flex-col gap-y-2 md:gap-y-0 md:flex-row">
-              <div className="w-full gap-x-14 md:gap-x-6 md:justify-start my-1 md:my-4 flex md:flex-row">
-                <label
-                  className="text-md mt-1.5 mr-1 md:mr-0"
-                  htmlFor="classSelect"
-                >
-                  Class
-                </label>
-                <div className="w-full md:w-[50%]">
-                  <Select
-                    id="classSelect"
-                    value={selectedClass}
-                    onChange={handleClassSelect}
-                    options={classOptions}
-                    placeholder={
-                      loadingClasses ? "Loading classes..." : "Select"
-                    }
-                    isSearchable
-                    isClearable
-                    className="text-sm"
-                    isDisabled={loadingClasses}
-                  />
-                </div>
-              </div>
 
-              <div className="w-full gap-x-6 relative left-0 md:-left-[5%] justify-between md:w-[98%] my-1 md:my-4 flex md:flex-row">
-                <label
-                  className="md:w-[50%] text-md mt-1.5"
-                  htmlFor="studentSelect"
-                >
-                  Student Name <span className="text-red-500">*</span>
-                </label>
-                <div className="w-full md:w-[80%]">
-                  <Select
-                    id="studentSelect"
-                    value={selectedStudent}
-                    onChange={handleStudentSelect}
-                    options={studentOptions}
-                    placeholder={
-                      loadingStudents ? "Loading students..." : "Select"
-                    }
-                    isSearchable
-                    isClearable
-                    className="text-sm"
-                    isDisabled={loadingStudents}
-                  />
-                  {nameError && (
-                    <div className="h-8 relative ml-1 text-danger text-xs">
-                      {nameError}
+      <div className=" w-full md:w-[95%] mt-4 mx-auto">
+        <div className="card mx-auto lg:w-[100%] shadow-lg">
+          <div className="p-2 px-3 bg-gray-100 flex justify-between items-center">
+            <h3 className="text-gray-700 mt-1 text-[1.2em] lg:text-xl text-nowrap">
+              Sibling Mapping
+            </h3>
+            <div className="box-border flex md:gap-x-2 justify-end md:h-10"></div>
+          </div>
+          <div
+            className=" relative w-[97%]    h-1  mx-auto bg-red-700"
+            style={{
+              backgroundColor: "#C03078",
+            }}
+          ></div>
+          <div className="w-full  flex flex-col md:flex-row">
+            <div className="     w-full md:container ">
+              {/* Search Section */}
+              <div className=" w-[95%] border-1  flex justify-center flex-col md:flex-row gap-x-1  bg-white rounded-lg  border-gray-300 shadow-md  mx-auto mt-6 p-6 mb-4 ">
+                <div className="w-[99%] flex md:flex-row justify-between items-center ">
+                  <div className="w-full flex flex-col gap-y-2 md:gap-y-0 md:flex-row">
+                    <div className="w-full gap-x-14 md:gap-x-6 md:justify-start my-1 md:my-4 flex md:flex-row">
+                      <label
+                        className="text-[.9em] mt-1.5 mr-1 md:mr-0"
+                        htmlFor="classSelect"
+                      >
+                        Class
+                      </label>
+                      <div className="w-full md:w-[50%]">
+                        <Select
+                          id="classSelect"
+                          value={selectedClass}
+                          onChange={handleClassSelect}
+                          options={classOptions}
+                          placeholder={
+                            loadingClasses ? "Loading classes..." : "Select"
+                          }
+                          isSearchable
+                          isClearable
+                          className="text-[.8em]"
+                          styles={customStyles} // Apply custom styles
+                          isDisabled={loadingClasses}
+                        />
+                      </div>
                     </div>
-                  )}
+
+                    <div className=" w-full gap-x-6 relative left-0 md:-left-[5%] justify-between md:w-[98%] my-1 md:my-4 flex md:flex-row">
+                      <label
+                        className="md:w-[50%] text-[.9em] mt-1.5"
+                        htmlFor="studentSelect"
+                      >
+                        Student Name
+                      </label>
+                      <div className="w-full md:w-[80%]">
+                        <Select
+                          id="studentSelect"
+                          value={selectedStudent}
+                          onChange={handleStudentSelect}
+                          options={studentOptions}
+                          placeholder={
+                            loadingStudents ? "Loading students..." : "Select"
+                          }
+                          isSearchable
+                          isClearable
+                          className="text-[.8em]"
+                          styles={customStyles} // Apply custom styles
+                          isDisabled={loadingStudents}
+                        />
+                        {nameError && (
+                          <div className="h-8 relative ml-1 text-danger text-xs">
+                            {nameError}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <button
-                type="search"
-                onClick={handleSearch}
-                style={{ backgroundColor: "#2196F3" }}
-                className={`my-1 md:my-4 btn h-10 w-18 md:w-auto btn-primary text-white font-bold py-1 border-1 border-blue-500 px-4 rounded ${
-                  loadingForSearch ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={loadingForSearch}
-              >
-                {loadingForSearch ? (
-                  <span className="flex items-center">
-                    <svg
-                      className="animate-spin h-4 w-4 mr-2 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                      ></path>
-                    </svg>
-                    Loading...
-                  </span>
-                ) : (
-                  "Search"
-                )}
-              </button>
+              {/* Form Section - Displayed when parentInformation is fetched */}
+
+              {loadingForSearch ? (
+                <div className="flex justify-center items-center h-44">
+                  <LoaderStyle />
+                </div>
+              ) : (
+                parentInformation && (
+                  // <div className="container mx-auto p-4 ">
+                  <div className=" w-full  md:container mx-auto py-4 p-4 px-4  ">
+                    <div className="card  px-3 rounded-md ">
+                      {/* <div className="card p-4 rounded-md "> */}
+                      <div className=" card-header mb-4 flex justify-between items-center ">
+                        <h5 className="text-gray-700 mt-1 text-md lg:text-lg">
+                          Student Information
+                        </h5>
+                      </div>
+                      <div
+                        className=" relative w-full   -top-6 h-1  mx-auto bg-red-700"
+                        style={{
+                          backgroundColor: "#C03078",
+                        }}
+                      ></div>
+
+                      <form
+                        onSubmit={handleSubmit}
+                        className="flex flex-col justify-center items-center overflow-x-hidden shadow-md p-2 bg-gray-50 mb-4"
+                      >
+                        <div className="flex  flex-col w-full   md:mx-10 pt-6 pb-6  px-6">
+                          {/* Student Name */}
+                          <div className="flex   flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="stud_name"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Student Name :
+                            </label>
+                            <p className="text-gray-700  relative top-2 md:w-[60%] ">
+                              {formData.stud_name || ""}
+                            </p>
+                          </div>
+
+                          {/* Father's Name */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="father_name"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Father's Name :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formData.father_name || ""}
+                            </p>
+                          </div>
+
+                          {/* Mother's Name */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="mother_name"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Mother's Name :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formData.mother_name || ""}
+                            </p>
+                          </div>
+
+                          {/* Father's Email */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="father_email"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Father's Email :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formData.father_email || ""}
+                            </p>
+                          </div>
+
+                          {/* Father's Phone */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="father_phone"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Father's Phone :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formData.father_phone || ""}
+                            </p>
+                          </div>
+
+                          {/* Mother's Email */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="mother_email"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Mother's Email :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formData.mother_email || ""}
+                            </p>
+                          </div>
+
+                          {/* Mother's Phone */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="mother_phone"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Mother's Phone :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formData.mother_phone || ""}
+                            </p>
+                          </div>
+
+                          {/* User ID */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="user_id"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              User ID :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formData.user_id || ""}
+                            </p>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )
+              )}
             </div>
+            <div className="     w-full md:container ">
+              <div className=" w-[95%] border-1  flex justify-center flex-col md:flex-row gap-x-1  bg-white rounded-lg  border-gray-300 shadow-md  mx-auto mt-6 p-6 mb-4 ">
+                {" "}
+                <div className="w-[99%] flex md:flex-row justify-between items-center">
+                  <div className="w-full flex flex-col gap-y-2 md:gap-y-0 md:flex-row">
+                    <div className="w-full gap-x-14 md:gap-x-6 md:justify-start my-1 md:my-4 flex md:flex-row">
+                      <label
+                        className="text-[.9em] mt-1.5 mr-1 md:mr-0"
+                        htmlFor="classSelect"
+                      >
+                        Class
+                      </label>
+                      <div className="w-full md:w-[50%]">
+                        <Select
+                          id="classSelect"
+                          value={selectedClassForSecond}
+                          onChange={handleClassSelectForSecond}
+                          options={classOptionsForSecond}
+                          placeholder={
+                            loadingClassesForSecond
+                              ? "Loading classes..."
+                              : "Select"
+                          }
+                          isSearchable
+                          isClearable
+                          className="text-[.8em]"
+                          styles={customStyles} // Apply custom styles
+                          isDisabled={loadingClassesForSecond}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="w-full gap-x-6 relative left-0 md:-left-[5%] justify-between md:w-[98%] my-1 md:my-4 flex md:flex-row">
+                      <label
+                        className="md:w-[50%] text-[.9em] mt-1.5"
+                        htmlFor="studentSelect"
+                      >
+                        Student Name
+                      </label>
+                      <div className="w-full md:w-[80%]">
+                        <Select
+                          id="studentSelect"
+                          value={selectedStudentForSecond}
+                          onChange={handleStudentSelectForSecond}
+                          options={studentOptionsForSecond}
+                          placeholder={
+                            loadingStudentsForSecond
+                              ? "Loading students..."
+                              : "Select"
+                          }
+                          isSearchable
+                          isClearable
+                          className="text-[.8em]"
+                          styles={customStyles} // Apply custom styles
+                          isDisabled={loadingStudentsForSecond}
+                        />
+                        {nameErrorForSecond && (
+                          <div className="h-8 relative ml-1 text-danger text-xs">
+                            {nameErrorForSecond}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Section - Displayed when parentInformation is fetched */}
+
+              {loadingForSearchForSecond ? (
+                <div className="flex justify-center items-center h-44">
+                  <LoaderStyle />
+                </div>
+              ) : (
+                parentInformationForSecond && (
+                  // <div className="container mx-auto p-4 ">
+                  <div className=" w-full  md:container mx-auto py-4 p-4 px-4  ">
+                    <div className="card  px-3 rounded-md ">
+                      {/* <div className="card p-4 rounded-md "> */}
+                      <div className=" card-header mb-4 flex justify-between items-center ">
+                        <h5 className="text-gray-700 mt-1 text-md lg:text-lg">
+                          Student Information
+                        </h5>
+                      </div>
+                      <div
+                        className=" relative w-full   -top-6 h-1  mx-auto bg-red-700"
+                        style={{
+                          backgroundColor: "#C03078",
+                        }}
+                      ></div>
+
+                      <form
+                        onSubmit={handleSubmit}
+                        className="flex flex-col justify-center items-center overflow-x-hidden shadow-md p-2 bg-gray-50 mb-4"
+                      >
+                        <div className="flex  flex-col w-full   md:mx-10 pt-6 pb-6  px-6">
+                          {/* Student Name */}
+                          <div className="flex   flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="stud_name"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Student Name :
+                            </label>
+                            <p className="text-gray-700  relative top-2 md:w-[60%] ">
+                              {formDataForSecond.stud_name || ""}
+                            </p>
+                          </div>
+
+                          {/* Father's Name */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="father_name"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Father's Name :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formDataForSecond.father_name || ""}
+                            </p>
+                          </div>
+
+                          {/* Mother's Name */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="mother_name"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Mother's Name :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formDataForSecond.mother_name || ""}
+                            </p>
+                          </div>
+
+                          {/* Father's Email */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="father_email"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Father's Email :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formDataForSecond.father_email || ""}
+                            </p>
+                          </div>
+
+                          {/* Father's Phone */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="father_phone"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Father's Phone :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formDataForSecond.father_phone || ""}
+                            </p>
+                          </div>
+
+                          {/* Mother's Email */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="mother_email"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Mother's Email :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formDataForSecond.mother_email || ""}
+                            </p>
+                          </div>
+
+                          {/* Mother's Phone */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="mother_phone"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              Mother's Phone :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formDataForSecond.mother_phone || ""}
+                            </p>
+                          </div>
+
+                          {/* User ID */}
+                          <div className="flex flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
+                            <label
+                              htmlFor="user_id"
+                              className="block font-semibold text-[1em] md:w-1/3 text-gray-700"
+                            >
+                              User ID :
+                            </label>
+                            <p className="text-gray-700 relative top-2  md:w-[60%] ">
+                              {formDataForSecond.user_id || ""}
+                            </p>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+          <div className="w-[98%] mx-auto mb-2  text-right">
+            <button
+              type="submit"
+              onClick={handleSubmit}
+              style={{ backgroundColor: "#2196F3" }}
+              className={`text-white font-bold py-1 border-1 border-blue-500 px-4 rounded ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="flex items-center">
+                  <svg
+                    className="animate-spin h-4 w-4 mr-2 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    ></path>
+                  </svg>
+                  Loading...
+                </span>
+              ) : (
+                "Save"
+              )}
+            </button>
           </div>
         </div>
-
-        {/* Form Section - Displayed when parentInformation is fetched */}
-        {parentInformation && (
-          // <div className="container mx-auto p-4 ">
-          <div className=" w-full  md:container mx-auto py-4 p-4 px-4  ">
-            <div className="card  px-3 rounded-md ">
-              {/* <div className="card p-4 rounded-md "> */}
-              <div className=" card-header mb-4 flex justify-between items-center ">
-                <h5 className="text-gray-700 mt-1 text-md lg:text-lg">
-                  Student Information
-                </h5>
-              </div>
-              <div
-                className=" relative w-full   -top-6 h-1  mx-auto bg-red-700"
-                style={{
-                  backgroundColor: "#C03078",
-                }}
-              ></div>
-              <p className=" text-[.9em] md:absolute md:right-5  md:top-[14%]   text-gray-500 ">
-                <span className="text-red-500 ">*</span>indicates mandatory
-                information
-              </p>
-              <form
-                onSubmit={handleSubmit}
-                className="  border-1 overflow-x-hidden shadow-md p-2 bg-gray-100 mb-4"
-              >
-                <div className=" flex flex-col gap-4 md:grid  md:grid-cols-3 md:gap-x-14 md:mx-10 gap-y-1 pt-4 pb-4">
-                  <div className=" ">
-                    <label
-                      htmlFor="sr_no"
-                      className="block font-bold  text-xs mb-2"
-                    >
-                      Sr No. <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      maxLength={100}
-                      id="sr_no"
-                      name="sr_no"
-                      readOnly
-                      value={formData.sr_no}
-                      onChange={handleChange}
-                      className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
-                    />
-                    {backendErrors.sr_no && (
-                      <span className="text-red-500 text-xs ml-2">
-                        {backendErrors.sr_no}
-                      </span>
-                    )}
-                    {errors.sr_no && (
-                      <div className="text-red-500 text-xs ml-2">
-                        {errors.sr_no}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="date_of_joining"
-                      className="block font-bold  text-xs mb-2"
-                    >
-                      Issue Date <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      id="date_of_joining"
-                      // max={today}
-                      name="date"
-                      value={formData.date}
-                      onChange={handleChange}
-                      className="input-field block w-full border border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
-                    />
-                    {errors.date && (
-                      <span className="text-red-500 text-xs ml-2">
-                        {errors.date}
-                      </span>
-                    )}
-                  </div>
-                  <div className=" ">
-                    <label
-                      htmlFor="staffName"
-                      className="block font-bold  text-xs mb-2"
-                    >
-                      Student Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      maxLength={200}
-                      id="staffName"
-                      name="stud_name"
-                      value={formData.stud_name}
-                      onChange={handleChange}
-                      readOnly
-                      className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
-                    />
-                    {errors.stud_name && (
-                      <div className="text-red-500 text-xs ml-2">
-                        {errors.stud_name}
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="father_name"
-                      className="block font-bold  text-xs mb-2"
-                    >
-                      Father's Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      maxLength={50}
-                      id="father_name"
-                      name="father_name"
-                      value={formData.father_name}
-                      onChange={handleChange}
-                      readOnly
-                      className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
-                    />
-                    {errors.father_name && (
-                      <div className="text-red-500 text-xs ml-2">
-                        {errors.father_name}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="dob"
-                      className="block font-bold text-xs mb-2"
-                    >
-                      Date of Birth <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      id="dob"
-                      min={MIN_DATE} // Set minimum date
-                      max={MAX_DATE} // Set maximum date to today
-                      name="dob"
-                      readOnly
-                      value={formData.dob}
-                      onChange={handleChange}
-                      className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
-                    />
-                    {errors.dob && (
-                      <div className="text-red-500 text-xs ml-2">
-                        {errors.dob}
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="dob_words"
-                      className="block font-bold  text-xs mb-2"
-                    >
-                      Birth date in words{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      type="text"
-                      maxLength={100}
-                      id="dob_words"
-                      name="dob_words"
-                      readOnly
-                      value={formData.dob_words}
-                      onChange={handleChange}
-                      className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
-                    />
-                    {errors.dob_words && (
-                      <div className="text-red-500 text-xs ml-2">
-                        {errors.dob_words}
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="class_division"
-                      className="block font-bold  text-xs mb-2"
-                    >
-                      Class/Divsion <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      // maxLength={12}
-                      id="class_division"
-                      readOnly
-                      name="class_division"
-                      value={formData.class_division}
-                      onChange={handleChange} // Using the handleChange function to update formData and validate
-                      className="input-field block w-full outline-none border border-gray-900 rounded-md py-1 px-3 bg-gray-200 shadow-inner"
-                    />
-                    {errors.class_division && (
-                      <span className="text-red-500 text-xs ml-2">
-                        {errors.class_division}
-                      </span>
-                    )}
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="employeeId"
-                      className="block font-bold  text-xs mb-2"
-                    >
-                      Purpose <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      maxLength={50}
-                      id="employeeId"
-                      name="purpose"
-                      value={formData.purpose}
-                      onChange={handleChange}
-                      className="input-field block w-full border border-gray-900 rounded-md py-1 px-3 bg-white shadow-inner"
-                    />
-                    {errors.purpose && (
-                      <span className="text-red-500 text-xs ml-2">
-                        {errors.purpose}
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="Nationality"
-                      className="block font-bold  text-xs mb-2"
-                    >
-                      Nationality <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      maxLength={20}
-                      id="Nationality"
-                      name="nationality"
-                      value={formData.nationality}
-                      onChange={handleChange}
-                      readOnly
-                      className="block  border w-full border-gray-900 rounded-md py-1 px-3  bg-gray-200 outline-none shadow-inner"
-                    />
-                    {errors.nationality && (
-                      <span className="text-red-500 text-xs ml-2">
-                        {errors.nationality}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="col-span-3 text-right">
-                    <button
-                      type="submit"
-                      onClick={handleSubmit}
-                      style={{ backgroundColor: "#2196F3" }}
-                      className={`text-white font-bold py-1 border-1 border-blue-500 px-4 rounded ${
-                        loading ? "opacity-50 cursor-not-allowed" : ""
-                      }`}
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <span className="flex items-center">
-                          <svg
-                            className="animate-spin h-4 w-4 mr-2 text-white"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                            ></path>
-                          </svg>
-                          Loading...
-                        </span>
-                      ) : (
-                        "Generate PDF"
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
