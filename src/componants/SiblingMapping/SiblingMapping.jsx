@@ -24,7 +24,7 @@ const SiblingMapping = () => {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [selectedStudentIdForSecond, setSelectedStudentIdForSecond] =
     useState(null);
-
+  const [radioButtonError, setRadioButtonError] = useState("");
   const [nameError, setNameError] = useState("");
   const [nameErrorForClass, setNameErrorForClass] = useState("");
   const [nameErrorForSecond, setNameErrorForSecond] = useState("");
@@ -55,7 +55,15 @@ const SiblingMapping = () => {
       zIndex: 50, // To ensure proper stacking
     }),
   };
-
+  const [selectedParent, setSelectedParent] = useState("");
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    if (!selectedParent) {
+      alert("Please select a form before submitting!");
+      return;
+    }
+    console.log("Form submitted for:", selectedParent);
+  };
   const [formData, setFormData] = useState({
     stud_name: "", // Combined name with class and division
     father_name: "",
@@ -279,6 +287,8 @@ const SiblingMapping = () => {
     // Reset error messages
     setNameError("");
     setNameErrorForClass("");
+    setRadioButtonError("");
+    setSelectedParent("");
     setErrors({}); // Clears all field-specific errors
 
     if (!selectedStudent1) {
@@ -286,23 +296,12 @@ const SiblingMapping = () => {
       toast.error("Please select Student Name.!");
       return;
     }
-    // Validate if class and student are selected
-    // let hasError = false;
-    // if (!selectedClass) {
-    //   setNameErrorForClass("Please select a class.");
-    //   hasError = true;
-    // }
-    // if (!selectedStudent) {
-    //   setNameError("Please select a student.");
-    //   hasError = true;
-    // }
-
-    // If there are validation errors, exit the function
-    // if (hasError) return;
     // Reset form data and selected values after successful submission
     setParentInformation(null);
     setFormData({
       stud_name: "", // Combined name with class and division
+      parent_id: "",
+
       father_name: "",
       mother_name: "", // Added mother's name
       father_email: "",
@@ -340,6 +339,8 @@ const SiblingMapping = () => {
             mother_name: student?.parents?.mother_name || "", // Mother's name
             father_email: student?.parents?.f_email || "",
             father_phone: student?.parents?.f_mobile || "",
+            parent_id: student?.parents?.parent_id || "",
+
             mother_email: student?.parents?.m_emailid || "",
             mother_phone: student?.parents?.m_mobile || "",
             user_id: student?.user_master?.user_id || "", // User ID set as Parent (Father Email here)
@@ -347,25 +348,19 @@ const SiblingMapping = () => {
         } else {
           console.error("No students found in the response.");
         }
-
-        console.log("setFormData", formData);
       } else {
         console.log("reponse", response.data.status);
-        if (response.data && response.data.status === 403) {
-          toast.error(
-            "Bonafide Certificate Already Generated. Please go to manage to download the Bonafide Certificate."
-          );
-        } else {
-          // Show a generic error message if the error is not a 403
-          toast.error("No data found for the selected student.");
-        }
-        // toast.error("No data found for the selected student.");
       }
     } catch (error) {
-      console.log("error is", error);
-      // toast.error(error.message);
-      // Check if response has a 403 status and the specific error message
-      console.log("error is", error.response);
+      console.log("error", error.response.data.message);
+      if (
+        error.response.data.message ==
+        "No student found matching the search criteria."
+      ) {
+        toast.error("student information not found!");
+      } else {
+        toast.error(error.response.data.message || "student not found!");
+      }
     } finally {
       setLoadingForSearch(false);
     }
@@ -374,6 +369,8 @@ const SiblingMapping = () => {
     // Reset error messages
     setNameErrorForSecond("");
     setNameErrorForClassForSecond("");
+    setRadioButtonError("");
+    setSelectedParent("");
     setErrors({}); // Clears all field-specific errors
 
     if (!selectedStudent1) {
@@ -384,6 +381,7 @@ const SiblingMapping = () => {
     setParentInformationForSecond(null); // Assuming response data contains form data
 
     setFormDataForSecond({
+      parent_id: "",
       stud_name: "", // Combined name with class and division
       father_name: "",
       mother_name: "", // Added mother's name
@@ -421,6 +419,8 @@ const SiblingMapping = () => {
             father_name: student?.parents?.father_name || "",
             mother_name: student?.parents?.mother_name || "", // Mother's name
             father_email: student?.parents?.f_email || "",
+            parent_id: student?.parents?.parent_id || "",
+
             father_phone: student?.parents?.f_mobile || "",
             mother_email: student?.parents?.m_emailid || "",
             mother_phone: student?.parents?.m_mobile || "",
@@ -431,139 +431,20 @@ const SiblingMapping = () => {
         }
       } else {
         console.log("reponse", response.data.status);
-        if (response.data && response.data.status === 403) {
-          toast.error(
-            "Bonafide Certificate Already Generated. Please go to manage to download the Bonafide Certificate."
-          );
-        } else {
-          // Show a generic error message if the error is not a 403
-          toast.error("No data found for the selected student.");
-        }
-        // toast.error("No data found for the selected student.");
       }
     } catch (error) {
-      console.log("error is", error);
-      // toast.error(error.message);
-      // Check if response has a 403 status and the specific error message
-      console.log("error is", error.response);
+      console.log("error", error.response.data.message);
+      if (
+        error.response.data.message ==
+        "No student found matching the search criteria."
+      ) {
+        toast.error("student information not found!");
+      } else {
+        toast.error(error.response.data.message || "student not found!");
+      }
     } finally {
       setLoadingForSearchForSecond(false);
     }
-  };
-  // For FOrm
-  const validate = () => {
-    const newErrors = {};
-
-    // Validate name
-    if (!formData.stud_name) newErrors.stud_name = "This field is required";
-    else if (!/^[^\d].*/.test(formData.stud_name))
-      newErrors.stud_name = "Name should not start with a number";
-
-    // Validate name
-    if (!formData.father_name) newErrors.father_name = "This field is required";
-    else if (!/^[^\d].*/.test(formData.father_name))
-      newErrors.father_name = "Name should not start with a number";
-    // Validate academic qualifications (now a single text input)
-    if (!formData.class_division)
-      newErrors.class_division = "This field is required";
-    if (!formData.sr_no) newErrors.sr_no = "This field is required";
-
-    // Validate dob
-    if (!formData.dob) newErrors.dob = "This field is required";
-    if (!formData.father_name) newErrors.father_name = "This field is required";
-
-    // Validate date of joining
-    if (!formData.date) newErrors.date = "This field is required";
-
-    // Validate Employee Id
-    if (!formData.purpose) newErrors.purpose = "This field is required";
-    // Validate address
-    if (!formData.dob_words) newErrors.dob_words = "This field is required";
-    if (!formData.nationality) newErrors.nationality = "This field is required";
-
-    setErrors(newErrors);
-    return newErrors;
-  };
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    let newValue = value;
-
-    if (name === "dob") {
-      setFormData((prev) => ({
-        ...prev,
-        dob: value,
-        dob_words: convertDateToWords(value),
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-    // Update formData for the field
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: newValue,
-    }));
-
-    // Field-specific validation
-    let fieldErrors = {};
-
-    // Name validation
-    if (name === "stud_name") {
-      if (!newValue) fieldErrors.stud_name = "Name is required";
-      else if (/^\d/.test(newValue))
-        fieldErrors.stud_name = "Name should not start with a number";
-    }
-    if (name === "father_name") {
-      if (!newValue) fieldErrors.father_name = "Name is required";
-      else if (/^\d/.test(newValue))
-        fieldErrors.father_name = "Name should not start with a number";
-    }
-
-    // Academic Qualification validation
-    if (name === "class_division") {
-      if (!newValue)
-        fieldErrors.class_division = "Class and Division is required";
-    }
-
-    // Date of Birth validation
-    if (name === "dob") {
-      if (!newValue) fieldErrors.dob = "Date of Birth is required";
-    }
-    // serial number
-
-    if (name === "sr_no") {
-      if (!newValue) fieldErrors.sr_no = "Serial number is required";
-    }
-    if (name === "father_name") {
-      if (!newValue) fieldErrors.father_name = "Father Name is required";
-    }
-
-    // Date of Joining validation
-    if (name === "date") {
-      if (!newValue) fieldErrors.date = " Date is required";
-    }
-
-    // Employee ID validation
-    if (name === "purpose") {
-      if (!newValue) fieldErrors.purpose = "Purpose  is required";
-    }
-
-    // Address validation
-    if (name === "dob_words") {
-      if (!newValue)
-        fieldErrors.dob_words = "  Birth date in words is required";
-    }
-    if (name === "nationality") {
-      if (!newValue) fieldErrors.nationality = "Nationality is required";
-    }
-
-    // Update the errors state with the new field errors
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: fieldErrors[name],
-    }));
   };
 
   const formatDateString = (dateString) => {
@@ -571,105 +452,218 @@ const SiblingMapping = () => {
     const [year, month, day] = dateString.split("-");
     return `${year}-${month}-${day}`;
   };
-
+  const handleChange = (value) => {
+    setSelectedParent(value);
+    // Clear the error message when a selection is made
+    setRadioButtonError("");
+  };
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const validationErrors = validate();
-    const errorsToCheck = validationErrors || {};
 
-    if (Object.keys(errorsToCheck).length > 0) {
-      setErrors(errorsToCheck);
+    // Validation checks
+    if (selectedStudentId === selectedStudentIdForSecond) {
+      toast.error(
+        "🚫 Both students cannot be the same. Please select different students!",
+        {
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        }
+      );
       return;
     }
 
-    const formattedFormData = {
-      ...formData,
-      dob: formatDateString(formData.dob),
-      date: formatDateString(formData.date),
+    let hasError = false;
+
+    if (!selectedStudentId) {
+      setNameError("Please select a student.");
+      hasError = true;
+    }
+    if (!selectedStudentIdForSecond) {
+      setNameErrorForSecond("Please select a student.");
+      hasError = true;
+    }
+    if (!selectedParent) {
+      setRadioButtonError(
+        "Please select any one of 'Set this as parent' option."
+      );
+      hasError = true;
+    }
+    if (hasError) {
+      return;
+    }
+
+    // Prepare the data format as per requirement
+    const requestData = {
+      operation: "create",
+      set_as_parent: selectedParent, // Example: "2" if parent 2 is selected
+      student_id1: selectedStudentId,
+      student_id2: selectedStudentIdForSecond,
+      parent_id1: formData?.parent_id || " ", // Ensure these are set properly
+      parent_id2: formDataForSecond?.parent_id || " ",
     };
 
+    console.log("Request Data:", requestData);
+
     try {
-      setLoading(true); // Start loading
+      setLoading(true);
 
       const token = localStorage.getItem("authToken");
       if (!token) {
         throw new Error("No authentication token is found");
       }
 
-      // Make an API call with the "blob" response type to download the PDF
       const response = await axios.post(
-        `${API_URL}/api/save_pdfbonafide`,
-        formattedFormData,
+        `${API_URL}/api/save_siblingmapping`,
+        requestData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          responseType: "blob", // Set response type to blob to handle PDF data
         }
       );
 
       if (response.status === 200) {
-        toast.success("Bonafide Certificate Created successfully!");
+        toast.success("Student Mapping successfully!");
 
-        // Extract filename from Content-Disposition header
-        const contentDisposition = response.headers["content-disposition"];
-        let filename = "DownloadedFile.pdf"; // Fallback name
-
-        if (contentDisposition) {
-          const match = contentDisposition.match(/filename="(.+?)"/);
-          if (match && match[1]) {
-            filename = match[1];
-          }
-        }
-
-        // Create a URL for the PDF blob and initiate download
-        const pdfBlob = new Blob([response.data], { type: "application/pdf" });
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        const link = document.createElement("a");
-        link.href = pdfUrl;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // Reset form data and selected values after successful submission
-        setFormData({
-          sr_no: "",
-          stud_name: "",
-          father_name: "",
-          dob: "",
-          dob_words: "",
-          date: "",
-          class_division: "",
-          purpose: "",
-          nationality: "",
-
-          // Add other fields here if needed
-        });
-        setSelectedClass(null); // Reset class selection
-        setSelectedStudent(null); // Reset student selection
-        setSelectedClassForSecond(null); // Reset class selection
-        setSelectedStudentForSecond(null); // Reset student selection
-        setErrors({});
-        setBackendErrors({});
-        setTimeout(() => {
-          setParentInformation(null);
-          setParentInformationForSecond(null);
-        }, 3000);
+        // Reset form data and selections
+        setSelectedStudent(null);
+        setSelectedStudentForSecond(null);
+        setSelectedClass(null);
+        setSelectedClassForSecond(null);
+        setSelectedParent("");
+        setParentInformation(null);
+        setParentInformationForSecond(null);
+        setNameError("");
+        setNameErrorForSecond("");
+        setRadioButtonError("");
       }
     } catch (error) {
-      console.error("Error:", error.response.data, error.response.sr_no);
-      toast.error("An error occurred while Creating the Bonafide Certificate.");
-
-      if (error.response && error.response) {
-        setBackendErrors(error.response || {});
-      } else {
-        toast.error(error.response.sr_no);
-      }
+      toast.error(error.response?.data?.error || "An error occurred!");
+      console.error("Error:", error.response || error.message);
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
+  const reset = () => {
+    setSelectedStudent(null);
+    setSelectedStudentForSecond(null);
+    setSelectedClass(null);
+    setSelectedClassForSecond(null);
+    setSelectedParent("");
+    setParentInformation(null);
+    setParentInformationForSecond(null);
+    setNameError("");
+    setNameErrorForSecond("");
+    setRadioButtonError("");
+  };
+  const handleNavigation = () => {
+    navigate("/dashboard");
+  };
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   // Validate if class and student are selected
+  //   if (selectedStudentId === selectedStudentIdForSecond) {
+  //     toast.error(
+  //       "🚫 Both students cannot be the same. Please select different students!",
+  //       {
+  //         // position: "rigt-center",
+  //         autoClose: 5000,
+  //         hideProgressBar: false,
+  //         closeOnClick: true,
+  //         pauseOnHover: true,
+  //         draggable: true,
+  //         // theme: "colored",
+  //       }
+  //     );
+  //     return;
+  //   }
+  //   let hasError = false;
+  //   if (!selectedStudentIdForSecond) {
+  //     setNameErrorForSecond("Please select a student.");
+  //     hasError = true;
+  //   }
+  //   if (!selectedStudentId) {
+  //     setNameError("Please select a student.");
+  //     hasError = true;
+  //   }
+  //   if (!selectedParent) {
+  //     setRadioButtonError(
+  //       "Please select any one of 'Set this as parent' option."
+  //     );
+  //     hasError = true;
+  //   }
+  //   if (hasError) {
+  //     return;
+  //   }
+  //   console.log("selectedParent", selectedParent);
+
+  //   const formattedFormData = {
+  //     ...formData,
+  //     dob: formatDateString(formData.dob),
+  //     date: formatDateString(formData.date),
+  //   };
+
+  //   try {
+  //     setLoading(true); // Start loading
+
+  //     const token = localStorage.getItem("authToken");
+  //     if (!token) {
+  //       throw new Error("No authentication token is found");
+  //     }
+
+  //     // Make an API call with the "blob" response type to download the PDF
+  //     const response = await axios.post(
+  //       `${API_URL}/api/save_siblingmapping`,
+  //       formattedFormData,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (response.status === 200) {
+  //       toast.success("Student Mapping successfully!");
+  //       // Reset form data and selected values after successful submission
+  //       setFormData({
+  //         sr_no: "",
+  //         stud_name: "",
+  //         father_name: "",
+  //         dob: "",
+  //         dob_words: "",
+  //         date: "",
+  //         class_division: "",
+  //         purpose: "",
+  //         nationality: "",
+
+  //         // Add other fields here if needed
+  //       });
+  //       setSelectedClass(null); // Reset class selection
+  //       setSelectedStudent(null); // Reset student selection
+  //       setSelectedClassForSecond(null); // Reset class selection
+  //       setSelectedStudentForSecond(null); // Reset student selection
+  //       setNameErrorForSecond("");
+  //       setNameErrorForClassForSecond("");
+  //       setRadioButtonError("");
+  //       setSelectedParent("");
+  //       setErrors({});
+  //       setBackendErrors({});
+  //       setTimeout(() => {
+  //         setParentInformation(null);
+  //         setParentInformationForSecond(null);
+  //       }, 3000);
+  //     }
+  //   } catch (error) {
+  //     console.log("error", error.response.data.message);
+
+  //     toast.error(error.response.data.message || "student not found!");
+  //   } finally {
+  //     setLoading(false); // Stop loading
+  //   }
+  // };
 
   return (
     <div>
@@ -677,10 +671,17 @@ const SiblingMapping = () => {
 
       <div className=" w-full md:w-[95%] mt-4 mx-auto">
         <div className="card mx-auto lg:w-[100%] shadow-lg">
-          <div className="p-2 px-3 bg-gray-100 flex justify-between items-center">
-            <h3 className="text-gray-700 mt-1 text-[1.2em] lg:text-xl text-nowrap">
+          <div className=" w-full  p-2 px-3 bg-gray-100 flex justify-between items-center ">
+            <h3 className=" w-full text-gray-700 mt-1 text-[1.2em] lg:text-xl text-nowrap">
               Sibling Mapping
             </h3>
+            {/* <div className="flex justify-between p-3"> */}
+            <RxCross1
+              className=" relative top-0.5  text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
+              type="button"
+              onClick={handleNavigation}
+            />
+            {/* </div> */}
             <div className="box-border flex md:gap-x-2 justify-end md:h-10"></div>
           </div>
           <div
@@ -779,9 +780,9 @@ const SiblingMapping = () => {
 
                       <form
                         onSubmit={handleSubmit}
-                        className="flex flex-col justify-center items-center overflow-x-hidden shadow-md p-2 bg-gray-50 mb-4"
+                        className="flex flex-col justify-center items-center overflow-x-hidden shadow-md p-2 pt-0 bg-gray-50 mb-4 "
                       >
-                        <div className="flex  flex-col w-full   md:mx-10 pt-6 pb-6  px-6">
+                        <div className="flex  flex-col w-full   md:mx-10  pb-6  px-6">
                           {/* Student Name */}
                           <div className="flex   flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
                             <label
@@ -885,6 +886,28 @@ const SiblingMapping = () => {
                               {formData.user_id || ""}
                             </p>
                           </div>
+
+                          {/* Radio Button */}
+                          <div className="flex flex-row items-center gap-x-4 mt-4">
+                            <input
+                              type="radio"
+                              id="parent1"
+                              name="setAsParent"
+                              value="form1"
+                              className="w-4 h-4"
+                              checked={selectedParent === "1"} // Controlled component
+                              onChange={() => handleChange("1")}
+                              required
+                            />
+                            <label htmlFor="parent1" className="text-gray-700">
+                              Set this as parent
+                            </label>{" "}
+                            {radioButtonError && (
+                              <div className="  ml-1 text-danger text-xs">
+                                {radioButtonError}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </form>
                     </div>
@@ -985,9 +1008,9 @@ const SiblingMapping = () => {
 
                       <form
                         onSubmit={handleSubmit}
-                        className="flex flex-col justify-center items-center overflow-x-hidden shadow-md p-2 bg-gray-50 mb-4"
+                        className="flex flex-col justify-center items-center overflow-x-hidden shadow-md p-2 pt-0 bg-gray-50 mb-4"
                       >
-                        <div className="flex  flex-col w-full   md:mx-10 pt-6 pb-6  px-6">
+                        <div className="flex  flex-col w-full   md:mx-10  pb-6  px-6">
                           {/* Student Name */}
                           <div className="flex   flex-col md:flex-row md:items-center gap-y-2 gap-x-8">
                             <label
@@ -1091,6 +1114,27 @@ const SiblingMapping = () => {
                               {formDataForSecond.user_id || ""}
                             </p>
                           </div>
+                          {/* Radio Button */}
+                          <div className="flex flex-row items-center gap-x-4 mt-4">
+                            <input
+                              type="radio"
+                              id="parent2"
+                              name="setAsParent"
+                              value="form2"
+                              className="w-4 h-4"
+                              checked={selectedParent === "2"} // Controlled component
+                              onChange={() => handleChange("2")}
+                              required
+                            />
+                            <label htmlFor="parent2" className="text-gray-700">
+                              Set this as parent
+                            </label>
+                            {radioButtonError && (
+                              <div className=" ml-1 text-danger text-xs">
+                                {radioButtonError}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </form>
                     </div>
@@ -1100,6 +1144,15 @@ const SiblingMapping = () => {
             </div>
           </div>
           <div className="w-[98%] mx-auto mb-2  text-right">
+            <button
+              type="reset"
+              onClick={reset}
+              className={` bg-red-500 mr-2 text-white font-bold py-1 border-1 border-red-500 px-4 rounded ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              Reset
+            </button>
             <button
               type="submit"
               onClick={handleSubmit}
