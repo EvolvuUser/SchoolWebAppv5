@@ -176,6 +176,8 @@ import LeaveAllocationtoAllStaff from "../componants/LeaveApplications/LeaveAllo
 import SiblingMapping from "../componants/SiblingMapping/SiblingMapping.jsx";
 import SubjectAllotmentHSC from "../componants/MastersModule/SubjectAllotmentForHSC/SubjectAllotmentHSC.jsx";
 import LeaveType from "../componants/LeaveType/LeaveType.jsx";
+import CategoryReligion from "../componants/CategoryReligion/CategoryReligion.jsx";
+import AllotGRNumbers from "../componants/AllotGRNumber/AllotGRNumbers.jsx";
 // import Menus from "../c";
 function Index() {
   return (
@@ -497,6 +499,16 @@ function Index() {
         <Route
           path="/allotClassTeacher"
           element={<PrivateRoute element={<AllotClassTeacher />} />}
+        />
+        {/* Allot GR Number Module */}
+        <Route
+          path="/allotGRNumber"
+          element={<PrivateRoute element={<AllotGRNumbers />} />}
+        />
+        {/*Update CategoryReligion Module */}
+        <Route
+          path="/categoryReligion"
+          element={<PrivateRoute element={<CategoryReligion />} />}
         />
         {/* ExamMdule */}
         <Route path="/exams" element={<PrivateRoute element={<Exam />} />} />
