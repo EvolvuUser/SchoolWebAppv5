@@ -10,11 +10,9 @@ import { FiPrinter } from "react-icons/fi";
 import { FaFileExcel } from "react-icons/fa";
 import * as XLSX from "xlsx";
 
-const ConsolidatedLeave = () => {
+const CatWiseStudRepo = () => {
   const API_URL = import.meta.env.VITE_API_URL;
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [toDate, setToDate] = useState(null);
-  const [fromDate, setFromDate] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [studentNameWithClassId, setStudentNameWithClassId] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState(null);
@@ -42,7 +40,7 @@ const ConsolidatedLeave = () => {
       setLoadingExams(true);
       const token = localStorage.getItem("authToken");
 
-      const response = await axios.get(`${API_URL}/api/staff_list`, {
+      const response = await axios.get(`${API_URL}/api/classes`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log("Class", response);
@@ -54,25 +52,17 @@ const ConsolidatedLeave = () => {
       setLoadingExams(false);
     }
   };
-  const statusMap = {
-    P: "Pending",
-    A: "Approved",
-    R: "Rejected",
-    H: "Hold",
-    S: "Scheduled",
-    V: "Verified",
-  };
+
   const handleStudentSelect = (selectedOption) => {
     setStudentError(""); // Reset error if student is select.
     setSelectedStudent(selectedOption);
     setSelectedStudentId(selectedOption?.value);
   };
-
   const studentOptions = useMemo(
     () =>
       studentNameWithClassId.map((cls) => ({
-        value: cls?.teacher_id,
-        label: `${cls.name}`,
+        value: cls?.class_id,
+        label: `${cls?.name} `,
       })),
     [studentNameWithClassId]
   );
@@ -82,7 +72,7 @@ const ConsolidatedLeave = () => {
   const handleSearch = async () => {
     setLoadingForSearch(false);
     // if (!selectedStudentId) {
-    //   setStudentError("Please select Staff Name.");
+    //   setStudentError("Please select Class.");
     //   setLoadingForSearch(false);
     //   return;
     // }
@@ -92,11 +82,10 @@ const ConsolidatedLeave = () => {
       setTimetable([]);
       const token = localStorage.getItem("authToken");
       const params = {};
-      if (selectedStudentId) params.staff_id = selectedStudentId;
-      if (fromDate) params.from_date = fromDate;
-      if (toDate) params.to_date = toDate;
+      if (selectedStudentId) params.class_id = selectedStudentId;
+
       const response = await axios.get(
-        `${API_URL}/api/get_consolidatedleavereport`,
+        `${API_URL}/api/get_categorywisestudentreport`,
         {
           headers: { Authorization: `Bearer ${token}` },
           params,
@@ -104,16 +93,16 @@ const ConsolidatedLeave = () => {
       );
 
       if (!response?.data?.data || response?.data?.data?.length === 0) {
-        toast.error("Consolidated Leave Report data not found.");
+        toast.error("Categorywise Student Report data not found.");
         setTimetable([]);
       } else {
         setTimetable(response?.data?.data);
         setPageCount(Math.ceil(response?.data?.data?.length / pageSize)); // Set page count based on response size
       }
     } catch (error) {
-      console.error("Error fetching Consolidated Leave Report:", error);
+      console.error("Error fetching Categorywise Student Report:", error);
       toast.error(
-        "Error fetching Consolidated Leave Report. Please try again."
+        "Error fetching Categorywise Student Report. Please try again."
       );
     } finally {
       setIsSubmitting(false); // Re-enable the button after the operation
@@ -122,10 +111,10 @@ const ConsolidatedLeave = () => {
   };
 
   const handlePrint = () => {
-    const printTitle = `Consolidate Leave Report  ${
+    const printTitle = `Categorywise Student Report ${
       selectedStudent?.label
-        ? `List of ${selectedStudent.label}`
-        : ": Complete List of All Staff "
+        ? `List of Class ${selectedStudent.label}`
+        : ": For All Students "
     }`;
     const printContent = `
   <div id="tableMain" class="flex items-center justify-center min-h-screen bg-white">
@@ -135,15 +124,9 @@ const ConsolidatedLeave = () => {
         <thead>
           <tr class="bg-gray-100">
             <th class="px-2 text-center py-2 border border-black text-sm font-semibold">Sr.No</th>
-            <th class="px-2 text-center py-2 border border-black text-sm font-semibold">Staff Name</th>
-            <th class="px-2 text-center py-2 border border-black text-sm font-semibold">Phone No.</th>
-            <th class="px-2 text-center py-2 border border-black text-sm font-semibold">Leave Type</th>
-            <th class="px-2 text-center py-2 border border-black text-sm font-semibold">Start Date</th>
-            <th class="px-2 text-center py-2 border border-black text-sm font-semibold">End Date</th>
-            <th class="px-2 text-center py-2 border border-black text-sm font-semibold">No. of days</th>
-            <th class="px-2 text-center py-2 border border-black text-sm font-semibold">Status</th>
-            <th class="px-2 text-center py-2 border border-black text-sm font-semibold">Approved By</th>
-           
+            <th class="px-2 text-center py-2 border border-black text-sm font-semibold">Class</th>
+            <th class="px-2 text-center py-2 border border-black text-sm font-semibold">Category</th>
+            <th class="px-2 text-center py-2 border border-black text-sm font-semibold">No. of Students</th>
           </tr>
         </thead>
         <tbody>
@@ -155,29 +138,15 @@ const ConsolidatedLeave = () => {
                   index + 1
                 }</td>
                 <td class="px-2 text-center py-2 border border-black">${
-                  subject?.StaffName || " "
+                  subject?.name || " "
                 }</td>
                 <td class="px-2 text-center py-2 border border-black">${
-                  subject?.phone || " "
+                  subject?.category || " "
                 }</td>
-                <td class="px-2 text-center py-2 border border-black">${
-                  subject?.LeaveType || " "
-                }</td>
-                <td class="px-2 text-center py-2 border border-black">${
-                  subject?.leave_start_date || " "
-                }</td>
-                 <td class="px-2 text-center py-2 border border-black">${
-                   subject?.leave_end_date || " "
-                 }</td>
-                  <td class="px-2 text-center py-2 border border-black">${
-                    subject?.no_of_days || " "
-                  }</td>
-                   <td class="px-2 text-center py-2 border border-black">${
-                     statusMap[subject?.status] || " "
-                   }</td>
-                    <td class="px-2 text-center py-2 border border-black">${
-                      subject?.ApprovedBy || " "
-                    }</td>
+               
+                      <td class="px-2 text-center py-2 border border-black">${
+                        subject?.counts || " "
+                      }</td>
               </tr>`
             )
             .join("")}
@@ -269,34 +238,17 @@ h5 + * { /* Targets the element after h5 */
     }
 
     // Define headers matching the print table
-    const headers = [
-      "Sr No.",
-      "Staff Name",
-      "Phone No.",
-      "Leave Type",
-      "Start Date",
-      "End Date",
-      "No. of days",
-      "Status",
-      "Approved By",
-    ];
+    const headers = ["Sr No.", "Class", "Category", "No. of Students"];
+
     // Convert displayedSections data to array format for Excel
     const data = displayedSections.map((student, index) => [
       index + 1,
-      student?.StaffName || " ",
-      student?.phone || " ",
-      student?.LeaveType || " ",
-      student?.leave_start_date || " ",
-      student?.leave_end_date || " ",
-      student?.no_of_days || " ",
-      statusMap[student?.status] || " ",
-      student?.ApprovedBy || " ",
+      student?.name || " ",
+      student?.category || " ",
+      student?.counts || " ",
     ]);
-
     // Create a worksheet
     const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
-
-    // Auto-adjust column width
     const columnWidths = headers.map(() => ({ wch: 20 })); // Approx. width of 20 characters per column
     worksheet["!cols"] = columnWidths;
 
@@ -305,49 +257,40 @@ h5 + * { /* Targets the element after h5 */
     XLSX.utils.book_append_sheet(workbook, worksheet, "Admission Form Data");
 
     // Generate and download the Excel file
-    const fileName = ` Consolidate_Leave_Report_${
-      selectedStudent?.label || "For All Staff"
+    const fileName = `Categorywise_Student_Report_${
+      selectedStudent?.label
+        ? `List of Class-${selectedStudent?.label}`
+        : "For ALL Students"
     }.xlsx`;
     XLSX.writeFile(workbook, fileName);
   };
 
   console.log("row", timetable);
-
   const filteredSections = timetable.filter((student) => {
     const searchLower = searchTerm.toLowerCase();
 
-    // Extract relevant fields and convert them to lowercase for case-insensitive search
-    const staffName = student?.StaffName?.toLowerCase() || "";
-    const phone = student?.phone?.toLowerCase() || "";
-    const leaveType = student?.LeaveType?.toLowerCase() || "";
-    const leaveStartDate = student?.leave_start_date?.toLowerCase() || "";
-    const leaveEndDate = student?.leave_end_date?.toLowerCase() || "";
-    const noOfDays = student?.no_of_days?.toString().toLowerCase() || "";
-    const status = statusMap[student?.status]?.toLowerCase() || "";
-    const approvedBy = student?.ApprovedBy?.toLowerCase() || "";
+    // Convert 'counts' to string for comparison
+    const counts = student?.counts?.toString() || "";
+    const name = student?.name?.toLowerCase() || "";
+    const category = student?.category?.toLowerCase() || "";
 
     // Check if the search term is present in any of the specified fields
     return (
-      staffName.includes(searchLower) ||
-      phone.includes(searchLower) ||
-      leaveType.includes(searchLower) ||
-      leaveStartDate.includes(searchLower) ||
-      leaveEndDate.includes(searchLower) ||
-      noOfDays.includes(searchLower) ||
-      status.includes(searchLower) ||
-      approvedBy.includes(searchLower)
+      counts.includes(searchLower) ||
+      name.includes(searchLower) ||
+      category.includes(searchLower)
     );
   });
 
   const displayedSections = filteredSections.slice(currentPage * pageSize);
   return (
     <>
-      <div className="w-full md:w-[100%] mx-auto p-4 ">
+      <div className="w-full md:w-[80%] mx-auto p-4 ">
         <ToastContainer />
         <div className="card p-4 rounded-md ">
           <div className=" card-header mb-4 flex justify-between items-center ">
             <h5 className="text-gray-700 mt-1 text-md lg:text-lg">
-              Consolidate Leave Report
+              Categorywise Student Report
             </h5>
             <RxCross1
               className=" relative right-2 text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
@@ -364,19 +307,17 @@ h5 + * { /* Targets the element after h5 */
           ></div>
 
           <>
-            <div className=" w-full md:w-[85%]   flex justify-center flex-col md:flex-row gap-x-1     ml-0    p-2">
+            <div className=" w-full md:w-[80%]  flex justify-center flex-col md:flex-row gap-x-1     ml-0    p-2">
               <div className="w-full md:w-[99%] flex md:flex-row justify-between items-center mt-0 md:mt-4">
-                <div className="w-full  gap-x-0 md:gap-x-12 flex flex-col gap-y-2 md:gap-y-0 md:flex-row">
-                  {/* Class Dropdown */}
-                  <div className="w-full  md:w-[50%] gap-x-2 justify-around my-1 md:my-4 flex md:flex-row">
+                <div className="w-full md:w-[75%] gap-x-0 md:gap-x-12  flex flex-col gap-y-2 md:gap-y-0 md:flex-row">
+                  <div className="w-full md:w-[50%] gap-x-2   justify-around  my-1 md:my-4 flex md:flex-row ">
                     <label
-                      className="w-full md:w-[25%] text-md pl-0 md:pl-5 mt-1.5"
+                      className="md:w-[25%] text-md pl-0 md:pl-5 mt-1.5"
                       htmlFor="studentSelect"
                     >
-                      {/* Staff <span className="text-red-500">*</span> */}
-                      Staff
+                      Class
                     </label>
-                    <div className="w-full md:w-[65%]">
+                    <div className=" w-full md:w-[65%]">
                       <Select
                         menuPortalTarget={document.body}
                         menuPosition="fixed"
@@ -389,21 +330,6 @@ h5 + * { /* Targets the element after h5 */
                         isClearable
                         className="text-sm"
                         isDisabled={loadingExams}
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            fontSize: ".9em", // Adjust font size for selected value
-                            minHeight: "30px", // Reduce height
-                          }),
-                          menu: (provided) => ({
-                            ...provided,
-                            fontSize: "1em", // Adjust font size for dropdown options
-                          }),
-                          option: (provided) => ({
-                            ...provided,
-                            fontSize: ".9em", // Adjust font size for each option
-                          }),
-                        }}
                       />
                       {studentError && (
                         <div className="h-8 relative ml-1 text-danger text-xs">
@@ -412,52 +338,12 @@ h5 + * { /* Targets the element after h5 */
                       )}
                     </div>
                   </div>
-
-                  {/* From Date Dropdown */}
-                  <div className="w-full   md:w-[50%] gap-x-4 justify-between my-1 md:my-4 flex md:flex-row">
-                    <label
-                      className="ml-0 md:ml-4 w-full md:w-[50%] text-md mt-1.5"
-                      htmlFor="fromDate"
-                    >
-                      From Date
-                    </label>
-                    <div className="w-full">
-                      <input
-                        type="date"
-                        id="fromDate"
-                        value={fromDate}
-                        onChange={(e) => setFromDate(e.target.value)}
-                        className="text-sm w-full border border-gray-300 rounded px-2 py-2"
-                      />
-                    </div>
-                  </div>
-
-                  {/* To Date Dropdown */}
-                  <div className="w-full  md:w-[45%] gap-x-4 justify-between my-1 md:my-4 flex md:flex-row">
-                    <label
-                      className="ml-0 md:ml-4 w-full md:w-[50%] text-md mt-1.5"
-                      htmlFor="toDate"
-                    >
-                      To Date
-                    </label>
-                    <div className="w-full">
-                      <input
-                        type="date"
-                        id="toDate"
-                        value={toDate}
-                        onChange={(e) => setToDate(e.target.value)}
-                        className="text-sm w-full border border-gray-300 rounded px-2 py-2"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Browse Button */}
                   <div className="mt-1">
                     <button
                       type="search"
                       onClick={handleSearch}
                       style={{ backgroundColor: "#2196F3" }}
-                      className={`btn h-10 w-18 md:w-auto btn-primary text-white font-bold py-1 border-1 border-blue-500 px-4 rounded ${
+                      className={` btn h-10 w-18 md:w-auto btn-primary text-white font-bold py-1 border-1 border-blue-500 px-4 rounded ${
                         loadingForSearch ? "opacity-50 cursor-not-allowed" : ""
                       }`}
                       disabled={loadingForSearch}
@@ -484,14 +370,14 @@ h5 + * { /* Targets the element after h5 */
                               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                             ></path>
                           </svg>
-                          Browsing...
+                          Searching...
                         </span>
                       ) : (
-                        "Browse"
+                        "Search"
                       )}
                     </button>
                   </div>
-                </div>
+                </div>{" "}
               </div>
             </div>
 
@@ -502,7 +388,7 @@ h5 + * { /* Targets the element after h5 */
                     <div className="p-2 px-3 bg-gray-100 border-none flex justify-between items-center">
                       <div className="w-full   flex flex-row justify-between mr-0 md:mr-4 ">
                         <h3 className="text-gray-700 mt-1 text-[1.2em] lg:text-xl text-nowrap">
-                          List Of Consolidated Leave Report
+                          List Of Categorywise Student Report
                         </h3>
                         <div className="w-1/2 md:w-[18%] mr-1 ">
                           <input
@@ -544,9 +430,9 @@ h5 + * { /* Targets the element after h5 */
                       }}
                     ></div>
 
-                    <div className="card-body w-full">
+                    <div className="card-body w-full md:w-[80%] mx-auto">
                       <div
-                        className="h-96 lg:h-96 overflow-y-scroll overflow-x-scroll"
+                        className="h-96 lg:h-96  overflow-y-scroll overflow-x-scroll"
                         style={{
                           scrollbarWidth: "thin", // Makes scrollbar thin in Firefox
                           scrollbarColor: "#C03178 transparent", // Sets track and thumb color in Firefox
@@ -557,14 +443,9 @@ h5 + * { /* Targets the element after h5 */
                             <tr className="bg-gray-100">
                               {[
                                 "Sr No.",
-                                "Staff Name",
-                                "Phone No.",
-                                "Leave Type",
-                                "Start Date",
-                                "End Date",
-                                "No. of days",
-                                "Status",
-                                "Approved By",
+                                "Class",
+                                "Category",
+                                "No. of Students",
                               ].map((header, index) => (
                                 <th
                                   key={index}
@@ -587,31 +468,13 @@ h5 + * { /* Targets the element after h5 */
                                     {index + 1}
                                   </td>
                                   <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student?.StaffName || " "}
-                                  </td>
-
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student?.phone || " "}
+                                    {student.name || " "}
                                   </td>
                                   <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student?.LeaveType || " "}
+                                    {student.category || " "}
                                   </td>
                                   <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student?.leave_start_date || " "}
-                                  </td>
-
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student?.leave_end_date || ""}
-                                  </td>
-
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student?.no_of_days || " "}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {statusMap[student?.status] || " "}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student?.ApprovedBy || " "}
+                                    {student.counts || " "}
                                   </td>
                                 </tr>
                               ))
@@ -637,4 +500,4 @@ h5 + * { /* Targets the element after h5 */
   );
 };
 
-export default ConsolidatedLeave;
+export default CatWiseStudRepo;

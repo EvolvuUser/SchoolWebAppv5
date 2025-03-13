@@ -10,11 +10,9 @@ import { FiPrinter } from "react-icons/fi";
 import { FaFileExcel } from "react-icons/fa";
 import * as XLSX from "xlsx";
 
-const ListAdmFrmRep = () => {
+const StudentReport = () => {
   const API_URL = import.meta.env.VITE_API_URL;
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [status, setStatus] = useState(null); // For status dropdown
-
   const [currentPage, setCurrentPage] = useState(0);
   const [studentNameWithClassId, setStudentNameWithClassId] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState(null);
@@ -42,14 +40,11 @@ const ListAdmFrmRep = () => {
       setLoadingExams(true);
       const token = localStorage.getItem("authToken");
 
-      const response = await axios.get(
-        `${API_URL}/api/get_classofnewadmission`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await axios.get(`${API_URL}/api/get_class_section`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       console.log("Class", response);
-      setStudentNameWithClassId(response?.data?.data || []);
+      setStudentNameWithClassId(response?.data || []);
     } catch (error) {
       toast.error("Error fetching Classes");
       console.error("Error fetching Classes:", error);
@@ -63,33 +58,11 @@ const ListAdmFrmRep = () => {
     setSelectedStudent(selectedOption);
     setSelectedStudentId(selectedOption?.value);
   };
-
-  // Dropdown options
-  const statusOptions = [
-    { value: "Applied", label: "Applied" },
-    { value: "Scheduled", label: "Scheduled" },
-    { value: "Verified", label: "Verified" },
-    { value: "Approved", label: "Approved" },
-    { value: "Hold", label: "Hold" },
-    { value: "Reject", label: "Reject" },
-  ];
-
-  const customStyles = {
-    control: (base, { isFocused }) => ({
-      ...base,
-      borderColor: isFocused ? "#6366F1" : "#d1d5db", // Indigo focus ring
-    }),
-    singleValue: (base, { data }) => ({
-      ...base,
-      color: data.value === "" ? "#9CA3AF" : "#000", // Gray for "Select", black for others
-    }),
-  };
-
   const studentOptions = useMemo(
     () =>
       studentNameWithClassId.map((cls) => ({
-        value: cls?.class_id,
-        label: `${cls.name}`,
+        value: cls?.section_id,
+        label: `${cls.get_class.name} ${cls.name}`,
       })),
     [studentNameWithClassId]
   );
@@ -131,63 +104,6 @@ const ListAdmFrmRep = () => {
       setLoadingForSearch(false);
     }
   };
-  //   const handleDownloadEXL = () => {
-  //     if (!displayedSections || displayedSections.length === 0) {
-  //       toast.error(
-  //         "No data available to download Excel sheet of Student ID Card."
-  //       );
-  //       return;
-  //     }
-
-  //     // Define headers
-  //     const headers = [
-  //       "Sr.No",
-  //       "Roll No",
-  //       "Photo URL",
-  //       "Class",
-  //       "Student Name",
-  //       "DOB",
-  //       "Father Mobile No.",
-  //       "Mother Mobile No.",
-  //       "Address",
-  //       "Blood Group",
-  //       "Grn No.",
-  //       "House",
-  //       "Image Name",
-  //     ];
-
-  //     // Convert table data into an array format
-  //     const data = displayedSections.map((subject, index) => [
-  //       index + 1,
-  //       subject?.roll_no || " ",
-  //       subject?.image_url || " ",
-  //       `${subject?.class_name || ""} ${subject?.sec_name || ""}`,
-  //       `${subject?.first_name || ""} ${subject?.mid_name || ""} ${
-  //         subject?.last_name || ""
-  //       }`,
-  //       subject?.dob || " ",
-  //       subject?.f_mobile || " ",
-  //       subject?.m_mobile || " ",
-  //       subject?.permant_add || " ",
-  //       subject?.blood_group || " ",
-  //       subject?.reg_no || " ",
-  //       subject?.house || " ",
-  //       subject?.image_name || " ",
-  //     ]);
-
-  //     // Create a worksheet
-  //     const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
-
-  //     // Create a workbook and append the worksheet
-  //     const workbook = XLSX.utils.book_new();
-  //     XLSX.utils.book_append_sheet(workbook, worksheet, "Student Data");
-
-  //     // Write and download the file
-  //     XLSX.writeFile(
-  //       workbook,
-  //       `Student idCard list of ${selectedStudent.label}.xlsx`
-  //     );
-  //   };
   const handleDownloadEXL = () => {
     if (!displayedSections || displayedSections.length === 0) {
       toast.error("No data available to download the Excel sheet.");
@@ -198,14 +114,20 @@ const ListAdmFrmRep = () => {
     const headers = [
       "Sr No.",
       "Form Id.",
+      "Roll No.", // Added
+      "GRN No.", // Added
       "Student Name",
       "Class",
       "Application Date",
       "Status",
       "DOB",
+      "DOA", // Added
       "Birth Place",
       "Present Address",
-      "City, State, Pincode",
+      "Address", // Added
+      "City", // Added
+      "State", // Added
+      "Pincode", // Added
       "Permanent Address",
       "Gender",
       "Religion",
@@ -216,21 +138,30 @@ const ListAdmFrmRep = () => {
       "Category",
       "Blood Group",
       "Aadhaar No.",
+      "Student Aadhaar No.", // Added
       "Sibling",
       "Father Name",
+      "Father Mobile No.", // Added
+      "Father Email-Id", // Added
       "Occupation",
       "Mobile No.",
       "Email Id",
       "Father Aadhaar No.",
       "Qualification",
       "Mother Name",
+      "Mother Mobile No.", // Added
+      "Mother Email-Id", // Added
       "Occupation",
-      "Mobile No.",
-      "Email Id",
       "Mother Aadhaar No.",
       "Qualification",
+      "Parent's Aadhaar No.", // Added
+      "Last year %", // Added
+      "Last year attendance", // Added
       "Areas of Interest",
       "Order Id",
+      "Emergency name", // Added
+      "Emergency Address", // Added
+      "Emergency Contact", // Added
     ];
 
     // Convert displayedSections data to array format for Excel
@@ -279,11 +210,8 @@ const ListAdmFrmRep = () => {
       student?.area_in_which_parent_can_contribute || " ",
       student?.OrderId || " ",
     ]);
-
     // Create a worksheet
     const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
-
-    // Auto-adjust column width
     const columnWidths = headers.map(() => ({ wch: 20 })); // Approx. width of 20 characters per column
     worksheet["!cols"] = columnWidths;
 
@@ -299,169 +227,6 @@ const ListAdmFrmRep = () => {
   };
 
   console.log("row", timetable);
-
-  //   const handlePrint = () => {
-  //   const printTitle = `List of Admission Forms Report for ${
-  //     selectedStudent?.label ? `Class ${selectedStudent.label}` : "All Students"
-  //   }`;
-
-  //     const printContent = `
-  //     <title>${printTitle}</title>
-  //   <style>
-  //     @page { margin: 4px; padding:4px; box-sizing:border-box;   ;
-  // }
-  //     @media print {
-  //       body {
-  //         font-size: 10px;
-  //       }
-  //       .table-container {
-  //         width: 98%;
-
-  //         transform: scale(0.99); /* Scale down to 39% */
-  //         transform-origin: top center;
-  //       }
-  //       table {
-  //         width: 100%;
-  //          border-spacing: 0;
-
-  //       }
-  //       th, td {
-  //         border: 1px solid black;
-  //         padding: 2px;
-  //         text-align: center;
-  //         word-wrap: break-word;
-  //       }
-  //     }
-  //       # HeadingForTitleIs{
-  //       width:100%;
-  //       margin:auto;
-  //       border: 2px solid black;
-
-  //       }
-  //       h2 {
-  //   width: 100%;
-  //   text-align: center;
-
-  //   margin: 0;  /* Remove any default margins */
-  //   padding: 5px 0;  /* Adjust padding if needed */
-  // }
-  //   h2 + * { /* Targets the element after h5 */
-  //   margin-top: 0; /* Ensures no extra space after h5 */
-  // }
-
-  //   </style>
-
-  //   <div class="table-container">
-  // <h2 id="tableHeading5"  class="text-lg font-semibold border-1 border-black">${printTitle}</h2>
-  //   <table class="min-w-full leading-normal table-auto border border-black">
-  //       <thead>
-  //         <tr class="bg-gray-100">
-  //           ${[
-  //             "Sr No.",
-  //             "Form Id.",
-  //             "Student Name",
-  //             "Class",
-  //             "Application Date",
-  //             "Status",
-  //             "DOB",
-  //             "Birth Place",
-  //             "Present Address",
-  //             "City, State, Pincode",
-  //             "Permanent Address",
-  //             "Gender",
-  //             "Religion",
-  //             "Caste",
-  //             "Subcaste",
-  //             "Nationality",
-  //             "Mother Tongue",
-  //             "Category",
-  //             "Blood Group",
-  //             "Aadhaar No.",
-  //             "Sibling",
-  //             "Father Name",
-  //             "Occupation",
-  //             "Mobile No.",
-  //             "Email Id",
-  //             "Father Aadhaar No.",
-  //             "Qualification",
-  //             "Mother Name",
-  //             "Occupation",
-  //             "Mobile No.",
-  //             "Email Id",
-  //             "Mother Aadhaar No.",
-  //             "Qualification",
-  //             "Areas of Interest",
-  //             "Order Id",
-  //           ]
-  //             .map(
-  //               (header) =>
-  //                 `<th class="px-1 py-1 text-sm font-semibold border border-black">${header}</th>`
-  //             )
-  //             .join("")}
-  //         </tr>
-  //       </thead>
-  //       <tbody>
-  //         ${displayedSections
-  //           .map(
-  //             (student, index) => `
-  //             <tr>
-  //               <td>${index + 1}</td>
-  //               <td>${student.form_id}</td>
-  //               <td>${student.first_name} ${student.mid_name} ${
-  //               student.last_name
-  //             }</td>
-  //               <td>${student.classname}</td>
-  //               <td>${student.application_date}</td>
-  //               <td>${student.admission_form_status}</td>
-  //               <td>${student.dob}</td>
-  //               <td>${student.birth_place}</td>
-  //               <td>${student.locality}</td>
-  //               <td>${student.city}, ${student.state}, ${student.pincode}</td>
-  //               <td>${student.perm_address}</td>
-  //               <td>${
-  //                 student.gender === "M"
-  //                   ? "Male"
-  //                   : student.gender === "F"
-  //                   ? "Female"
-  //                   : student.gender
-  //               }</td>
-  //               <td>${student.religion}</td>
-  //               <td>${student.caste}</td>
-  //               <td>${student.subcaste}</td>
-  //               <td>${student.nationality}</td>
-  //               <td>${student.mother_tongue}</td>
-  //               <td>${student.category}</td>
-  //               <td>${student.blood_group}</td>
-  //               <td>${student.stud_aadhar}</td>
-  //               <td>${student.sibling_student_info}</td>
-  //               <td>${student.father_name}</td>
-  //               <td>${student.father_occupation}</td>
-  //               <td>${student.f_mobile}</td>
-  //               <td>${student.f_email}</td>
-  //               <td>${student.f_aadhar_no}</td>
-  //               <td>${student.f_qualification}</td>
-  //               <td>${student.mother_name}</td>
-  //               <td>${student.mother_occupation}</td>
-  //               <td>${student.m_mobile}</td>
-  //               <td>${student.m_emailid}</td>
-  //               <td>${student.m_aadhar_no}</td>
-  //               <td>${student.m_qualification}</td>
-  //               <td>${student.area_in_which_parent_can_contribute}</td>
-  //               <td>${student.OrderId}</td>
-  //             </tr>
-  //           `
-  //           )
-  //           .join("")}
-  //       </tbody>
-  //     </table>
-  //   </div>
-  //   `;
-
-  //     const newWindow = window.open("", "_blank");
-  //     newWindow.document.write(printContent);
-  //     newWindow.document.close();
-  //     newWindow.print();
-  //   };
 
   const filteredSections = timetable.filter((section) => {
     const searchLower = searchTerm.toLowerCase();
@@ -538,7 +303,7 @@ const ListAdmFrmRep = () => {
         <div className="card p-4 rounded-md ">
           <div className=" card-header mb-4 flex justify-between items-center ">
             <h5 className="text-gray-700 mt-1 text-md lg:text-lg">
-              Admission Forms Report
+              Student Report
             </h5>
             <RxCross1
               className=" relative right-2 text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
@@ -555,7 +320,7 @@ const ListAdmFrmRep = () => {
           ></div>
 
           <>
-            <div className=" w-full md:w-[85%]   flex justify-center flex-col md:flex-row gap-x-1     ml-0    p-2">
+            <div className=" w-full md:w-[70%]  flex justify-center flex-col md:flex-row gap-x-1     ml-0    p-2">
               <div className="w-full md:w-[99%] flex md:flex-row justify-between items-center mt-0 md:mt-4">
                 <div className="w-full md:w-[75%] gap-x-0 md:gap-x-12  flex flex-col gap-y-2 md:gap-y-0 md:flex-row">
                   <div className="w-full md:w-[50%] gap-x-2   justify-around  my-1 md:my-4 flex md:flex-row ">
@@ -586,38 +351,6 @@ const ListAdmFrmRep = () => {
                       )}
                     </div>
                   </div>
-                  <div className="w-full md:w-[45%]  gap-x-4  justify-between  my-1 md:my-4 flex md:flex-row">
-                    <label
-                      className=" ml-0 md:ml-4 w-full md:w-[30%]  text-md mt-1.5 "
-                      htmlFor="studentSelect"
-                    >
-                      Status
-                    </label>{" "}
-                    <div className="w-full">
-                      <Select
-                        id="status"
-                        menuPortalTarget={document.body}
-                        menuPosition="fixed"
-                        options={statusOptions}
-                        value={
-                          statusOptions.find(
-                            (option) => option.value === status
-                          ) || null
-                        }
-                        onChange={(selectedOption) =>
-                          setStatus(
-                            selectedOption ? selectedOption.value : null
-                          )
-                        }
-                        isSearchable
-                        isClearable
-                        className="text-sm"
-                        styles={customStyles}
-                        placeholder="Select"
-                      />
-                    </div>
-                  </div>
-
                   <div className="mt-1">
                     <button
                       type="search"
@@ -668,7 +401,7 @@ const ListAdmFrmRep = () => {
                     <div className="p-2 px-3 bg-gray-100 border-none flex justify-between items-center">
                       <div className="w-full   flex flex-row justify-between mr-0 md:mr-4 ">
                         <h3 className="text-gray-700 mt-1 text-[1.2em] lg:text-xl text-nowrap">
-                          List Of Admission Forms Report
+                          List Of Student Report
                         </h3>
                         <div className="w-1/2 md:w-[18%] mr-1 ">
                           <input
@@ -724,14 +457,20 @@ const ListAdmFrmRep = () => {
                               {[
                                 "Sr No.",
                                 "Form Id.",
+                                "Roll No.", // Added
+                                "GRN No.", // Added
                                 "Student Name",
                                 "Class",
                                 "Application Date",
                                 "Status",
                                 "DOB",
+                                "DOA", // Added
                                 "Birth Place",
                                 "Present Address",
-                                "City, State, Pincode",
+                                "Address", // Added
+                                "City", // Added
+                                "State", // Added
+                                "Pincode", // Added
                                 "Permanent Address",
                                 "Gender",
                                 "Religion",
@@ -742,21 +481,30 @@ const ListAdmFrmRep = () => {
                                 "Category",
                                 "Blood Group",
                                 "Aadhaar No.",
+                                "Student Aadhaar No.", // Added
                                 "Sibling",
                                 "Father Name",
+                                "Father Mobile No.", // Added
+                                "Father Email-Id", // Added
                                 "Occupation",
                                 "Mobile No.",
                                 "Email Id",
                                 "Father Aadhaar No.",
                                 "Qualification",
                                 "Mother Name",
+                                "Mother Mobile No.", // Added
+                                "Mother Email-Id", // Added
                                 "Occupation",
-                                "Mobile No.",
-                                "Email Id",
                                 "Mother Aadhaar No.",
                                 "Qualification",
+                                "Parent's Aadhaar No.", // Added
+                                "Last year %", // Added
+                                "Last year attendance", // Added
                                 "Areas of Interest",
                                 "Order Id",
+                                "Emergency name", // Added
+                                "Emergency Address", // Added
+                                "Emergency Contact", // Added
                               ].map((header, index) => (
                                 <th
                                   key={index}
@@ -913,4 +661,4 @@ const ListAdmFrmRep = () => {
   );
 };
 
-export default ListAdmFrmRep;
+export default StudentReport;
