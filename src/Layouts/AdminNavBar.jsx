@@ -847,8 +847,8 @@ const AdminNavBar = () => {
           </NavDropdown.Item>
           {/* <NavDropdown.Item
             as={Link}
-            // to="/studentReport"
-            to="#"
+            to="/studentReport"
+            // to="#"
             className="text-sm font-bold hover:text-black"
           >
             Student Report
@@ -862,7 +862,7 @@ const AdminNavBar = () => {
           </NavDropdown.Item>
           <NavDropdown.Item
             as={Link}
-            to="/StudentRemarkReport"
+            to="/studentRemarkReport"
             className="text-sm font-bold hover:text-black"
           >
             Student Remarks Report
@@ -881,20 +881,62 @@ const AdminNavBar = () => {
           >
             Student - Religion wise Report
           </NavDropdown.Item>
-          {/* <NavDropdown.Item
+          <NavDropdown.Item
             as={Link}
-            // to="/gendrWiseStudRepo"
-            to="#"
+            to="/gendrWiseStudRepo"
+            // to="#"
             className="text-sm font-bold hover:text-black"
           >
             Student - Gender wise Report
-          </NavDropdown.Item> */}
+          </NavDropdown.Item>
           <NavDropdown.Item
             as={Link}
-            to="/GenWiseCatRepo"
+            to="/genWiseRelignRepo"
+            className="text-sm font-bold hover:text-black"
+          >
+            Student -Genderwise Religionwise Report
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            to="/genWiseCatRepo"
             className="text-sm font-bold hover:text-black"
           >
             Student - Genderwise Categorywise Report
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            to="/newStudentsRepo"
+            className="text-sm font-bold hover:text-black"
+          >
+            New Students Report
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            to="/leftStudentsRepo"
+            className="text-sm font-bold hover:text-black"
+          >
+            Left Students Report
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            to="/hSCStudSubjectsRepo"
+            className="text-sm font-bold hover:text-black"
+          >
+            HSC Students Subjects Report
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            to="/staffReport"
+            className="text-sm font-bold hover:text-black"
+          >
+            Staff Report
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            to="/feePaymentRepo"
+            className="text-sm font-bold hover:text-black"
+          >
+            Fees Payment Report
           </NavDropdown.Item>
         </NavDropdown>
 

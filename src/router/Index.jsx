@@ -197,6 +197,12 @@ import RelgWiseStudRepo from "../componants/Reports/RelgWiseStudRepo.jsx";
 import GendrWiseStudRepo from "../componants/Reports/GendrWiseStudRepo.jsx";
 import StudentRemarkReport from "../componants/Reports/StudentRemarkReport.jsx";
 import GenWiseCatRepo from "../componants/Reports/GenWiseCatRepo.jsx";
+import GenWiseRelignRepo from "../componants/Reports/GenWiseRelignRepo.jsx";
+import NewStudentsRepo from "../componants/Reports/NewStudentsRepo.jsx";
+import LeftStudentsRepo from "../componants/Reports/LeftStudentsRepo.jsx";
+import FeesPaymentReport from "../componants/Reports/FeesPaymentReport.jsx";
+import StaffReport from "../componants/Reports/StaffReport.jsx";
+import HSCStudentsSubjectsReport from "../componants/Reports/HSCStudentsSubjectsReport.jsx";
 // import Menus from "../c";
 function Index() {
   return (
@@ -639,6 +645,11 @@ function Index() {
           path="/relgWiseStudRepo"
           element={<PrivateRoute element={<RelgWiseStudRepo />} />}
         />
+        {/* Student GenWiseRelignRepo Report Module */}
+        <Route
+          path="/genWiseRelignRepo"
+          element={<PrivateRoute element={<GenWiseRelignRepo />} />}
+        />
         {/* Student Gender Wise  Report Module */}
         <Route
           path="/gendrWiseStudRepo"
@@ -646,13 +657,39 @@ function Index() {
         />
         {/* Student StudentRemarkReport  Module */}
         <Route
-          path="/StudentRemarkReport"
+          path="/studentRemarkReport"
           element={<PrivateRoute element={<StudentRemarkReport />} />}
         />
         {/* Student Gender Wise  Report Module */}
         <Route
-          path="/GenWiseCatRepo"
+          path="/genWiseCatRepo"
           element={<PrivateRoute element={<GenWiseCatRepo />} />}
+        />
+        {/* Student Gender Wise  Report Module */}
+        <Route
+          path="/newStudentsRepo"
+          element={<PrivateRoute element={<NewStudentsRepo />} />}
+        />
+        {/* Student Gender Wise  Report Module */}
+        <Route
+          path="/leftStudentsRepo"
+          element={<PrivateRoute element={<LeftStudentsRepo />} />}
+        />
+        {/* Staff Report Module */}
+        <Route
+          path="/staffReport"
+          element={<PrivateRoute element={<StaffReport />} />}
+        />
+        {/* Student Gender Wise  Report Module */}
+        <Route
+          path="/hSCStudSubjectsRepo"
+          element={<PrivateRoute element={<HSCStudentsSubjectsReport />} />}
+        />
+
+        {/* Fee payment report module */}
+        <Route
+          path="/feePaymentRepo"
+          element={<PrivateRoute element={<FeesPaymentReport />} />}
         />
         <Route path="/notification" element={<NotificationPage />} />
         <Route path="/changepassword" element={<ChangePassword />} />
