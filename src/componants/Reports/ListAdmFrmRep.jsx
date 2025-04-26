@@ -757,14 +757,23 @@ const ListAdmFrmRep = () => {
                                 "Qualification",
                                 "Areas of Interest",
                                 "Order Id",
-                              ].map((header, index) => (
-                                <th
-                                  key={index}
-                                  className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider"
-                                >
-                                  {header}
-                                </th>
-                              ))}
+                              ].map((header, index) => {
+                                let columnWidth = "min-w-[150px] px-2"; // default width
+
+                                if (header === "Sr No.")
+                                  columnWidth = "min-w-[50px]";
+                                else if (header === "Present Address")
+                                  columnWidth = "min-w-[200px]";
+
+                                return (
+                                  <th
+                                    key={index}
+                                    className={`text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider ${columnWidth}`}
+                                  >
+                                    {header}
+                                  </th>
+                                );
+                              })}
                             </tr>
                           </thead>
 
@@ -789,13 +798,21 @@ const ListAdmFrmRep = () => {
                                     {student.classname}
                                   </td>
                                   <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student.application_date}
+                                    {student.application_date
+                                      ? new Date(
+                                          student.application_date
+                                        ).toLocaleDateString("en-GB")
+                                      : ""}
                                   </td>
                                   <td className="px-2 py-2 text-center border border-gray-300">
                                     {student.admission_form_status}
                                   </td>
                                   <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student.dob}
+                                    {student.dob
+                                      ? new Date(
+                                          student.dob
+                                        ).toLocaleDateString("en-GB")
+                                      : ""}
                                   </td>
                                   <td className="px-2 py-2 text-center border border-gray-300">
                                     {student.birth_place}

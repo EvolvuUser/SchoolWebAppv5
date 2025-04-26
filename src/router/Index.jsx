@@ -203,6 +203,23 @@ import LeftStudentsRepo from "../componants/Reports/LeftStudentsRepo.jsx";
 import FeesPaymentReport from "../componants/Reports/FeesPaymentReport.jsx";
 import StaffReport from "../componants/Reports/StaffReport.jsx";
 import HSCStudentsSubjectsReport from "../componants/Reports/HSCStudentsSubjectsReport.jsx";
+import WorldlineFeePaymentReport from "../componants/Reports/WorldlineFeePaymentReport.jsx";
+import RazorpayFeePaymentReport from "../componants/Reports/RazorpayFeePaymentReport.jsx";
+import SubstituteTeacherMonthlyReport from "../componants/Reports/SubstituteTeacherMonthlyReport.jsx";
+import SubstitutionWeeklyHoursReport from "../componants/Reports/SubstitutionWeeklyHoursReport.jsx";
+import LeavingCertificateReport from "../componants/Reports/LeavingCertificateReport.jsx";
+import PendingStudentIdCardReport from "../componants/Reports/PendingStudentIdCardReport.jsx";
+// import TimetablePlanner from "../componants/TimeTablePlanner/CreateExamTimeTablePlanner/TimetablePlanner.jsx";
+import TeacherPeriodAllocation from "../componants/TimeTablePlanner/CommonTableForAllTable/TeacherPeriodAllocation.jsx";
+import CreateClassWisePeriodAllotment from "../componants/TimeTablePlanner/CommonTableForAllTable/CreateClassWisePeriodAllotment.jsx";
+import ClassWisePeriodAllotment from "../componants/TimeTablePlanner/CommonTableForAllTable/ClassWisePeriodAllotment.jsx";
+import EditTimetablePlanner from "../componants/TimeTablePlanner/EditTimeTablePlanner/EditTimetablePlanner.jsx";
+import CreateTimetablePlanner from "../componants/TimeTablePlanner/CreateExamTimeTablePlanner/CreateTimetablePlanner.jsx";
+// import TimetablePlanner from "../componants/TimeTablePlanner/TimetablePlanner.jsx";
+import TimetablePlanner from "../componants/TimeTablePlanner/TimeTablePlanner.jsx";
+import MonthlyAttendenceReport from "../componants/Reports/MonthlyAttendanceReport.jsx";
+import ComingSoon from "../componants/common/CommingSoon/ComingSoon.jsx";
+
 // import Menus from "../c";
 function Index() {
   return (
@@ -242,6 +259,12 @@ function Index() {
         <Route
           path="/student-demo-table"
           element={<PrivateRoute element={<DemoTable />} />}
+        />
+        {/* comming soon file */}
+        <Route
+          path="/comingSoon"
+          // path="#"
+          element={<PrivateRoute element={<ComingSoon />} />}
         />
         {/* All Certificates  */}
         <Route
@@ -442,6 +465,23 @@ function Index() {
           path="/CareTacker/view/:id"
           element={<PrivateRoute element={<ViewCareTacker />} />}
         />
+        {/* TimeTablePlanner module */}
+        <Route
+          path="/teacherPeriodAlloction"
+          element={<PrivateRoute element={<TeacherPeriodAllocation />} />}
+        />
+        {/* CreateClassWisePeriodAllotment module */}
+        <Route
+          path="/createClassWisePAllot"
+          element={
+            <PrivateRoute element={<CreateClassWisePeriodAllotment />} />
+          }
+        />
+        {/* ClassWisePeriodAllotment Module */}
+        <Route
+          path="/classWisePAllot"
+          element={<PrivateRoute element={<ClassWisePeriodAllotment />} />}
+        />
         {/* Set Late Time module */}
         <Route
           path="/SetLateTime"
@@ -537,6 +577,21 @@ function Index() {
         <Route
           path="/updateStudentID"
           element={<PrivateRoute element={<UpdateStudentID />} />}
+        />
+        {/* Time Table Planner */}
+        <Route
+          path="/timetablePlanner"
+          element={<PrivateRoute element={<TimetablePlanner />} />}
+        />
+        {/* EditTimetablePlanner module */}
+        <Route
+          path="/timetablePlanner/edit/:id"
+          element={<PrivateRoute element={<EditTimetablePlanner />} />}
+        />
+        {/* Create TimeTable Module */}
+        <Route
+          path="/createTimetablePlanner"
+          element={<PrivateRoute element={<CreateTimetablePlanner />} />}
         />
         {/* TimeTable Module */}
         <Route
@@ -680,6 +735,11 @@ function Index() {
           path="/staffReport"
           element={<PrivateRoute element={<StaffReport />} />}
         />
+        {/* monthlyAttendenceReport module */}
+        <Route
+          path="/monthlyAttendenceRepo"
+          element={<PrivateRoute element={<MonthlyAttendenceReport />} />}
+        />
         {/* Student Gender Wise  Report Module */}
         <Route
           path="/hSCStudSubjectsRepo"
@@ -690,6 +750,38 @@ function Index() {
         <Route
           path="/feePaymentRepo"
           element={<PrivateRoute element={<FeesPaymentReport />} />}
+        />
+        {/* Worldline Fee Payment Report  module */}
+        <Route
+          path="/worldlinfeePayRepo"
+          element={<PrivateRoute element={<WorldlineFeePaymentReport />} />}
+        />
+        {/* Razorpay Fee Payment Reportmodule */}
+        <Route
+          path="/rozorpayfeePayRepo"
+          element={<PrivateRoute element={<RazorpayFeePaymentReport />} />}
+        />
+        {/* Substitute Teacher Monthly Report Reportmodule */}
+        <Route
+          path="/SubsTeaMonthlyRepo"
+          element={
+            <PrivateRoute element={<SubstituteTeacherMonthlyReport />} />
+          }
+        />
+        {/* Substitution Weekly Hours Report Report Reportmodule */}
+        <Route
+          path="/SubsWklyHrsRepo"
+          element={<PrivateRoute element={<SubstitutionWeeklyHoursReport />} />}
+        />
+        {/* Leaving certificate Report Report Reportmodule */}
+        <Route
+          path="/LeavCertifRepo"
+          element={<PrivateRoute element={<LeavingCertificateReport />} />}
+        />
+        {/* PendingStudentIdcard Report Reportmodule */}
+        <Route
+          path="/PndingStudIdCrdRepo"
+          element={<PrivateRoute element={<PendingStudentIdCardReport />} />}
         />
         <Route path="/notification" element={<NotificationPage />} />
         <Route path="/changepassword" element={<ChangePassword />} />

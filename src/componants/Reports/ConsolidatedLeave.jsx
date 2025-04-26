@@ -34,7 +34,7 @@ const ConsolidatedLeave = () => {
 
   useEffect(() => {
     fetchExams();
-    handleSearch();
+    // handleSearch();
   }, []);
 
   const fetchExams = async () => {
@@ -54,14 +54,16 @@ const ConsolidatedLeave = () => {
       setLoadingExams(false);
     }
   };
+
   const statusMap = {
-    P: "Pending",
-    A: "Approved",
-    R: "Rejected",
+    P: "Approve",
+    A: "Apply",
+    R: "Reject",
     H: "Hold",
     S: "Scheduled",
     V: "Verified",
   };
+
   const handleStudentSelect = (selectedOption) => {
     setStudentError(""); // Reset error if student is select.
     setSelectedStudent(selectedOption);
@@ -81,11 +83,11 @@ const ConsolidatedLeave = () => {
 
   const handleSearch = async () => {
     setLoadingForSearch(false);
-    // if (!selectedStudentId) {
-    //   setStudentError("Please select Staff Name.");
-    //   setLoadingForSearch(false);
-    //   return;
-    // }
+    if (!selectedStudentId) {
+      setStudentError("Please select Staff Name.");
+      setLoadingForSearch(false);
+      return;
+    }
     setSearchTerm("");
     try {
       setLoadingForSearch(true); // Start loading
@@ -163,11 +165,21 @@ const ConsolidatedLeave = () => {
                 <td class="px-2 text-center py-2 border border-black">${
                   subject?.LeaveType || " "
                 }</td>
-                <td class="px-2 text-center py-2 border border-black">${
-                  subject?.leave_start_date || " "
+                <td class="px-2 text-center py-2 border border-black">
+                ${
+                  subject?.leave_start_date
+                    ? new Date(subject?.leave_start_date).toLocaleDateString(
+                        "en-GB"
+                      )
+                    : ""
                 }</td>
-                 <td class="px-2 text-center py-2 border border-black">${
-                   subject?.leave_end_date || " "
+                 <td class="px-2 text-center py-2 border border-black">
+                 ${
+                   subject?.leave_start_date
+                     ? new Date(subject?.leave_start_date).toLocaleDateString(
+                         "en-GB"
+                       )
+                     : ""
                  }</td>
                   <td class="px-2 text-center py-2 border border-black">${
                     subject?.no_of_days || " "
@@ -186,82 +198,159 @@ const ConsolidatedLeave = () => {
     </div>
   </div>`;
 
-    const printWindow = window.open("", "", "height=800,width=1000");
+    //     const printWindow = window.open("", "", "height=800,width=1000");
+    //     printWindow.document.write(`
+    //   <html>
+    //   <head>
+    //     <title>${printTitle}</title>
+    //     <style>
+    //       @page { margin: 0; padding:0; box-sizing:border-box;   ;
+    // }
+    //       body { margin: 0; padding: 0; box-sizing:border-box; font-family: Arial, sans-serif; }
+    //       #tableHeading {
+    //   width: 100%;
+    //   margin: auto; /* Centers the div horizontally */
+    //   display: flex;
+    //   justify-content: center;
+    // }
+
+    // #tableHeading table {
+    //   width: 100%; /* Ensures the table fills its container */
+    //   margin:auto;
+    //   padding:0 10em 0 10em;
+
+    // }
+
+    // #tableContainer {
+    //   display: flex;
+    //   justify-content: center; /* Centers the table horizontally */
+    //   width: 80%;
+
+    // }
+
+    // h5 {
+    //   width: 100%;
+    //   text-align: center;
+    //   margin: 0;  /* Remove any default margins */
+    //   padding: 5px 0;  /* Adjust padding if needed */
+    // }
+
+    // #tableMain {
+    // width:100%;
+    // margin:auto;
+    // box-sizing:border-box;
+    //   display: flex;
+    //   flex-direction: column;
+    //   align-items: center;
+    //   justify-content: flex-start; /* Prevent unnecessary space */
+    // padding:0 10em 0 10em;
+    // }
+
+    // h5 + * { /* Targets the element after h5 */
+    //   margin-top: 0; /* Ensures no extra space after h5 */
+    // }
+
+    //       table { border-spacing: 0; width: 70%; margin: auto;   }
+    //       th { font-size: 0.8em; background-color: #f9f9f9; }
+    //       td { font-size: 12px; }
+    //       th, td { border: 1px solid gray; padding: 8px; text-align: center; }
+    //       .student-photo {
+    //         width: 30px !important;
+    //         height: 30px !important;
+    //         object-fit: cover;
+    //         border-radius: 50%;
+    //       }
+    //     </style>
+    //   </head>
+    //   <body>
+    //     ${printContent}
+    //   </body>
+    //   </html>`);
+    //     printWindow.document.close();
+    //     printWindow.print();
+
+    const printWindow = window.open("", "_blank", "width=1000,height=800");
+
     printWindow.document.write(`
-  <html>
-  <head>
-    <title>${printTitle}</title>
-    <style>
-      @page { margin: 0; padding:0; box-sizing:border-box;   ;
-}
-      body { margin: 0; padding: 0; box-sizing:border-box; font-family: Arial, sans-serif; }
-      #tableHeading {
-  width: 100%;
-  margin: auto; /* Centers the div horizontally */
-  display: flex;
-  justify-content: center;
-}
+      <html>
+        <head>
+          <title>${printTitle}</title>
+          <style>
+          @page { margin: 0; padding:0; box-sizing:border-box;   ;
+    }
+          body { margin: 0; padding: 0; box-sizing:border-box; font-family: Arial, sans-serif; }
+          #tableHeading {
+      width: 100%;
+      margin: auto; /* Centers the div horizontally */
+      display: flex;
+      justify-content: center;
+    }
 
-#tableHeading table {
-  width: 100%; /* Ensures the table fills its container */
-  margin:auto;
-  padding:0 10em 0 10em;
+    #tableHeading table {
+      width: 100%; /* Ensures the table fills its container */
+      margin:auto;
+      padding:0 10em 0 10em;
+    }
 
-  
+    #tableContainer {
+      display: flex;
+      justify-content: center; /* Centers the table horizontally */
+      width: 80%;
 
+    }
 
-}
+    h5 {
+      width: 100%;
+      text-align: center;
+      margin: 0;  /* Remove any default margins */
+      padding: 5px 0;  /* Adjust padding if needed */
+    }
 
-#tableContainer {
-  display: flex;
-  justify-content: center; /* Centers the table horizontally */
-  width: 80%;
-  
-}
+    #tableMain {
+    width:100%;
+    margin:auto;
+    box-sizing:border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start; /* Prevent unnecessary space */
+    padding:0 10em 0 10em;
+    }
 
- 
-h5 {  
-  width: 100%;  
-  text-align: center;  
-  margin: 0;  /* Remove any default margins */
-  padding: 5px 0;  /* Adjust padding if needed */
-}
+    h5 + * { /* Targets the element after h5 */
+      margin-top: 0; /* Ensures no extra space after h5 */
+    }
 
-#tableMain {
-width:100%;
-margin:auto;
-box-sizing:border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start; /* Prevent unnecessary space */
-padding:0 10em 0 10em;
-}
+          table { border-spacing: 0; width: 70%; margin: auto;   }
+          th { font-size: 0.8em; background-color: #f9f9f9; }
+          td { font-size: 12px; }
+          th, td { border: 1px solid gray; padding: 8px; text-align: center; }
+          .student-photo {
+            width: 30px !important;
+            height: 30px !important;
+            object-fit: cover;
+            border-radius: 50%;
+          }
+          </style>
+        </head>
+           <body>
+          <div id="printContainer">
+              ${printContent}
+          </div>
+      </body>
+      </html>
+    `);
 
-h5 + * { /* Targets the element after h5 */
-  margin-top: 0; /* Ensures no extra space after h5 */
-}
-
-
-      table { border-spacing: 0; width: 70%; margin: auto;   }
-      th { font-size: 0.8em; background-color: #f9f9f9; }
-      td { font-size: 12px; }
-      th, td { border: 1px solid gray; padding: 8px; text-align: center; }
-      .student-photo {
-        width: 30px !important; 
-        height: 30px !important;
-        object-fit: cover;
-        border-radius: 50%;
-      }
-    </style>
-  </head>
-  <body>
-    ${printContent}
-  </body>
-  </html>`);
     printWindow.document.close();
-    printWindow.print();
+
+    // ✅ Ensure content is fully loaded before printing
+    printWindow.onload = function () {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close(); // Optional: close after printing
+    };
   };
+
   const handleDownloadEXL = () => {
     if (!displayedSections || displayedSections.length === 0) {
       toast.error("No data available to download the Excel sheet.");
@@ -286,8 +375,16 @@ h5 + * { /* Targets the element after h5 */
       student?.StaffName || " ",
       student?.phone || " ",
       student?.LeaveType || " ",
-      student?.leave_start_date || " ",
-      student?.leave_end_date || " ",
+      `${
+        student?.leave_start_date
+          ? new Date(student?.leave_start_date).toLocaleDateString("en-GB")
+          : ""
+      }`,
+      `${
+        student?.leave_end_date
+          ? new Date(student?.leave_end_date).toLocaleDateString("en-GB")
+          : ""
+      }`,
       student?.no_of_days || " ",
       statusMap[student?.status] || " ",
       student?.ApprovedBy || " ",
@@ -373,8 +470,8 @@ h5 + * { /* Targets the element after h5 */
                       className="w-full md:w-[25%] text-md pl-0 md:pl-5 mt-1.5"
                       htmlFor="studentSelect"
                     >
-                      {/* Staff <span className="text-red-500">*</span> */}
-                      Staff
+                      Staff <span className="text-red-500">*</span>
+                      {/* Staff */}
                     </label>
                     <div className="w-full md:w-[65%]">
                       <Select
@@ -597,11 +694,19 @@ h5 + * { /* Targets the element after h5 */
                                     {student?.LeaveType || " "}
                                   </td>
                                   <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student?.leave_start_date || " "}
+                                    {student?.leave_start_date
+                                      ? new Date(
+                                          student?.leave_start_date
+                                        ).toLocaleDateString("en-GB")
+                                      : ""}
                                   </td>
 
                                   <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student?.leave_end_date || ""}
+                                    {student?.leave_end_date
+                                      ? new Date(
+                                          student?.leave_end_date
+                                        ).toLocaleDateString("en-GB")
+                                      : ""}
                                   </td>
 
                                   <td className="px-2 py-2 text-center border border-gray-300">

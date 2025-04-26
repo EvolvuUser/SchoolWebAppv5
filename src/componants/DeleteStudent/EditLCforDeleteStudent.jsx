@@ -8,22 +8,14 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { RxCross1 } from "react-icons/rx";
-// import { RxCross1 } from "react-icons/rx";
-
 const EditLCforDeleteStudent = () => {
   const API_URL = import.meta.env.VITE_API_URL;
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [selectedStudentId, setSelectedStudentId] = useState(null);
-  const [nameError, setNameError] = useState("");
-  const [nameErrorForClass, setNameErrorForClass] = useState("");
   const [selectedClass, setSelectedClass] = useState(null);
   const [parentInformation, setParentInformation] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [loadingForSearch, setLoadingForSearch] = useState(false);
   const [loadingForSearchAcy, setLoadingForSearchAcy] = useState(false);
-
-  const [selectedActivities, setSelectedActivities] = useState([]);
-
+  // const [selectedActivities, setSelectedActivities] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
   const { student } = location.state || {};
@@ -59,7 +51,6 @@ const EditLCforDeleteStudent = () => {
     attendance: "",
     subjectsFor: [],
     subjects: [],
-
     reason_leaving: "",
     application_date: "",
     leaving_date: "",
@@ -71,7 +62,7 @@ const EditLCforDeleteStudent = () => {
     academicStudent: [],
     academic_yr: "", // Add this to track selected academic year
     part_of: "",
-    // games: "",
+    games: "",
     selectedActivities: [],
   });
 
@@ -79,33 +70,61 @@ const EditLCforDeleteStudent = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        setLoading(true); // Start loading
+        setLoading(true);
         const token = localStorage.getItem("authToken");
-
         if (!token) throw new Error("No authentication token found");
 
-        const response = await axios.get(
-          //   `${API_URL}/api/get_getleavingcertificatedata/${student?.student_id}`,
-          `${API_URL}/api/get_getleavingcertificatedata/${student?.slc_no}`,
+        let response;
 
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        // Call correct API based on slc_no availability
+        if (student?.slc_no) {
+          response = await axios.get(
+            `${API_URL}/api/get_getleavingcertificatedata/${student.slc_no}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+        } else if (student?.student_id) {
+          response = await axios.get(
+            `${API_URL}/api/get_srnoleavingcertificatedata/${student.student_id}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+        } else {
+          toast.error("Student information is missing.");
+          return;
+        }
 
-        if (response.data.success && response.data.data) {
-          const fetchedData = response.data.data.leavingcertificatesingle;
+        // Check for success in response
+        if (response?.data?.success) {
+          let fetchedData;
           const DataStudentAc = response.data.data;
-          // Update formData with the fetched data
-          // Inside useEffect, after fetching data and setting formData
-          const { subjects_studied, games } =
-            response.data.data.leavingcertificatesingle;
-          const classsubject = response.data.data.classsubject;
-          // Convert comma-separated strings to arrays
-          const selectedSubjects = subjects_studied
-            ? subjects_studied.split(",")
+          const classsubject = DataStudentAc.classsubject || [];
+
+          // API structure check
+          if (DataStudentAc.leavingcertificatesingle) {
+            fetchedData = DataStudentAc.leavingcertificatesingle;
+          } else if (DataStudentAc.studentinformation) {
+            fetchedData = DataStudentAc.studentinformation;
+            // Patch missing fields
+            fetchedData.dob_words = DataStudentAc.dobinwords || "";
+            fetchedData.sr_no = DataStudentAc.sr_no || "";
+            fetchedData.issue_date = DataStudentAc.date || "";
+          } else {
+            toast.error("Unexpected response structure.");
+            return;
+          }
+
+          // Parse subjects and activities
+          const selectedSubjects = fetchedData.subjects_studied
+            ? fetchedData.subjects_studied.split(",")
             : [];
-          const selectedActivities = games ? games.split(",") : [];
+          const selectedActivities = fetchedData.games
+            ? fetchedData.games.split(",")
+            : [];
+
+          // Set form data
           setFormData({
             sr_no: fetchedData.sr_no || "",
             student_id: fetchedData.student_id || "",
@@ -113,8 +132,9 @@ const EditLCforDeleteStudent = () => {
             academicStudent: DataStudentAc.academicStudent || [],
             issue_date: fetchedData.issue_date || "",
             student_id_no: fetchedData.stud_id_no || "",
-            aadhar_no: fetchedData.aadhar_no || "",
-            first_name: fetchedData.stud_name || "",
+            aadhar_no:
+              fetchedData.stu_aadhaar_no || fetchedData.aadhar_no || "",
+            first_name: fetchedData.first_name || fetchedData.stud_name || "",
             mid_name: fetchedData.mid_name || "",
             last_name: fetchedData.last_name || "",
             father_name: fetchedData.father_name || "",
@@ -129,7 +149,8 @@ const EditLCforDeleteStudent = () => {
             dob: fetchedData.dob || "",
             dob_words: fetchedData.dob_words || "",
             prev_school_class: fetchedData.last_school_attended_standard || "",
-            date_of_admission: fetchedData.date_of_admission || "",
+            date_of_admission:
+              fetchedData.date_of_admission || fetchedData.admission_date || "",
             admission_class: fetchedData.admission_class || "",
             attendance: fetchedData.attendance || "",
             reason_leaving: fetchedData.reason_leaving || "",
@@ -145,12 +166,12 @@ const EditLCforDeleteStudent = () => {
             academic_yr: fetchedData.academic_yr || "",
             conduct: fetchedData.conduct || "",
             fee_month: fetchedData.fee_month || "",
-            subjects: DataStudentAc.classsubject || [],
-            // selectedActivities: (fetchedData.games || "").split(","),
-            subjectsFor: classsubject, // All subjects to display
-            selectedSubjects: selectedSubjects, // Only selected subjects checked
-            selectedActivities: selectedActivities, // Only selected activities checked
+            subjects: classsubject,
+            subjectsFor: classsubject,
+            selectedSubjects,
+            selectedActivities,
           });
+
           toast.success("Data loaded successfully");
         } else {
           toast.error("Failed to load data");
@@ -159,12 +180,99 @@ const EditLCforDeleteStudent = () => {
         console.error("Error fetching initial data:", error);
         toast.error("Error fetching initial data");
       } finally {
-        setLoading(false); // Stop loading
+        setLoading(false);
       }
     };
 
     fetchInitialData();
   }, []);
+
+  // useEffect(() => {
+  //   const fetchInitialData = async () => {
+  //     try {
+  //       setLoading(true); // Start loading
+  //       const token = localStorage.getItem("authToken");
+
+  //       if (!token) throw new Error("No authentication token found");
+
+  //       const response = await axios.get(
+  //         //   `${API_URL}/api/get_getleavingcertificatedata/${student?.student_id}`,
+  //         `${API_URL}/api/get_getleavingcertificatedata/${student?.slc_no}`,
+
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         }
+  //       );
+
+  //       if (response.data.success && response.data.data) {
+  //         const fetchedData = response.data.data.leavingcertificatesingle;
+  //         const DataStudentAc = response.data.data;
+  //         const { subjects_studied, games } =
+  //           response.data.data.leavingcertificatesingle;
+  //         const classsubject = response.data.data.classsubject;
+  //         const selectedSubjects = subjects_studied
+  //           ? subjects_studied.split(",")
+  //           : [];
+  //         const selectedActivities = games ? games.split(",") : [];
+  //         setFormData({
+  //           sr_no: fetchedData.sr_no || "",
+  //           student_id: fetchedData.student_id || "",
+  //           grn_no: fetchedData.grn_no || "",
+  //           academicStudent: DataStudentAc.academicStudent || [],
+  //           issue_date: fetchedData.issue_date || "",
+  //           student_id_no: fetchedData.stud_id_no || "",
+  //           aadhar_no: fetchedData.aadhar_no || "",
+  //           first_name: fetchedData.stud_name || "",
+  //           mid_name: fetchedData.mid_name || "",
+  //           last_name: fetchedData.last_name || "",
+  //           father_name: fetchedData.father_name || "",
+  //           mother_name: fetchedData.mother_name || "",
+  //           nationality: fetchedData.nationality || "",
+  //           mother_tongue: fetchedData.mother_tongue || "",
+  //           religion: fetchedData.religion || "",
+  //           caste: fetchedData.caste || "",
+  //           subcaste: fetchedData.subcaste || "",
+  //           birth_place: fetchedData.birth_place || "",
+  //           state: fetchedData.state || "",
+  //           dob: fetchedData.dob || "",
+  //           dob_words: fetchedData.dob_words || "",
+  //           prev_school_class: fetchedData.last_school_attended_standard || "",
+  //           date_of_admission: fetchedData.date_of_admission || "",
+  //           admission_class: fetchedData.admission_class || "",
+  //           attendance: fetchedData.attendance || "",
+  //           reason_leaving: fetchedData.reason_leaving || "",
+  //           application_date: fetchedData.application_date || "",
+  //           leaving_date: fetchedData.leaving_date || "",
+  //           standard_studying: fetchedData.standard_studying || "",
+  //           dob_proof: fetchedData.dob_proof || "",
+  //           promoted_to: fetchedData.promoted_to || "",
+  //           last_exam: fetchedData.last_exam || "",
+  //           udise_pen_no: fetchedData.udise_pen_no || "",
+  //           part_of: fetchedData.part_of || "",
+  //           remark: fetchedData.remark || "",
+  //           academic_yr: fetchedData.academic_yr || "",
+  //           conduct: fetchedData.conduct || "",
+  //           fee_month: fetchedData.fee_month || "",
+  //           subjects: DataStudentAc.classsubject || [],
+  //           // selectedActivities: (fetchedData.games || "").split(","),
+  //           subjectsFor: classsubject, // All subjects to display
+  //           selectedSubjects: selectedSubjects, // Only selected subjects checked
+  //           selectedActivities: selectedActivities, // Only selected activities checked
+  //         });
+  //         toast.success("Data loaded successfully");
+  //       } else {
+  //         toast.error("Failed to load data");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching initial data:", error);
+  //       toast.error("Error fetching initial data");
+  //     } finally {
+  //       setLoading(false); // Stop loading
+  //     }
+  //   };
+
+  //   fetchInitialData();
+  // }, []);
 
   const getYearInWords = (year) => {
     if (year < 1000 || year > 9999) return "Year Out of Range"; // Optional range limit
@@ -309,139 +417,6 @@ const EditLCforDeleteStudent = () => {
   // Get today's date in YYYY-MM-DD format
   // Calculate today's date
   const today = new Date().toISOString().split("T")[0];
-
-  // for student and class dropdown
-
-  //   const handleSearch = async () => {
-  //     setNameError("");
-  //     setNameErrorForClass("");
-  //     setErrors({}); // Clears all field-specific errors
-
-  //     if (!selectedClass && !selectedStudent) {
-  //       setNameError("Please select at least one of them.");
-  //       toast.error("Please select at least one of them!");
-  //       return;
-  //     }
-
-  //     setFormData({
-  //       grn_no: "",
-  //       class_id: "",
-  //       issue_date: "",
-  //       student_id_no: "",
-  //       aadhar_no: "",
-  //       first_name: "",
-  //       mid_name: "",
-  //       last_name: "",
-  //       father_name: "",
-  //       mother_name: "",
-  //       nationality: "",
-  //       mother_tongue: "",
-  //       religion: "",
-  //       caste: "",
-  //       subcaste: "",
-  //       birth_place: "",
-  //       dob: "",
-  //       dob_words: "",
-  //       dob_proof: "",
-  //       prev_school_class: "",
-  //       // previous_school_attended: "",
-  //       date_of_admission: "",
-  //       admission_class: "",
-  //       leaving_date: "",
-  //       standard_studying: "",
-  //       last_exam: "",
-  //       subjects: [], // Empty array for selected subjects
-  //       promoted_to: "",
-  //       attendance: "",
-  //       fee_month: "",
-  //       part_of: "",
-  //       selectedActivities: [], // Empty array for selected activities
-  //       application_date: "",
-  //       conduct: "",
-  //       reason_leaving: "",
-  //       remark: "",
-  //       academic_yr: "",
-  //       stud_id: "",
-  //       udise_pen_no: "",
-  //     });
-
-  //     try {
-  //       setLoadingForSearch(true); // Start loading
-  //       const token = localStorage.getItem("authToken");
-  //       const response = await axios.get(
-  //         `${API_URL}/api/get_srnoleavingcertificatedata/${selectedStudentId}`,
-  //         {
-  //           headers: { Authorization: `Bearer ${token}` },
-  //         }
-  //       );
-
-  //       // Check if data was received and update the form state
-  //       if (response?.data?.data) {
-  //         const fetchedData = response.data.data; // Extract the data
-
-  //         setParentInformation(fetchedData); // Assuming response data contains parent information
-  //         // Extract all subject names for initial selected state
-  //         const allSubjectNames = (fetchedData.classsubject || []).map(
-  //           (subject) => subject.name
-  //         );
-
-  //         console.log("allSubjectNames", allSubjectNames);
-  //         // Populate formData with the fetched data
-  //         setFormData({
-  //           sr_no: fetchedData.sr_no || "",
-  //           class_id: fetchedData.class_id || " ",
-  //           class_id_for_subj: fetchedData.studentinformation.class_id || "",
-  //           grn_no: fetchedData.studentinformation.grn_no || "",
-  //           date: today || "", // Directly from the fetched data
-  //           subjectsFor: fetchedData.classsubject || [],
-  //           academicStudent: fetchedData.academicStudent || [],
-  //           academic_yr: fetchedData.studentinformation?.academic_yr || "", // Preselect first academic year if available
-  //           subjects: allSubjectNames,
-
-  //           selectedSubjects: allSubjectNames, // Initialize with all subjects checked
-  //           // first_name: `${fetchedData.studentinformation?.first_name || ""} ${
-  //           //   fetchedData.studentinformation?.mid_name || ""
-  //           // } ${fetchedData.studentinformation?.last_name || ""}`,
-  //           student_id_no: fetchedData.studentinformation.student_id_no || "",
-  //           first_name: fetchedData.studentinformation.first_name || "",
-  //           mid_name: fetchedData.studentinformation.mid_name || "",
-  //           last_name: fetchedData.studentinformation.last_name || "",
-  //           udise_pen_no: fetchedData.studentinformation.udise_pen_no || "",
-  //           promoted_to: fetchedData.studentinformation.promoted_to || "",
-  //           last_exam: fetchedData.studentinformation.last_exam || "",
-
-  //           stud_id: fetchedData.studentinformation.student_id || " ",
-  //           father_name: fetchedData.studentinformation.father_name || "",
-  //           mother_name: fetchedData.studentinformation.mother_name || "",
-
-  //           date_of_admission:
-  //             fetchedData.studentinformation.date_of_admission || "",
-  //           religion: fetchedData.studentinformation.religion || "",
-  //           caste: fetchedData.studentinformation.caste || "",
-  //           subcaste: fetchedData.studentinformation.subcaste || "",
-  //           birth_place: fetchedData.studentinformation.birth_place || "", // Adjusted according to the fetched data
-  //           state: fetchedData.studentinformation.state || "",
-  //           mother_tongue: fetchedData.studentinformation.mother_tongue || "",
-  //           dob: fetchedData.studentinformation.dob || "",
-  //           // dob_words: fetchedData.dobinwords || "", // Directly from fetched data
-  //           dob_words: convertDateToWords(fetchedData.studentinformation.dob),
-  //           attendance: fetchedData.total_attendance || "",
-  //           nationality: fetchedData.studentinformation.nationality || "",
-  //           aadhar_no: fetchedData.studentinformation.aadhar_no || "",
-  //           teacher_image_name:
-  //             fetchedData.studentinformation.father_image_name || null, // Assuming this is for a teacher image
-  //           purpose: fetchedData.purpose || " ",
-  //         });
-  //       } else {
-  //         toast.error("No data found for the selected student.");
-  //       }
-  //     } catch (error) {
-  //       console.log("error is", error);
-  //       toast.error("Error fetching data for the selected student.");
-  //     } finally {
-  //       setLoadingForSearch(false);
-  //     }
-  //   };
 
   const validate = () => {
     const newErrors = {};
@@ -711,11 +686,9 @@ const EditLCforDeleteStudent = () => {
     event.preventDefault();
     console.log("Submit process started");
 
-    // Clear previous errors
     setErrors({});
     setBackendErrors({});
 
-    // Check validation
     if (!validate()) {
       console.log("Validation failed, stopping submission");
       return;
@@ -723,7 +696,6 @@ const EditLCforDeleteStudent = () => {
 
     console.log("Validation passed, proceeding with submission");
 
-    // Format the form data before submission
     const formattedFormData = {
       grn_no: formData.grn_no || "",
       issue_date: formatDateString(formData.issue_date),
@@ -750,12 +722,12 @@ const EditLCforDeleteStudent = () => {
       leaving_date: formatDateString(formData.leaving_date),
       standard_studying: formData.standard_studying || "",
       last_exam: formData.last_exam || "",
-      subjects: formData.selectedSubjects || [], // Ensure it's an array of subject names
+      subjects: formData.selectedSubjects || [],
       promoted_to: formData.promoted_to || "",
       attendance: formData.attendance || "",
       fee_month: formData.fee_month || "",
       part_of: formData.part_of || "",
-      games: selectedActivities || [], // Ensure it's an array of game names
+      games: formData?.selectedActivities || [],
       application_date: formatDateString(formData.application_date),
       conduct: formData.conduct || "",
       reason_leaving: formData.reason_leaving || "",
@@ -770,28 +742,28 @@ const EditLCforDeleteStudent = () => {
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("No authentication token found");
 
-      const response = await axios.put(
-        `${API_URL}/api/update_leavingcertificate/${student?.sr_no}`,
+      const response = await axios.post(
+        `${API_URL}/api/save_pdfleavingcertificate`,
         formattedFormData,
         {
           headers: { Authorization: `Bearer ${token}` },
-          responseType: "blob", // For PDF response
+          responseType: "blob", // To handle PDF download
         }
       );
 
       if (response.status === 200) {
-        toast.success("LC Certificate Updated successfully!");
-        // Extract filename from Content-Disposition header
+        toast.success("LC Certificate saved successfully!");
+
+        // Extract filename from Content-Disposition
         const contentDisposition = response.headers["content-disposition"];
-        let filename = "DownloadedFile.pdf"; // Fallback name
+        let filename = "LeavingCertificate.pdf";
 
         if (contentDisposition) {
           const match = contentDisposition.match(/filename="(.+?)"/);
-          if (match && match[1]) {
-            filename = match[1];
-          }
+          if (match && match[1]) filename = match[1];
         }
-        // Download PDF
+
+        // Trigger PDF download
         const pdfBlob = new Blob([response.data], { type: "application/pdf" });
         const pdfUrl = URL.createObjectURL(pdfBlob);
         const link = document.createElement("a");
@@ -801,7 +773,7 @@ const EditLCforDeleteStudent = () => {
         link.click();
         document.body.removeChild(link);
 
-        // Reset form data
+        // Reset form
         setFormData({
           sr_no: "",
           grn_no: "",
@@ -814,7 +786,6 @@ const EditLCforDeleteStudent = () => {
           promoted_to: " ",
           last_exam: "",
           stud_id: "",
-          // student_UID: "",
           father_name: "",
           mother_name: "",
           religion: "",
@@ -833,7 +804,6 @@ const EditLCforDeleteStudent = () => {
           subjectsFor: [],
           subjects: [],
           selectedActivities: [],
-
           reason_leaving: "",
           application_date: "",
           leaving_date: "",
@@ -843,20 +813,19 @@ const EditLCforDeleteStudent = () => {
           aadhar_no: "",
           teacher_image_name: null,
           academicStudent: [],
-          academic_yr: "", // Add this to track selected academic year
+          academic_yr: "",
           part_of: "",
         });
+
         setSelectedClass(null);
         setSelectedStudent(null);
-
         setTimeout(() => setParentInformation(null), 3000);
 
-        // Navigate to the desired route after successful update
         navigate("/leavingCertificate");
       }
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
-      toast.error("An error occurred while Updated the LC Certificate.");
+      toast.error("An error occurred while saving the LC Certificate.");
 
       if (error.response && error.response.data) {
         setBackendErrors(error.response.data);
@@ -867,6 +836,187 @@ const EditLCforDeleteStudent = () => {
       setLoading(false);
     }
   };
+
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   console.log("Submit process started");
+
+  //   // Clear previous errors
+  //   setErrors({});
+  //   setBackendErrors({});
+
+  //   // Check validation
+  //   if (!validate()) {
+  //     console.log("Validation failed, stopping submission");
+  //     return;
+  //   }
+
+  //   console.log("Validation passed, proceeding with submission");
+
+  //   // Format the form data before submission
+  //   const formattedFormData = {
+  //     grn_no: formData.grn_no || "",
+  //     issue_date: formatDateString(formData.issue_date),
+  //     student_id_no: formData.student_id_no || "",
+  //     aadhar_no: formData.aadhar_no || "",
+  //     first_name: formData.first_name || "",
+  //     mid_name: formData.mid_name || "",
+  //     last_name: formData.last_name || "",
+  //     father_name: formData.father_name || "",
+  //     mother_name: formData.mother_name || "",
+  //     nationality: formData.nationality || "",
+  //     mother_tongue: formData.mother_tongue || "",
+  //     state: formData.state || "",
+  //     religion: formData.religion || "",
+  //     caste: formData.caste || "",
+  //     subcaste: formData.subcaste || "",
+  //     birth_place: formData.birth_place || "",
+  //     dob: formatDateString(formData.dob),
+  //     dob_words: formData.dob_words || "",
+  //     dob_proof: formData.dob_proof || "",
+  //     previous_school_attended: formData.prev_school_class || "",
+  //     date_of_admission: formatDateString(formData.date_of_admission),
+  //     admission_class: formData.admission_class || "",
+  //     leaving_date: formatDateString(formData.leaving_date),
+  //     standard_studying: formData.standard_studying || "",
+  //     last_exam: formData.last_exam || "",
+  //     subjects: formData.selectedSubjects || [], // Ensure it's an array of subject names
+  //     promoted_to: formData.promoted_to || "",
+  //     attendance: formData.attendance || "",
+  //     fee_month: formData.fee_month || "",
+  //     part_of: formData.part_of || "",
+  //     games: selectedActivities || [], // Ensure it's an array of game names
+  //     application_date: formatDateString(formData.application_date),
+  //     conduct: formData.conduct || "",
+  //     reason_leaving: formData.reason_leaving || "",
+  //     remark: formData.remark || "",
+  //     academic_yr: formData.academic_yr || "",
+  //     stud_id: formData.stud_id || "",
+  //     udise_pen_no: formData.udise_pen_no || "",
+  //   };
+
+  //   try {
+  //     setLoading(true);
+  //     const token = localStorage.getItem("authToken");
+  //     if (!token) throw new Error("No authentication token found");
+
+  //     // response= await axios.put(
+  //     //   `${API_URL}/api/update_leavingcertificate/${student?.sr_no}`,
+  //     //   formattedFormData,
+  //     //   {
+  //     //     headers: { Authorization: `Bearer ${token}` },
+  //     //     responseType: "blob", // For PDF response
+  //     //   }
+  //     // );
+  //     // 1️⃣ Save First If slc_no is Present
+  //     if (student?.slc_no) {
+  //       var response = await axios.post(
+  //         `${API_URL}/api/save_pdfleavingcertificate`,
+  //         formattedFormData,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         }
+  //       );
+  //     }
+
+  //     // 2️⃣ Then Update and Download
+  //     // const response = await axios.put(
+  //     //   `${API_URL}/api/update_leavingcertificate/${student?.sr_no}`,
+  //     //   formattedFormData,
+  //     //   {
+  //     //     headers: { Authorization: `Bearer ${token}` },
+  //     //     responseType: "blob",
+  //     //   }
+  //     // );
+
+  //     if (response.status === 200) {
+  //       toast.success("LC Certificate Updated successfully!");
+  //       // Extract filename from Content-Disposition header
+  //       const contentDisposition = response.headers["content-disposition"];
+  //       let filename = "DownloadedFile.pdf"; // Fallback name
+
+  //       if (contentDisposition) {
+  //         const match = contentDisposition.match(/filename="(.+?)"/);
+  //         if (match && match[1]) {
+  //           filename = match[1];
+  //         }
+  //       }
+  //       // Download PDF
+  //       const pdfBlob = new Blob([response.data], { type: "application/pdf" });
+  //       const pdfUrl = URL.createObjectURL(pdfBlob);
+  //       const link = document.createElement("a");
+  //       link.href = pdfUrl;
+  //       link.download = filename;
+  //       document.body.appendChild(link);
+  //       link.click();
+  //       document.body.removeChild(link);
+
+  //       // Reset form data
+  //       setFormData({
+  //         sr_no: "",
+  //         grn_no: "",
+  //         date: "",
+  //         first_name: "",
+  //         mid_name: "",
+  //         last_name: "",
+  //         udise_pen_no: "",
+  //         student_id_no: "",
+  //         promoted_to: " ",
+  //         last_exam: "",
+  //         stud_id: "",
+  //         // student_UID: "",
+  //         father_name: "",
+  //         mother_name: "",
+  //         religion: "",
+  //         caste: "",
+  //         subcaste: "",
+  //         birth_place: "",
+  //         state: "",
+  //         mother_tongue: "",
+  //         dob: "",
+  //         dob_words: "",
+  //         nationality: "",
+  //         prev_school_class: "",
+  //         date_of_admission: "",
+  //         admission_class: "",
+  //         attendance: "",
+  //         subjectsFor: [],
+  //         subjects: [],
+  //         selectedActivities: [],
+
+  //         reason_leaving: "",
+  //         application_date: "",
+  //         leaving_date: "",
+  //         standard_studying: "",
+  //         dob_proof: "",
+  //         class_id_for_subj: "",
+  //         aadhar_no: "",
+  //         teacher_image_name: null,
+  //         academicStudent: [],
+  //         academic_yr: "", // Add this to track selected academic year
+  //         part_of: "",
+  //       });
+  //       setSelectedClass(null);
+  //       setSelectedStudent(null);
+
+  //       setTimeout(() => setParentInformation(null), 3000);
+
+  //       // Navigate to the desired route after successful update
+  //       navigate("/leavingCertificate");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error.response?.data || error.message);
+  //     toast.error("An error occurred while Updated the LC Certificate.");
+
+  //     if (error.response && error.response.data) {
+  //       setBackendErrors(error.response.data);
+  //     } else {
+  //       toast.error("Unknown error occurred.");
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleCheckboxChange = (event) => {
     const { value, checked } = event.target;
@@ -889,7 +1039,7 @@ const EditLCforDeleteStudent = () => {
   };
 
   // Log or save selectedActivities when needed
-  console.log("____activity", selectedActivities);
+  console.log("____activity--->", formData.selectedActivities);
   // Handle selection of each subject
   const handleSubjectSelection = (e, subjectName) => {
     setFormData((prevData) => {
@@ -923,7 +1073,7 @@ const EditLCforDeleteStudent = () => {
         {/* <div className="card p-4 rounded-md "> */}
         <div className=" card-header mb-4 flex justify-between items-center  ">
           <h5 className="text-gray-700 mt-1 text-md lg:text-lg">
-            Edit Deleted Student LC
+            Generate Deleted Student LC
           </h5>
 
           <RxCross1
@@ -2014,10 +2164,10 @@ const EditLCforDeleteStudent = () => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                     ></path>
                   </svg>
-                  Loading...
+                  Generating...
                 </span>
               ) : (
-                "Update"
+                "Generate PDF"
               )}
             </button>
           </div>

@@ -525,7 +525,7 @@
 // working  hover and onclick on navbar
 
 import { NavDropdown } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./AdminNavBar.css"; // Attach the CSS file
 import { IoIosHelpCircleOutline } from "react-icons/io";
 import { useState, useEffect, useRef } from "react";
@@ -535,6 +535,7 @@ const AdminNavBar = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [clickedDropdown, setClickedDropdown] = useState(null);
   const menuRef = useRef(null);
+  const navigate = useNavigate();
 
   // 🔹 Toggle Dropdown on Click
   const toggleDropdown = (dropdownName) => {
@@ -576,12 +577,15 @@ const AdminNavBar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
+  const handleTicketClick = () => {
+    // Navigate to the "Coming Soon" page
+    navigate("/comingSoon");
+  };
   return (
     <>
       <Nav ref={menuRef}>
-        {/* Role Dropdown */}
-        <NavDropdown
+        {/* Role Dropdown now we have hide this*/}
+        {/* <NavDropdown
           title={<span className="nav-dropdown-title">Role</span>}
           className="custom-nav-dropdown"
         >
@@ -594,7 +598,7 @@ const AdminNavBar = () => {
           <NavDropdown.Item as={Link} to="/show_roles">
             Manage Access
           </NavDropdown.Item>
-        </NavDropdown>
+        </NavDropdown> */}
 
         {/* My Actions Dropdown */}
         <NavDropdown
@@ -729,7 +733,38 @@ const AdminNavBar = () => {
               Leave Application
             </NavDropdown.Item>
           </NavDropdown>
-
+          {/* Time Table Planner */}
+          {/* Leave Sub-dropdown */}
+          <NavDropdown
+            title={
+              <span
+                className="nav-dropdown-titleSubUnder"
+                onClick={() => toggleDropdown("timetableplanner")}
+                onMouseEnter={() => handleMouseEnter("timetableplanner")}
+              >
+                Time Table Planner
+              </span>
+            }
+            className="dropend custom-submenu"
+            show={openDropdown === "timetableplanner"}
+            onMouseLeave={handleMouseLeave}
+          >
+            <NavDropdown.Item as={Link} to="/teacherPeriodAlloction">
+              Teacher Period Allocation
+            </NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/classWisePAllot">
+              Class Wise Period Allocation
+            </NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/timetablePlanner">
+              Time Table Planner
+            </NavDropdown.Item>
+            {/* <NavDropdown.Item as={Link} to="#">
+              
+            </NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/LeaveApplication">
+              Leave Application
+            </NavDropdown.Item> */}
+          </NavDropdown>
           {/* Other Items */}
           <NavDropdown.Item as={Link} to="/leavingCertificate">
             Leaving Certificate
@@ -756,8 +791,9 @@ const AdminNavBar = () => {
             Update Category and Religion
           </NavDropdown.Item>
           <NavDropdown.Item as={Link} to="/updateStudentID">
-            Update Student ID Other Details
+            Update Student ID and Other Details
           </NavDropdown.Item>
+
           <NavDropdown.Item as={Link} to="/timeTable">
             Time Table
           </NavDropdown.Item>
@@ -796,27 +832,13 @@ const AdminNavBar = () => {
         {/* View Dropdown */}
 
         <NavDropdown
-          // title=""
           title={<span className="nav-dropdown-title">View</span>}
-          className="custom-nav-dropdown"
-          style={{ color: "black", fontWeight: "700" }}
+          className="relative cursor-pointer"
+          style={{ color: "black", fontWeight: "800" }}
+          onClick={handleTicketClick} // Trigger navigation when clicked
         >
-          <NavDropdown.Item
-            as={Link}
-            to="#"
-            className="text-sm font-bold hover:text-black"
-          >
-            Notices/SMS for Staff
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="#"
-            className="text-sm font-bold hover:text-black"
-          >
-            Book Availability
-          </NavDropdown.Item>
+          {/* You can leave the dropdown empty or add other items if needed */}
         </NavDropdown>
-
         {/* Reports Dropdown */}
         <NavDropdown
           // title=""
@@ -824,157 +846,189 @@ const AdminNavBar = () => {
           className="custom-nav-dropdown"
           style={{ color: "black", fontWeight: "700" }}
         >
-          <NavDropdown.Item
-            as={Link}
-            to="/listAdmFrmRep"
-            className="text-sm font-bold hover:text-black"
+          <div
+            style={{
+              maxHeight: "400px",
+              overflowY: "auto",
+              scrollbarWidth: "thin", // For Firefox
+              scrollbarColor: "#C03178 transparent", // For Firefox
+              msOverflowStyle: "none", // Hide scrollbar in IE and Edge
+            }}
           >
-            List of Admission Forms Report
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/balanceleave"
-            className="text-sm font-bold hover:text-black"
-          >
-            Balance Leave
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/consolidatedLeave"
-            className="text-sm font-bold hover:text-black"
-          >
-            Consolidated Leave
-          </NavDropdown.Item>
-          {/* <NavDropdown.Item
-            as={Link}
-            to="/studentReport"
-            // to="#"
-            className="text-sm font-bold hover:text-black"
-          >
-            Student Report
-          </NavDropdown.Item> */}
-          <NavDropdown.Item
-            as={Link}
-            to="/studentContactDetailsReport"
-            className="text-sm font-bold hover:text-black"
-          >
-            Student Contact Details Report
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/studentRemarkReport"
-            className="text-sm font-bold hover:text-black"
-          >
-            Student Remarks Report
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/catWiseStudRepo"
-            className="text-sm font-bold hover:text-black"
-          >
-            Student - Category wise Report
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/relgWiseStudRepo"
-            className="text-sm font-bold hover:text-black"
-          >
-            Student - Religion wise Report
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/gendrWiseStudRepo"
-            // to="#"
-            className="text-sm font-bold hover:text-black"
-          >
-            Student - Gender wise Report
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/genWiseRelignRepo"
-            className="text-sm font-bold hover:text-black"
-          >
-            Student -Genderwise Religionwise Report
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/genWiseCatRepo"
-            className="text-sm font-bold hover:text-black"
-          >
-            Student - Genderwise Categorywise Report
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/newStudentsRepo"
-            className="text-sm font-bold hover:text-black"
-          >
-            New Students Report
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/leftStudentsRepo"
-            className="text-sm font-bold hover:text-black"
-          >
-            Left Students Report
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/hSCStudSubjectsRepo"
-            className="text-sm font-bold hover:text-black"
-          >
-            HSC Students Subjects Report
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/staffReport"
-            className="text-sm font-bold hover:text-black"
-          >
-            Staff Report
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="/feePaymentRepo"
-            className="text-sm font-bold hover:text-black"
-          >
-            Fees Payment Report
-          </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/listAdmFrmRep"
+              className="text-sm font-bold hover:text-black"
+            >
+              List of Admission Forms Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/balanceleave"
+              className="text-sm font-bold hover:text-black"
+            >
+              Balance Leave
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/consolidatedLeave"
+              className="text-sm font-bold hover:text-black"
+            >
+              Consolidated Leave
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/studentReport"
+              // to="#"
+              className="text-sm font-bold hover:text-black"
+            >
+              Student Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/studentContactDetailsReport"
+              className="text-sm font-bold hover:text-black"
+            >
+              Student Contact Details Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/studentRemarkReport"
+              className="text-sm font-bold hover:text-black"
+            >
+              Student Remarks Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/catWiseStudRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Student - Category wise Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/relgWiseStudRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Student - Religion wise Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/gendrWiseStudRepo"
+              // to="#"
+              className="text-sm font-bold hover:text-black"
+            >
+              Student - Gender wise Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/genWiseRelignRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Student -Genderwise Religionwise Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/genWiseCatRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Student - Genderwise Categorywise Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/newStudentsRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              New Students Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/leftStudentsRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Left Students Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/hSCStudSubjectsRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              HSC Students Subjects Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/staffReport"
+              className="text-sm font-bold hover:text-black"
+            >
+              Staff Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/monthlyAttendenceRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Monthly Attendance Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/feePaymentRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Fees Payment Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/worldlinfeePayRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Worldline Fee Payment Report{" "}
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/rozorpayfeePayRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Razorpay Fee Payment Report{" "}
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/PndingStudIdCrdRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Pending Student ID Card Report
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/SubsTeaMonthlyRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Substitute Teacher Monthly Report{" "}
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/SubsWklyHrsRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Substitution Weekly Hours Report{" "}
+            </NavDropdown.Item>
+            <NavDropdown.Item
+              as={Link}
+              to="/LeavCertifRepo"
+              className="text-sm font-bold hover:text-black"
+            >
+              Leaving Certificate Report
+            </NavDropdown.Item>
+          </div>
         </NavDropdown>
 
         {/* Ticket Dropdown */}
         <NavDropdown
-          // title=""
           title={<span className="nav-dropdown-title">Ticket</span>}
-          className="custom-nav-dropdown"
-          style={{ color: "black", fontWeight: "700" }}
+          className="relative cursor-pointer"
+          style={{ color: "black", fontWeight: "800" }}
+          onClick={handleTicketClick} // Trigger navigation when clicked
         >
-          <NavDropdown.Item
-            as={Link}
-            to="#"
-            className="text-sm font-bold hover:text-black"
-          >
-            T1
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="#"
-            className="text-sm font-bold hover:text-black"
-          >
-            T2
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="#"
-            className="text-sm font-bold hover:text-black"
-          >
-            T3
-          </NavDropdown.Item>
-          <NavDropdown.Item
-            as={Link}
-            to="#"
-            className="text-sm font-bold hover:text-black"
-          >
-            T4
-          </NavDropdown.Item>
+          {/* You can leave the dropdown empty or add other items if needed */}
         </NavDropdown>
 
         {/* Masters Dropdown */}

@@ -1994,7 +1994,7 @@ function CreateStaff() {
         >
           {" "}
           {loading ? (
-            <div className=" inset-0 flex items-center justify-center bg-gray-50  z-10">
+            <div className=" inset-0  h-52 flex items-center justify-center bg-gray-50  z-10">
               <Loader /> {/* Replace this with your loader component */}
             </div>
           ) : (
@@ -2138,9 +2138,9 @@ function CreateStaff() {
                   <option className="bg-gray-300" value="">
                     Select
                   </option>{" "}
-                  <option value="trained-PGT">trained-PGT</option>
-                  <option value="trained-TGT">trained-TGT</option>{" "}
-                  <option value="trained-PRT">trained-PRT</option>
+                  <option value="Trained-PGT">Trained-PGT</option>
+                  <option value="Trained-TGT">Trained-TGT</option>{" "}
+                  <option value="Trained-PRT">Trained-PRT</option>
                   <option value="NTT">NTT</option>
                   <option value="ECCE">ECCE</option>
                   <option value="Untrained">Untrained</option>
@@ -2316,9 +2316,9 @@ function CreateStaff() {
                   <option className=" bg-gray-300" value="">
                     Select
                   </option>
-                  <option value="M">Male</option>
-                  <option value="F">Female</option>
-                  <option value="O">Other</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
                 </select>
                 {errors.sex && (
                   <span className="text-red-500 text-xs">{errors.sex}</span>

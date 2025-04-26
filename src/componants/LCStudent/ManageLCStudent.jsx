@@ -51,6 +51,9 @@ function ManageLCStudent() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const previousPageRef = useRef(0);
+  const prevSearchTermRef = useRef("");
+
   const pageSize = 10;
   useEffect(() => {
     fetchClassNames();
@@ -265,7 +268,20 @@ function ManageLCStudent() {
     setShowEditModal(false);
     setShowDeleteModal(false);
   };
+  useEffect(() => {
+    const trimmedSearch = searchTerm.trim().toLowerCase();
 
+    if (trimmedSearch !== "" && prevSearchTermRef.current === "") {
+      previousPageRef.current = currentPage;
+      setCurrentPage(0);
+    }
+
+    if (trimmedSearch === "" && prevSearchTermRef.current !== "") {
+      setCurrentPage(previousPageRef.current);
+    }
+
+    prevSearchTermRef.current = trimmedSearch;
+  }, [searchTerm]);
   const filteredSections = subjects.filter((section) => {
     // Convert the fields to lowercase for case-insensitive comparison
     const subjectNameIs = section?.student_name.toLowerCase() || "";
@@ -278,6 +294,10 @@ function ManageLCStudent() {
       slcNoIs.includes(searchTermLower)
     );
   });
+
+  useEffect(() => {
+    setPageCount(Math.ceil(filteredSections.length / pageSize));
+  }, [filteredSections, pageSize]);
 
   const displayedSections = filteredSections.slice(
     currentPage * pageSize,
@@ -394,10 +414,7 @@ function ManageLCStudent() {
                               let showDeleteButton = subject.IsDelete === "N"; // Show delete button if IsDelete is "N"
 
                               return (
-                                <tr
-                                  key={subject.sr_no}
-                                  className=" text-sm font-light"
-                                >
+                                <tr key={subject.sr_no} className=" text-sm ">
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                     {currentPage * pageSize + index + 1}
                                   </td>
