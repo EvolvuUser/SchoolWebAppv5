@@ -220,7 +220,7 @@ import TimetablePlanner from "../componants/TimeTablePlanner/TimeTablePlanner.js
 import MonthlyAttendenceReport from "../componants/Reports/MonthlyAttendanceReport.jsx";
 import ComingSoon from "../componants/common/CommingSoon/ComingSoon.jsx";
 
-// import Menus from "../cfd";
+// import Menus from "../c";
 function Index() {
   return (
     <Routes>
