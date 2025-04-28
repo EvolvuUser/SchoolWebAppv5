@@ -308,9 +308,17 @@ function ManageLCStudent() {
     <>
       {/* <ToastContainer /> */}
       <div className="md:mx-auto md:w-3/4 p-4 bg-white mt-4 ">
-        <h3 className=" mt-1 text-[1.2em] lg:text-xl text-nowrap">
-          LC Students
-        </h3>
+        <div className=" card-header  flex justify-between items-center  ">
+          <h3 className=" mt-1 text-[1.2em] lg:text-xl text-nowrap">
+            LC Students
+          </h3>
+          <RxCross1
+            className="float-end relative -top-1 right-2 text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
+            onClick={() => {
+              navigate("/dashboard");
+            }}
+          />
+        </div>
         <div
           className=" relative  mb-8   h-1  mx-auto bg-red-700"
           style={{
@@ -411,7 +419,9 @@ function ManageLCStudent() {
                             displayedSections.map((subject, index) => {
                               // Determine the status text and button visibility based on conditions
 
-                              let showDeleteButton = subject.IsDelete === "N"; // Show delete button if IsDelete is "N"
+                              let showDeleteButton =
+                                subject?.IsDelete === "N" &&
+                                subject?.isPromoted !== "Y"; // Show delete button if IsDelete is "N"
 
                               return (
                                 <tr key={subject.sr_no} className=" text-sm ">
@@ -445,8 +455,7 @@ function ManageLCStudent() {
                                       .replace(/\s+/g, " ")}
                                   </td>
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                    {subject?.classname}
-                                    {subject?.sectionname}
+                                    {subject?.classname} {subject?.sectionname}
                                   </td>
 
                                   {/* Delete button */}
