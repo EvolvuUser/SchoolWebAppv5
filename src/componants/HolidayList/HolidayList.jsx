@@ -50,6 +50,7 @@ function HolidayList() {
   const [dateLimits, setDateLimits] = useState({ min: "", max: "" });
   // const [formData, setFormData] = useState({ holiday_date: "" });
 
+  const today = new Date().toISOString().split("T")[0];
   const [formData, setFormData] = useState({
     title: "",
     holiday_date: "",
@@ -106,7 +107,7 @@ function HolidayList() {
         const academicYear = response.data.data[0].academic_yr; // Assuming first entry has the academic year
         setDateLimits(getDateLimits(academicYear)); // Set the min/max dates
       }
-
+      console.log("holiday list", response.data.data);
       setHolidays(response.data.data || []);
       setPageCount(Math.ceil(response.data.data.length / pageSize));
     } catch (error) {
@@ -120,7 +121,7 @@ function HolidayList() {
     fetchSessionData();
     console.log("session.data", fetchSessionData);
 
-    // fetchHolidays();
+    fetchHolidays();
 
     // If data is posted successfully, reset the flag and refetch
     if (isDataPosted) {
@@ -138,17 +139,94 @@ function HolidayList() {
     setShowAddModal(true);
   };
 
+  // const handleSubmitAdd = async () => {
+  //   if (isSubmitting) return; // Prevent duplicate submissions
+  //   setIsSubmitting(true);
+
+  //   const { title, holiday_date, to_date } = formData;
+
+  //   console.log("data", { title, holiday_date, to_date });
+
+  //   let formHasErrors = false;
+  //   let errorMessages = {};
+
+  //   if (!title) {
+  //     formHasErrors = true;
+  //     errorMessages.title = "Title is required.";
+  //   }
+
+  //   if (!holiday_date) {
+  //     formHasErrors = true;
+  //     errorMessages.holiday_date = "Start Date is required.";
+  //   }
+
+  //   if (formHasErrors) {
+  //     setFieldErrors(errorMessages);
+  //     setIsSubmitting(false);
+  //     toast.dismiss();
+  //     toast.error("Please fill required fields.");
+  //     return;
+  //   }
+
+  //   try {
+  //     const token = localStorage.getItem("authToken");
+  //     if (!token) {
+  //       toast.error("No authentication token found. Please log in again.");
+  //       setIsSubmitting(false);
+  //       return;
+  //     }
+
+  //     const requestData = {
+  //       title,
+  //       holiday_date,
+  //       to_date: to_date || "", // Set empty string if to_date is not provided
+  //     };
+
+  //     const response = await axios.post(
+  //       `${API_URL}/api/save_holiday`,
+  //       requestData,
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+
+  //     const { data } = response;
+
+  //     if (!data.success) {
+  //       toast.error("Holiday already exists.");
+  //       setIsSubmitting(false);
+  //       return;
+  //     }
+
+  //     // Success Handling
+  //     toast.success("Holiday added successfully!");
+  //     setFormData({ title: "", holiday_date: "", to_date: "" });
+  //     setFieldErrors({}); // Reset errors
+  //     fetchHolidays(); // Refresh holiday list
+  //     handleCloseModal(); // Close modal
+  //   } catch (error) {
+  //     console.error("Error adding holiday:", error);
+
+  //     if (!error.response || error.response.status >= 500) {
+  //       toast.error("Server error. Please try again later.");
+  //     }
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
   const handleSubmitAdd = async () => {
     if (isSubmitting) return; // Prevent duplicate submissions
     setIsSubmitting(true);
 
     const { title, holiday_date, to_date } = formData;
 
-    console.log("data", { title, holiday_date, to_date });
+    console.log("Submitting:", { title, holiday_date, to_date });
 
     let formHasErrors = false;
     let errorMessages = {};
 
+    // Validation
     if (!title) {
       formHasErrors = true;
       errorMessages.title = "Title is required.";
@@ -159,11 +237,16 @@ function HolidayList() {
       errorMessages.holiday_date = "Start Date is required.";
     }
 
+    if (to_date && holiday_date && to_date < holiday_date) {
+      formHasErrors = true;
+      errorMessages.to_date = "End Date must be same or after Start Date.";
+    }
+
     if (formHasErrors) {
       setFieldErrors(errorMessages);
       setIsSubmitting(false);
       toast.dismiss();
-      toast.error("Please fill required fields.");
+      toast.error("Please fill all required fields correctly.");
       return;
     }
 
@@ -178,7 +261,7 @@ function HolidayList() {
       const requestData = {
         title,
         holiday_date,
-        to_date: to_date || "", // Set empty string if to_date is not provided
+        to_date: to_date || "", // Send empty string if to_date is not provided
       };
 
       const response = await axios.post(
@@ -192,22 +275,25 @@ function HolidayList() {
       const { data } = response;
 
       if (!data.success) {
-        toast.error("Holiday already exists.");
+        toast.error("Holiday already exists or failed to add.");
         setIsSubmitting(false);
         return;
       }
 
-      // Success Handling
+      // ✅ Success
       toast.success("Holiday added successfully!");
       setFormData({ title: "", holiday_date: "", to_date: "" });
-      setFieldErrors({}); // Reset errors
-      fetchHolidays(); // Refresh holiday list
+      setFieldErrors({}); // Clear errors
+
+      await fetchHolidays(); // Refresh list
       handleCloseModal(); // Close modal
     } catch (error) {
       console.error("Error adding holiday:", error);
 
       if (!error.response || error.response.status >= 500) {
         toast.error("Server error. Please try again later.");
+      } else {
+        toast.error("Failed to add holiday. Please check your input.");
       }
     } finally {
       setIsSubmitting(false);
@@ -307,6 +393,8 @@ function HolidayList() {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      console.log("response of holiday list", response);
 
       if (!response.data.success) {
         toast.error(response.data.message || "Failed to update holiday.");
@@ -609,6 +697,7 @@ function HolidayList() {
     setFormData({ title: "", holiday_date: "", to_date: "" }); // Clear the form data when closing
     setFieldErrors({ message: "" }); // Reset any errors
     setShowAddModal(false);
+
     setShowEditModal(false);
     setShowDeleteModal(false);
     setShowDActiveModal(false);
@@ -647,12 +736,25 @@ function HolidayList() {
   };
 
   // Handle file selection
+  // const handleFileChange = (event) => {
+  //   const file = event.target.files[0];
+  //   setSelectedFile(file); // Set the selected file to state
+  //   setErrorMessage(""); // Clear any previous error
+  //   setUploadStatus(""); // Clear any previous success
+  //   setErrorMessageUrl("");
+  // };
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    setSelectedFile(file); // Set the selected file to state
-    setErrorMessage(""); // Clear any previous error
-    setUploadStatus(""); // Clear any previous success
-    setErrorMessageUrl("");
+
+    if (file) {
+      setSelectedFile(file);
+      setErrorMessage("");
+      setUploadStatus("");
+      setErrorMessageUrl("");
+
+      // Reset input value so same file can be selected again
+      event.target.value = null;
+    }
   };
 
   const downloadCsv = async (fileUrl) => {
@@ -689,15 +791,16 @@ function HolidayList() {
       return;
     }
 
-    // Regular expression to allow "holidaylist.csv", "holidaylist(1).csv", "holidaylist(2).csv", etc.
-    const fileNamePattern = /^holidaylist(\s\(\d+\))?\.csv$/;
+    const fileNamePattern = /^holidaylist(\s?\(\d+\))?\.csv$/;
+    const rejectedFileName = /^rejected_template(\s?\(\d+\))?\.csv$/;
 
     const fileName = selectedFile.name.trim();
 
     // Check if the file name matches the allowed pattern
-    if (!fileNamePattern.test(fileName)) {
+    if (!fileNamePattern.test(fileName) && !rejectedFileName.test(fileName)) {
       toast.warning(
-        "⚠️ Invalid file name! Please select 'holidaylist.csv' or 'holidaylist(x).csv' (e.g., 'holidaylist(1).csv')."
+        "⚠️ Please check if correct file is selected for upload. The file name should be holidaylist or rejected_template."
+        //  Invalid file name! Please select 'holidaylist.csv' or 'holidaylist(x).csv' (e.g., 'holidaylist(1).csv').
       );
       return;
     }
@@ -807,6 +910,8 @@ function HolidayList() {
       );
     });
 
+  console.warn("Filtered Sections ", filteredSections);
+
   useEffect(() => {
     setPageCount(Math.ceil(filteredSections.length / pageSize));
   }, [filteredSections, pageSize]);
@@ -815,7 +920,7 @@ function HolidayList() {
     currentPage * pageSize,
     (currentPage + 1) * pageSize
   );
-  // console.log("displayted sections", displayedSections);
+  console.log("displayted sections", displayedSections);
 
   return (
     <>
@@ -877,14 +982,12 @@ function HolidayList() {
                       </h5>
 
                       <p className="text-sm text-gray-600 mb-4">
-                        # Do not change the name of the file. Do not change the
-                        contents of first 4 columns in the downloaded
-                        excelsheet.
+                        # Do not change the name of the file.
                         <br /># Please click on the button below to select the
                         file which was downloaded in the previous step.
                       </p>
 
-                      <label className="mt-2 bg-blue-600 md:w-[45%] overflow-hidden text-white rounded-full text-xs  px-6 py-3 hover:bg-blue-700 cursor-pointer transition duration-200 whitespace-nowrap">
+                      <label className="mt-4 bg-blue-600 md:w-[45%] overflow-hidden text-white rounded-full text-xs  px-6 py-3 hover:bg-blue-700 cursor-pointer transition duration-200 whitespace-nowrap">
                         <i className="fas fa-upload text-lg "></i>{" "}
                         {selectedFile
                           ? selectedFile.name.length > 20
@@ -936,7 +1039,7 @@ function HolidayList() {
 
                       <button
                         onClick={handleUpload}
-                        className="mt-16 bg-blue-600 text-white text-xs rounded-full px-6 py-3 hover:bg-blue-700 transition duration-200"
+                        className="mt-12 bg-blue-600 text-white text-xs rounded-full px-6 py-3 hover:bg-blue-700 transition duration-200"
                         disabled={loading} // Disable button during loading
                       >
                         {" "}
@@ -1075,13 +1178,17 @@ function HolidayList() {
                                 </td>
 
                                 <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                  {formatDate(holiday.holiday_date)}
+                                  {holiday.holiday_date == "0000-00-00"
+                                    ? " "
+                                    : formatDate(holiday.holiday_date)}
                                   {/* {holiday.holiday_date} */}
                                 </td>
 
                                 <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                  {formatDate(holiday.to_date || "")}
-                                  {/* {holiday.to_date} */}
+                                  {/* {formatDate(holiday.to_date || "")} */}
+                                  {holiday.to_date == "0000-00-00"
+                                    ? " "
+                                    : formatDate(holiday.to_date)}
                                 </td>
 
                                 <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
@@ -1138,6 +1245,7 @@ function HolidayList() {
                       </table>
                     </div>
                     <div className=" flex justify-center pt-2 -mb-3">
+                      {/* {filteredSections.length > pageSize && ( */}
                       <ReactPaginate
                         previousLabel={"Previous"}
                         nextLabel={"Next"}
@@ -1148,7 +1256,7 @@ function HolidayList() {
                         marginPagesDisplayed={1}
                         pageRangeDisplayed={1}
                         onPageChange={handlePageClick}
-                        containerClassName={"pagination"}
+                        containerClassName={"pagination justify-content-center"}
                         pageClassName={"page-item"}
                         pageLinkClassName={"page-link"}
                         previousClassName={"page-item"}
@@ -1157,6 +1265,7 @@ function HolidayList() {
                         nextLinkClassName={"page-link"}
                         activeClassName={"active"}
                       />
+                      {/* )} */}
                     </div>
                   </div>
                 </div>
@@ -1216,7 +1325,7 @@ function HolidayList() {
                     </div>
                   </div>
 
-                  <div className=" relative mb-4 flex justify-center  mx-4">
+                  {/* <div className=" relative mb-4 flex justify-center  mx-4">
                     <label htmlFor="holiday_date" className="w-1/2 mt-2">
                       Start Date<span className="text-red-500">*</span>
                     </label>
@@ -1253,13 +1362,52 @@ function HolidayList() {
                       min={dateLimits.min} // Restrict min date
                       max={dateLimits.max} // Restrict max date
                     />
+                  </div> */}
+
+                  <div className="relative mb-4 flex justify-center mx-4">
+                    <label htmlFor="holiday_date" className="w-1/2 mt-2">
+                      Start Date<span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="holiday_date"
+                      className="form-control shadow-md"
+                      type="date"
+                      name="holiday_date"
+                      value={formData.holiday_date}
+                      onChange={handleChangeInput}
+                      min={dateLimits.min || today}
+                      max={dateLimits.max}
+                    />
+                    <div className="absolute top-9 left-1/3">
+                      {fieldErrors.holiday_date && (
+                        <span className="text-danger text-xs">
+                          {fieldErrors.holiday_date}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="relative mb-4 flex justify-center mx-4">
+                    <label htmlFor="to_date" className="w-1/2 mt-2">
+                      End Date
+                    </label>
+                    <input
+                      id="to_date"
+                      className="form-control shadow-md"
+                      type="date"
+                      name="to_date"
+                      value={formData.to_date}
+                      onChange={handleChangeInput}
+                      min={formData.holiday_date || today} // Use Start Date as min, fallback to today
+                      max={dateLimits.max || ""}
+                    />
                     {/* <div className="absolute top-9 left-1/3">
-                        {fieldErrors.to_date && (
-                          <span className="text-danger text-xs">
-                            {fieldErrors.to_date}
-                          </span>
-                        )}
-                      </div> */}
+                    {fieldErrors.to_date && (
+                    <span className="text-danger text-xs">
+                        {fieldErrors.to_date}
+                    </span>
+                     )}
+                    </div> */}
                   </div>
                 </div>
                 {/* <div className="modal-footer d-flex justify-content-end"> */}
@@ -1390,7 +1538,7 @@ function HolidayList() {
                     </div>
                   </div>
 
-                  <div className=" relative mb-4 flex justify-center  mx-4">
+                  {/* <div className=" relative mb-4 flex justify-center  mx-4">
                     <label htmlFor="holiday_date" className="w-1/2 mt-2">
                       Start Date<span className="text-red-500">*</span>
                     </label>
@@ -1427,13 +1575,52 @@ function HolidayList() {
                       min={dateLimits.min} // Restrict min date
                       max={dateLimits.max} // Restrict max date
                     />
+                  </div> */}
+
+                  <div className="relative mb-4 flex justify-center mx-4">
+                    <label htmlFor="holiday_date" className="w-1/2 mt-2">
+                      Start Date<span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="holiday_date"
+                      className="form-control shadow-md"
+                      type="date"
+                      name="holiday_date"
+                      value={formData.holiday_date}
+                      onChange={handleChangeInput}
+                      min={dateLimits.min}
+                      max={dateLimits.max}
+                    />
+                    <div className="absolute top-9 left-1/3">
+                      {fieldErrors.holiday_date && (
+                        <span className="text-danger text-xs">
+                          {fieldErrors.holiday_date}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="relative mb-4 flex justify-center mx-4">
+                    <label htmlFor="to_date" className="w-1/2 mt-2">
+                      End Date
+                    </label>
+                    <input
+                      id="to_date"
+                      className="form-control shadow-md"
+                      type="date"
+                      name="to_date"
+                      value={formData.to_date}
+                      onChange={handleChangeInput}
+                      min={formData.holiday_date || dateLimits.min} // Dynamically restrict min
+                      max={dateLimits.max}
+                    />
                     {/* <div className="absolute top-9 left-1/3">
-                        {fieldErrors.to_date && (
-                          <span className="text-danger text-xs">
-                            {fieldErrors.to_date}
-                          </span>
-                        )}
-                      </div> */}
+                      {fieldErrors.to_date && (
+                        <span className="text-danger text-xs">
+                          {fieldErrors.to_date}
+                        </span>
+                      )}
+                    </div> */}
                   </div>
                 </div>
 

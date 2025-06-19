@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 // import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Styles from "./EventCard.module.css"; // Import CSS module
-import Loader from "../common/Loader";
+import Loader from "../common/LoaderFinal/DashboardLoadder/Loader";
+import { useNavigate } from "react-router-dom";
 
 const EventCard = () => {
   const API_URL = import.meta.env.VITE_API_URL; // url for host
@@ -11,6 +12,7 @@ const EventCard = () => {
   const currentYear = new Date().getFullYear();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const months = [
     { value: 0, label: "January" },
@@ -35,7 +37,10 @@ const EventCard = () => {
       console.log("token is", token);
 
       if (!token) {
-        throw new Error("No authentication token found");
+        // toast.error("Authentication token not found Please login again");
+        navigate("/"); // 👈 Redirect to login
+        return; // 👈
+        // throw new Error("No authentication token found");
       }
 
       const response = await axios.get(
@@ -48,8 +53,6 @@ const EventCard = () => {
           },
           headers: {
             Authorization: `Bearer ${token}`,
-            // "X-Academic-Year": academicYr,
-            // "X-Academic-Year": "2023-2024",
           },
         }
       );
@@ -84,7 +87,7 @@ const EventCard = () => {
     <div className={`  border-2 border-solid h-64 bg-slate-100`}>
       <div className="  m-auto header p-1 flex justify-between items-center bg-gray-200 rounded-t-lg mb-3">
         <span className="lg:text-lg sm:text-xs sm:font-semibold text-gray-500 mb-1">
-          Events_List
+          Events List
         </span>
 
         {/* <div
@@ -115,9 +118,9 @@ const EventCard = () => {
         >
           {filteredEvents.length ? (
             filteredEvents.map((event, index) => (
-              <div key={index} className={`${Styles.eventCard} rounded-lg `}>
+              <div key={index} className={`${Styles.eventCard}  rounded-lg `}>
                 <div
-                  className={` h-full box-border max-w-3/4 px-2  bg-gray-500   text-cyan-900 text-lg rounded-l-lg      `}
+                  className={` h-full box-border  max-w-3/4 px-2  bg-gray-500   text-cyan-900 text-lg rounded-l-lg      `}
                   style={{ background: "#00FFFF", color: "#C3347D" }}
                 >
                   <div
@@ -126,19 +129,20 @@ const EventCard = () => {
                     {" "}
                     <span className="    flex flex-col justify-start max-h-10px">
                       <p className=" relative top-4 text-2.5em w-8 mx-auto font-medium text-center h-8 bg-gray-600 text-white rounded-lg">
-                        {new Date(event.start_date).getDate() + 1}{" "}
+                        {event.start_date.split("-")[2] || ""}
+                        {/* {new Date(event.start_date).getDate() + 1}{" "} */}
                       </p>
                       <p>
                         {new Date(event.start_date).toLocaleString("default", {
                           month: "long",
-                        })}
+                        }) || " "}
                       </p>
                       <p>
                         <span
                           style={{ color: "#C3347D" }}
                           className=" relative bottom-4 text-[.8em]"
                         >
-                          {event.start_time}
+                          {event?.start_time || " "}
                         </span>
                       </p>
                     </span>
@@ -158,11 +162,11 @@ const EventCard = () => {
                     {event.title}{" "}
                     <span
                       style={{ color: "#C334A2" }}
-                    >{` (class-${event.class_name})`}</span>
+                    >{` (class-${event?.class_name})`}</span>
                   </h5>
                   <div className="mb-3">
                     <div
-                      className={`${Styles.discription} box-border shadow-inner mb-0 p-2 text-sm sm:mb-1 mt-0 text-gray-800`}
+                      className={`${Styles?.discription} box-border shadow-inner mb-0 p-2 text-sm sm:mb-1 mt-0 text-gray-800`}
                       style={{
                         maxHeight: "80px", // Adjust height as needed
                         overflowY: "auto", // Enables vertical scrolling
@@ -171,7 +175,7 @@ const EventCard = () => {
                         backgroundColor: "#f9f9f9", // Optional: Light background
                       }}
                     >
-                      {event.event_desc}
+                      {event?.event_desc}
                     </div>
                     <p
                       style={{
@@ -182,11 +186,14 @@ const EventCard = () => {
                         marginBottom: "-10px",
                       }}
                     >
-                      {`The event will conclude on ${
-                        new Date(event.end_date).getDate() + 1
-                      } ${new Date(event.end_date).toLocaleString("default", {
-                        month: "long",
-                      })} at ${event.end_time}`}
+                      {`The event will conclude on ${new Date(
+                        event.end_date
+                      ).getDate()} ${new Date(event.end_date).toLocaleString(
+                        "default",
+                        {
+                          month: "long",
+                        }
+                      )} at ${event?.end_time}`}
                     </p>
                   </div>
                 </div>
@@ -194,7 +201,7 @@ const EventCard = () => {
             ))
           ) : (
             <div className="relative left-[1%] w-[100%] text-center flex justify-center items-center mt-10">
-              <div className="flex flex-col items-center justify-center text-center py-10 animate-bounce">
+              <div className="flex flex-col items-center justify-center text-center ">
                 <p className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-400 to-pink-500 drop-shadow-md mb-3">
                   Oops!{" "}
                 </p>

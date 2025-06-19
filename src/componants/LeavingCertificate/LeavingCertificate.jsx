@@ -19,6 +19,8 @@ const LeavingCertificate = () => {
   const [nameError, setNameError] = useState("");
   const [nameErrorForClass, setNameErrorForClass] = useState("");
   const [selectedClass, setSelectedClass] = useState(null);
+  const [selectedClassForSubject, setSelectedClassForSubject] = useState("");
+
   const [parentInformation, setParentInformation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingForSearch, setLoadingForSearch] = useState(false);
@@ -280,8 +282,22 @@ const LeavingCertificate = () => {
     }
   };
 
+  // const handleClassSelect = (selectedOption) => {
+  //   setSelectedClass(selectedOption);
+  //   setSelectedClassForSubject(selectedOption?.label);
+  //   setSelectedStudent(null);
+  //   setSelectedStudentId(null);
+  //   setClassIdForSearch(selectedOption?.value);
+  //   fetchStudentNameWithClassId(selectedOption?.value);
+  // };
+
   const handleClassSelect = (selectedOption) => {
     setSelectedClass(selectedOption);
+
+    // Extract only class name from label, e.g., "10 A (170)" → "10"
+    const classNameOnly = selectedOption?.label?.split(" ")[0] || "";
+
+    setSelectedClassForSubject(classNameOnly);
     setSelectedStudent(null);
     setSelectedStudentId(null);
     setClassIdForSearch(selectedOption?.value);
@@ -328,20 +344,7 @@ const LeavingCertificate = () => {
       toast.error("Please select Student Name.!");
       return;
     }
-    // Validate if class and student are selected
-    // let hasError = false;
 
-    // if (!selectedClass) {
-    //   setNameErrorForClass("Please select a class.");
-    //   hasError = true;
-    // }
-    // if (!selectedStudent) {
-    //   setNameError("Please select a student.");
-    //   hasError = true;
-    // }
-
-    // // If there are validation errors, exit the function
-    // if (hasError) return;
     setFormData({
       grn_no: "",
       date: "",
@@ -467,101 +470,7 @@ const LeavingCertificate = () => {
       setLoadingForSearch(false);
     }
   };
-  // For FOrm
-  // const validate = () => {
-  //   const newErrors = {};
 
-  //   // Validate General Register No
-  //   if (!formData.grn_no) newErrors.grn_no = "General Register No is required";
-
-  //   // Validate Date
-  //   if (!formData.date) newErrors.date = "Date is required";
-
-  //   // Validate Student Name
-  //   if (!formData.first_name) newErrors.first_name = "Student Name is required";
-  //   else if (!/^[^\d].*/.test(formData.first_name))
-  //     newErrors.first_name = "Student Name should not start with a number";
-
-  //   // Validate Student ID
-  //   if (!formData.stud_id_no) newErrors.stud_id_no = "Student ID is required";
-
-  //   // Validate Father's Name
-  //   if (!formData.father_name)
-  //     newErrors.father_name = "Father's Name is required";
-  //   else if (!/^[^\d].*/.test(formData.father_name))
-  //     newErrors.father_name = "Father's Name should not start with a number";
-
-  //   // Validate Mother's Name
-  //   if (!formData.mother_name)
-  //     newErrors.mother_name = "Mother's Name is required";
-
-  //   // Validate Class and Division
-  //   if (!formData.class_division)
-  //     newErrors.class_division = "Class and Division is required";
-
-  //   // Validate Birth Place
-  //   if (!formData.birthPlace) newErrors.birthPlace = "Birth Place is required";
-
-  //   // Validate State
-  //   if (!formData.state) newErrors.state = "State is required";
-
-  //   // Validate Mother Tongue
-  //   if (!formData.mother_tongue)
-  //     newErrors.mother_tongue = "Mother Tongue is required";
-
-  //   // Validate Date of Birth
-  //   if (!formData.dob) newErrors.dob = "Date of Birth is required";
-
-  //   // Validate Birth Date in Words
-  //   if (!formData.dob_words)
-  //     newErrors.dob_words = "Birth date in words is required";
-
-  //   // Validate Nationality
-  //   if (!formData.nationality)
-  //     newErrors.nationality = "Nationality is required";
-
-  //   // Validate Previous School and Class
-  //   if (!formData.prev_school_class)
-  //     newErrors.prev_school_class =
-  //       "Previous School and Class is required";
-
-  //   // Validate Date of Admission
-  //   if (!formData.admission_date)
-  //     newErrors.admission_date = "Date of Admission is required";
-
-  //   // Validate Learning History
-  //   if (!formData.admission_class)
-  //     newErrors.admission_class = "Learning History is required";
-
-  //   // Validate Progress Report
-  //   if (!formData.progress)
-  //     newErrors.progress = "Progress Report is required";
-
-  //   // Validate Behavior
-  //   if (!formData.behaviour) newErrors.behaviour = "Behavior is required";
-
-  //   // Validate Reason for Leaving
-  //   if (!formData.reason_leaving)
-  //     newErrors.reason_leaving = "Reason for Leaving is required";
-
-  //   // Validate Date of Leaving Certificate
-  //   if (!formData.application_date)
-  //     newErrors.application_date =
-  //       "Date of Leaving Certificate is required";
-
-  //   // Validate Aadhar Card Number
-  //   if (!formData.stu_aadhaar_no)
-  //     newErrors.stu_aadhaar_no = "Aadhar Card No is required";
-
-  //   // Validate Purpose
-  //   if (!formData.purpose || formData.purpose.trim() === "")
-  //     newErrors.purpose = "Purpose is required";
-
-  //   setErrors(newErrors);
-
-  //   // Return true if no errors, false if errors exist
-  //   return Object.keys(newErrors).length === 0;
-  // };
   const validate = () => {
     const newErrors = {};
 
@@ -1070,6 +979,7 @@ const LeavingCertificate = () => {
           part_of: "",
         });
         setSelectedClass(null);
+        setSelectedClassForSubject("");
         setSelectedStudent(null);
 
         setTimeout(() => setParentInformation(null), 3000);
@@ -1087,7 +997,53 @@ const LeavingCertificate = () => {
       setLoading(false);
     }
   };
+  const handleBack = () => {
+    setFormData({
+      sr_no: "",
+      grn_no: "",
+      date: "",
+      first_name: "",
+      mid_name: "",
+      last_name: "",
+      udise_pen_no: "",
+      stud_id_no: "",
+      promoted_to: " ",
+      last_exam: "",
+      stud_id: "",
+      // student_UID: "",
+      father_name: "",
+      mother_name: "",
+      religion: "",
+      caste: "",
+      subcaste: "",
+      birth_place: "",
+      state: "",
+      mother_tongue: "",
+      dob: "",
+      dob_words: "",
+      nationality: "",
+      prev_school_class: "",
+      admission_date: "",
+      admission_class: "",
+      attendance: "",
+      subjectsFor: [],
+      subjects: [],
+      selectedActivities: [],
 
+      reason_leaving: "",
+      application_date: "",
+      leaving_date: "",
+      standard_studying: "",
+      dob_proof: "",
+      class_id_for_subj: "",
+      stu_aadhaar_no: "",
+      teacher_image_name: null,
+      academicStudent: [],
+      academic_yr: "", // Add this to track selected academic year
+      part_of: "",
+    });
+    setParentInformation(null);
+  };
   const handleCheckboxChange = (event) => {
     const { value, checked } = event.target;
     let updatedActivities;
@@ -1595,8 +1551,6 @@ const LeavingCertificate = () => {
                         Subjects Studied <span className="text-red-500">*</span>
                       </label>
 
-                      {/* Render checkboxes for each subject */}
-                      {/* Render checkboxes for each subject */}
                       {formData.subjectsFor &&
                       formData.subjectsFor.length > 0 ? (
                         formData.subjectsFor.map((subject, index) => (
@@ -1626,35 +1580,98 @@ const LeavingCertificate = () => {
                         </p>
                       )}
 
-                      {/* Conditional extra subject for class 100 */}
-                      {formData.class_id_for_subj &&
-                        formData.class_id_for_subj === 109 && (
-                          <div className="col-span-1 relative  ">
-                            <label className="inline-flex items-center">
-                              <input
-                                type="checkbox"
-                                name="subjects"
-                                value="Basic Mathematics"
-                                checked={formData.selectedSubjects.includes(
-                                  "Basic Mathematics"
-                                )}
-                                onChange={(e) =>
-                                  handleSubjectSelection(e, "Basic Mathematics")
-                                }
-                                className="form-checkbox h-4 w-4 text-blue-600"
-                              />
-                              <span className="ml-1 text-sm">
-                                Basic Mathematics
-                              </span>
-                            </label>
-                          </div>
-                        )}
+                      {selectedClassForSubject == "10" && (
+                        <div className="col-span-1 relative  ">
+                          <label className="inline-flex items-center">
+                            <input
+                              type="checkbox"
+                              name="subjects"
+                              value="Basic Mathematics"
+                              checked={formData.selectedSubjects.includes(
+                                "Basic Mathematics"
+                              )}
+                              onChange={(e) =>
+                                handleSubjectSelection(e, "Basic Mathematics")
+                              }
+                              className="form-checkbox h-4 w-4 text-blue-600"
+                            />
+                            <span className="ml-1 text-sm">
+                              Basic Mathematics
+                            </span>
+                          </label>
+                        </div>
+                      )}
                       {errors.selectedSubjects && (
                         <span className="text-red-500 text-xs ml-1 h-1 col-span-3">
                           {errors.selectedSubjects}
                         </span>
                       )}
                     </div>
+                    {/* <div className="grid col-span-2 row-span-2">
+                      <label
+                        htmlFor="subjects"
+                        className="block font-bold text-xs col-span-3"
+                      >
+                        Subjects Studied <span className="text-red-500">*</span>
+                      </label>
+
+                      {formData.subjectsFor &&
+                      formData.subjectsFor.length > 0 ? (
+                        formData.subjectsFor.map((subject, index) => (
+                          <div key={index} className="grid-col-3 relative">
+                            <label>
+                              <input
+                                type="checkbox"
+                                name="subjects"
+                                value={subject.name}
+                                checked={formData.selectedSubjects.includes(
+                                  subject.name
+                                )}
+                                onChange={(e) =>
+                                  handleSubjectSelection(e, subject.name)
+                                }
+                                className="form-checkbox h-4 w-4 text-blue-600"
+                              />
+                              <span className="ml-1 text-sm">
+                                {subject.name}
+                              </span>
+                            </label>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500 col-span-3">
+                          No subjects available
+                        </p>
+                      )}
+
+                      {selectedClass?.label?.trim().startsWith("10") && (
+                        <div className="col-span-1 relative">
+                          <label className="inline-flex items-center">
+                            <input
+                              type="checkbox"
+                              name="subjects"
+                              value="Basic Mathematics"
+                              checked={formData.selectedSubjects.includes(
+                                "Basic Mathematics"
+                              )}
+                              onChange={(e) =>
+                                handleSubjectSelection(e, "Basic Mathematics")
+                              }
+                              className="form-checkbox h-4 w-4 text-blue-600"
+                            />
+                            <span className="ml-1 text-sm">
+                              Basic Mathematics
+                            </span>
+                          </label>
+                        </div>
+                      )}
+
+                      {errors.selectedSubjects && (
+                        <span className="text-red-500 text-xs ml-1 h-1 col-span-3">
+                          {errors.selectedSubjects}
+                        </span>
+                      )}
+                    </div> */}
                     <div>
                       <label
                         htmlFor="subcaste"
@@ -2334,9 +2351,10 @@ const LeavingCertificate = () => {
                   </div>
                 </fieldset>
 
-                <div className="col-span-3 text-right">
+                <div className="col-span-3 space-x-2 text-right">
+                  {/* Generate PDF Button */}
                   <button
-                    type="submit"
+                    type="submit" // triggers form submission
                     onClick={handleSubmit}
                     style={{ backgroundColor: "#2196F3" }}
                     className={`text-white font-bold py-1 border-1 border-blue-500 px-4 rounded ${
@@ -2371,6 +2389,15 @@ const LeavingCertificate = () => {
                     ) : (
                       "Generate PDF"
                     )}
+                  </button>
+
+                  {/* Back Button */}
+                  <button
+                    type="button" // prevents form submission
+                    onClick={handleBack}
+                    className="text-white font-bold py-1 bg-yellow-500 hover:bg-yellow-600 border-1 border-yellow-500 px-4 rounded"
+                  >
+                    Back
                   </button>
                 </div>
               </form>

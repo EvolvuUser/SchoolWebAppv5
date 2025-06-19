@@ -9,6 +9,7 @@ import { RxCross1 } from "react-icons/rx";
 function LeaveAllocationtoAllStaff() {
   const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
+  const [loadingForSubmit, setLoadingForSubmit] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,7 +35,11 @@ function LeaveAllocationtoAllStaff() {
 
   const handleAllocatedLeaveChange = (e) => {
     setFieldErrors((prev) => ({ ...prev, leave_allocated: "" }));
-    setNewLeaveAllocated(e.target.value);
+    const value = e.target.value;
+    if (/^\d*\.?\d*$/.test(value)) {
+      setNewLeaveAllocated(value);
+    }
+    // setNewLeaveAllocated(e.target.value);
   };
 
   // fetch leave type
@@ -78,6 +83,7 @@ function LeaveAllocationtoAllStaff() {
 
     setIsSubmitting(true);
     try {
+      setLoadingForSubmit(true);
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("No authentication token found.");
 
@@ -105,7 +111,7 @@ function LeaveAllocationtoAllStaff() {
     } catch (error) {
       toast.error(error.message || "Failed to allocate leave.");
     } finally {
-      setIsSubmitting(false);
+      setLoadingForSubmit(false);
     }
   };
 
@@ -162,10 +168,13 @@ function LeaveAllocationtoAllStaff() {
                   Leave Allocated <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="text"
+                  // type="text"
+                  type="number"
+                  min="0" // or min="0" if zero is allowed
+                  maxLength={5} // e.g. "999.9"
                   value={newLeaveAllocated}
                   onChange={handleAllocatedLeaveChange}
-                  className="h-10 text-gray-600 p-1 border-1 border-gray-300 outline-blue-400 rounded-md w-[60%] md:w-[55%] "
+                  className="h-10 text-gray-600 p-1 pl-4 border-1 border-gray-300 outline-blue-400 rounded-md w-[60%] md:w-[55%] "
                   placeholder=""
                 />
 
@@ -188,11 +197,11 @@ function LeaveAllocationtoAllStaff() {
                 Reset
               </button>{" "}
               <button
-                className="mr-2 bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-700"
+                className="mr-2 bg-blue-500 text-white py-1 px-3 rounded  hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={loadingForSubmit}
               >
-                Save
+                {loadingForSubmit ? "Saving..." : "Save"}
               </button>
               {/* <button
                 className="mr-2 bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-700"

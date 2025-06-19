@@ -1,18 +1,10 @@
-import { PiBookOpenUserLight } from "react-icons/pi";
-// import { PiBookOpenUserLight } from "react-icons/pi";
-import { FaUserGroup, FaUsers, FaUsersLine } from "react-icons/fa6";
-import { FiUsers } from "react-icons/fi";
-import { MdOutlinePayment } from "react-icons/md";
-// import Card from "../components/common/Card.jsx";
+import { FaUserGroup, FaUsersLine } from "react-icons/fa6";
 import Style from "../../CSS/DashbordCss/Card.module.css";
-// import NewCard from "../components/common/NewCard.jsx";
 import Card from "../common/Card.jsx";
 import EventCard from "./EventCard.jsx";
 import CardStuStaf from "../common/CardStuStaf.jsx";
 import StudentsChart from "../Dashbord/Charts/StudentsChart.jsx";
-import Footer from "../../Layouts/Footer.jsx";
-import { FaBirthdayCake } from "react-icons/fa";
-import { GiAchievement } from "react-icons/gi";
+import { FaBirthdayCake, FaClipboardCheck } from "react-icons/fa";
 import { HiCollection } from "react-icons/hi";
 import { IoTicket } from "react-icons/io5";
 import NoticeBord from "./NoticeBord.jsx";
@@ -23,6 +15,7 @@ import TableFeeCollect from "./TableFeeCollect.jsx";
 import { Link, useNavigate } from "react-router-dom";
 import LoadingSpinner from "../common/LoadingSpinner.jsx";
 import { ToastContainer, toast } from "react-toastify";
+import { RiPassValidFill } from "react-icons/ri";
 
 const DashboardContent = () => {
   const API_URL = import.meta.env.VITE_API_URL; // url for host
@@ -38,110 +31,159 @@ const DashboardContent = () => {
   });
   const [staffBirthday, setStaffBirthday] = useState("");
   const [ticketCount, setTicketCount] = useState("");
+  const [approveLeaveCount, setApproveLeaveCount] = useState("");
+
   const [pendingFee, setPendingFee] = useState("");
+  const [collectedFee, setCollectedFee] = useState("");
+  const [approvedLessonPlaneCount, setApprovedLessonPlaneCount] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const academicYr = localStorage.getItem("academicYear");
+  const [roleId, setRoleId] = useState(null);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        // const academicYr=localStorage.getItem("user");
-        const academicYr = localStorage.getItem("academicYear");
-        const roleId = localStorage.getItem("roleId");
-        console.log("**** role ID******", roleId);
+    fetchRoleId();
+    fetchData();
+  }, []);
+  const fetchRoleId = async () => {
+    const token = localStorage.getItem("authToken");
 
-        if (!token) {
-          throw new Error("No authentication token or academic year found");
+    if (!token) {
+      toast.error("Authentication token not found Please login again");
+      navigate("/"); // 👈 Redirect to login
+      return; // 👈 Prevent further execution
+    }
+
+    try {
+      const response = await axios.get(`${API_URL}/api/sessionData`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const roleId = response?.data?.user?.role_id;
+
+      if (roleId) {
+        setRoleId(roleId); // ✅ Save only roleId to state
+      } else {
+        console.warn("role_id not found in sessionData response");
+      }
+    } catch (error) {
+      console.error("Failed to fetch session data:", error);
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const roleId = localStorage.getItem("roleId");
+      console.log("**** role ID******", roleId);
+
+      if (!token) {
+        toast.error("Authentication token not found Please login again");
+        navigate("/"); // 👈 Redirect to login
+        return; // 👈 Prevent further execution
+      }
+
+      // Fetch student data
+      const studentResponse = await axios.get(`${API_URL}/api/studentss`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setStudentData({
+        total: studentResponse.data.count,
+        present: studentResponse.data.present,
+      });
+
+      // Fetch staff data
+      const staffResponse = await axios.get(
+        // "http://127.0.0.1:8000/api/staff",
+        `${API_URL}/api/staff`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
+      );
+      console.log("reponse of the staffAPI", staffResponse);
+      setStaffData({
+        teachingStaff: staffResponse?.data?.teachingStaff,
+        attendanceteachingstaff: staffResponse?.data?.attendanceteachingstaff,
+        nonTeachingStaff: staffResponse?.data?.non_teachingStaff,
+        attendancenonteachingstaff:
+          staffResponse?.data?.attendancenonteachingstaff,
+      });
+      // Fetch Tickiting count values
 
-        // Fetch student data
-        const studentResponse = await axios.get(`${API_URL}/api/studentss`, {
+      const responseTickingCount = await axios.get(
+        `${API_URL}/api/ticketcount`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
 
-            "X-Academic-Year": academicYr,
+            "Role-Id": roleId, // add roleId for different role
           },
-        });
+        }
+      );
+      console.log(
+        "***the roleiD count*******",
+        responseTickingCount.data.count
+      );
+      setTicketCount(responseTickingCount.data.count);
+      // Fetch the data of approveLeave count
+      const responseApproveLeaveCount = await axios.get(
+        `${API_URL}/api/get_count_of_approveleave`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setApproveLeaveCount(responseApproveLeaveCount?.data?.data);
 
-        setStudentData({
-          total: studentResponse.data.count,
-          present: studentResponse.data.present,
-        });
+      // Fetch Pending Fee Records counts
+      const pendingFeeCount = await axios.get(`${API_URL}/api/feecollection`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // setPendingFee(pendingFeeCount.data.pendingFee);
+      setCollectedFee(pendingFeeCount.data["Collected Fees"]);
+      setPendingFee(pendingFeeCount.data["Pending Fees"]);
+      console.log("pendingFee count is here******", pendingFeeCount.data);
 
-        // Fetch staff data
-        const staffResponse = await axios.get(
-          // "http://127.0.0.1:8000/api/staff",
-          `${API_URL}/api/staff`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "X-Academic-Year": academicYr,
-            },
-          }
-        );
-        console.log("reponse of the staffAPI", staffResponse);
-        setStaffData({
-          teachingStaff: staffResponse?.data?.teachingStaff,
-          attendanceteachingstaff: staffResponse?.data?.attendanceteachingstaff,
-          nonTeachingStaff: staffResponse?.data?.non_teachingStaff,
-          attendancenonteachingstaff:
-            staffResponse?.data?.attendancenonteachingstaff,
-        });
-        // Fetch Tickiting count values
+      // Fetch birthday Count
+      const Birthdaycount = await axios.get(
+        `${API_URL}/api/staffbirthdaycount`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(
+        "the birthday count and it's value is=",
+        Birthdaycount.data.count
+      );
+      setStaffBirthday(Birthdaycount.data.count);
 
-        const responseTickingCount = await axios.get(
-          `${API_URL}/api/ticketcount`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "X-Academic-Year": academicYr,
-              "Role-Id": roleId, // add roleId for different role
-            },
-          }
-        );
-        console.log(
-          "***the roleiD count*******",
-          responseTickingCount.data.count
-        );
-        setTicketCount(responseTickingCount.data.count);
-        // Fetch Pending Fee Records counts
-        const pendingFeeCount = await axios.get(
-          `${API_URL}/api/feecollection`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "X-Academic-Year": academicYr,
-            },
-          }
-        );
-        setPendingFee(pendingFeeCount.data);
-        console.log("pendingFee count is here******", pendingFeeCount.data);
-
-        // Fetch birthday Count
-        const Birthdaycount = await axios.get(
-          `${API_URL}/api/staffbirthdaycount`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "X-Academic-Year": academicYr,
-            },
-          }
-        );
-        console.log(
-          "the birthday count and it's value is=",
-          Birthdaycount.data.count
-        );
-        setStaffBirthday(Birthdaycount.data.count);
-      } catch (error) {
-        setError(error.message);
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
+      // fetch Approved lesson plane count
+      const ApprovedLessonPlane = await axios.get(
+        `${API_URL}/api/get_count_non_approved_lesson_plan`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setApprovedLessonPlaneCount(ApprovedLessonPlane.data.data);
+      console.log("pendingFee count is here******", pendingFeeCount.data.data);
+    } catch (error) {
+      setError(error.message);
+      console.error("Error fetching data:", error);
+    }
+  };
   return (
     <>
       {/* {error && <div className="error-message">{error}</div>} */}
@@ -149,60 +191,67 @@ const DashboardContent = () => {
       <div className="flex flex-col lg:flex-row items-start justify-between w-full gap-4 p-6 ">
         <div className="w-full lg:w-2/3  grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* {console.log("totalstudent", studentData.total)} */}
-          <CardStuStaf
-            title="Student"
-            TotalValue={studentData.total}
-            presentValue={studentData.present}
-            color="#4CAF50"
-            icon={
-              <FaUsersLine
-                style={{
-                  color: "violet",
-                  backgroundColor: "white",
-                  padding: "10px",
-                  borderRadius: "50%",
-                }}
-              />
-            }
-          />
-          <CardStuStaf
-            title="Teachers"
-            TotalValue={staffData.teachingStaff}
-            // presentValue={staffData.teachingStaff}
-            presentValue={staffData?.attendanceteachingstaff}
-            color="#2196F3"
-            icon={
-              <FaUserGroup
-                style={{
-                  color: "#00FFFF",
-                  backgroundColor: "white",
-                  padding: "10px",
-                  borderRadius: "50%",
-                }}
-              />
-            }
-          />
-          <CardStuStaf
-            title="Staff"
-            TotalValue={staffData.nonTeachingStaff}
-            // presentValue={staffData.nonTeachingStaff}
-            presentValue={staffData?.attendancenonteachingstaff}
-            color="#2196F3"
-            icon={
-              <FaUserGroup
-                style={{
-                  color: "#A287F3",
-                  backgroundColor: "white",
-                  padding: "10px",
-                  borderRadius: "50%",
-                }}
-              />
-            }
-          />
+          <Link to="/studentAbsent" className="no-underline">
+            <CardStuStaf
+              title="Student"
+              TotalValue={studentData.total}
+              presentValue={studentData.present}
+              color="#4CAF50"
+              icon={
+                <FaUsersLine
+                  style={{
+                    color: "violet",
+                    backgroundColor: "white",
+                    padding: "10px",
+                    borderRadius: "50%",
+                  }}
+                />
+              }
+            />
+          </Link>
+          <Link to="/teacherList" className="no-underline">
+            <CardStuStaf
+              title="Teachers"
+              TotalValue={staffData.teachingStaff}
+              // presentValue={staffData.teachingStaff}
+              presentValue={staffData?.attendanceteachingstaff}
+              color="#2196F3"
+              icon={
+                <FaUserGroup
+                  style={{
+                    color: "#00FFFF",
+                    backgroundColor: "white",
+                    padding: "10px",
+                    borderRadius: "50%",
+                  }}
+                />
+              }
+            />
+          </Link>
+          <Link to="/nonTeachingStaff" className="no-underline">
+            <CardStuStaf
+              title="Non-Teaching Staff"
+              TotalValue={staffData.nonTeachingStaff}
+              // presentValue={staffData.nonTeachingStaff}
+              presentValue={staffData?.attendancenonteachingstaff}
+              color="#2196F3"
+              icon={
+                <FaUserGroup
+                  style={{
+                    color: "#A287F3",
+                    backgroundColor: "white",
+                    padding: "10px",
+                    borderRadius: "50%",
+                  }}
+                />
+              }
+            />
+          </Link>
           <Link to="/feependinglist" className="no-underline">
             <Card
-              title="Pending Fee-Collection "
-              value={pendingFee}
+              title="Fee"
+              value={collectedFee}
+              valuePendingFee={pendingFee}
               color="#FF5733"
               icon={
                 <HiCollection
@@ -216,7 +265,8 @@ const DashboardContent = () => {
               }
             />
           </Link>
-          <Link to="/ticktinglist" className="no-underline">
+          {/* Hide as of now after prepare it then we will show it */}
+          {/* <Link to="/ticktinglist" className="no-underline">
             <Card
               title="Ticketing Module"
               value={ticketCount}
@@ -232,19 +282,63 @@ const DashboardContent = () => {
                 />
               }
             />
-          </Link>
+          </Link> */}
 
-          <Link to="/staffbirthlist" className="no-underline">
+          {roleId === null ? (
+            // Skeleton card
+            <div className="flex justify-between animate-pulse bg-white rounded shadow-md p-4 w-full h-[114px] border border-gray-200">
+              <div className="relative -top-2 h-20 bg-gray-300 rounded w-1/2"></div>
+              <div className="relative top-3 h-10 bg-gray-300 rounded w-1/3"></div>
+            </div>
+          ) : roleId === "M" ? (
+            // Approve Leave card for roleId "M"
+            <Link to="/approveLeavelist" className="no-underline">
+              <Card
+                title="Approve Leave"
+                value={approveLeaveCount}
+                color="#FFC107"
+                icon={
+                  <RiPassValidFill
+                    style={{
+                      color: "#C03078",
+                      backgroundColor: "white",
+                      padding: "10px",
+                      borderRadius: "50%",
+                    }}
+                  />
+                }
+              />
+            </Link>
+          ) : (
+            // Ticketing Module card for all other roles
+            <Link to="/ticktinglist" className="no-underline">
+              <Card
+                title="Ticketing Module"
+                value={ticketCount}
+                color="#FFC107"
+                icon={
+                  <IoTicket
+                    style={{
+                      color: "#30C790",
+                      backgroundColor: "white",
+                      padding: "10px",
+                      borderRadius: "50%",
+                    }}
+                  />
+                }
+              />
+            </Link>
+          )}
+
+          {/* <Link to="/approveLeavelist" className="no-underline">
             <Card
-              title="Today's Birthdays"
-              value={staffBirthday}
-              // {loading ? <LoadingSpinner /> :   value={staffBirthday}}
-
-              color="#2196F3"
+              title="Approve Leave"
+              value={ticketCount}
+              color="#FFC107"
               icon={
-                <FaBirthdayCake
+                <RiPassValidFill
                   style={{
-                    color: "cyan",
+                    color: "#C03078",
                     backgroundColor: "white",
                     padding: "10px",
                     borderRadius: "50%",
@@ -252,7 +346,52 @@ const DashboardContent = () => {
                 />
               }
             />
-          </Link>
+          </Link> */}
+          {roleId === null ? (
+            // Skeleton card
+            <div className="flex justify-between animate-pulse bg-white rounded shadow-md p-4 w-full h-[114px] border border-gray-200">
+              <div className=" relative -top-2 h-20 bg-gray-300 rounded w-1/2 "></div>
+              <div className=" relative top-3 h-10 bg-gray-300 rounded w-1/3"></div>
+            </div>
+          ) : roleId === "M" ? (
+            <Link to="/approveLessonP" className="no-underline">
+              <Card
+                title="Approve Lesson Plans"
+                value={approvedLessonPlaneCount}
+                spanLabel="Pending"
+                color="#4CAF50"
+                icon={
+                  <FaClipboardCheck
+                    style={{
+                      color: "green",
+                      backgroundColor: "white",
+                      padding: "10px",
+                      borderRadius: "50%",
+                    }}
+                  />
+                }
+              />
+            </Link>
+          ) : (
+            <Link to="/staffbirthlist" className="no-underline">
+              <Card
+                title="Today's Birthdays"
+                value={staffBirthday}
+                color="#2196F3"
+                icon={
+                  <FaBirthdayCake
+                    style={{
+                      color: "cyan",
+                      backgroundColor: "white",
+                      padding: "10px",
+                      borderRadius: "50%",
+                    }}
+                  />
+                }
+              />
+            </Link>
+          )}
+
           {/* you can add more cards here just add on */}
         </div>
 
@@ -298,26 +437,50 @@ const DashboardContent = () => {
           }}
         >
           {" "}
-          <TableFeeCollect />
+          {roleId === null ? (
+            // Skeleton card
+            <div className="flex justify-between animate-pulse bg-white rounded shadow-md p-4 w-full h-[114px] border border-gray-200">
+              <div className=" relative -top-2 h-20 bg-gray-300 rounded w-1/2 "></div>
+              <div className=" relative top-3 h-10 bg-gray-300 rounded w-1/3"></div>
+            </div>
+          ) : roleId === "M" ? null : (
+            roleId !== "M" && <TableFeeCollect />
+          )}
+          {/* <TableFeeCollect /> */}
           {/* <div className="flex justify-between bg-gray-200">
             <h5 className="text-gray-500 pl-2">Filter Fee </h5>
             <TableFeeCollect />
           </div> */}
         </div>
-        <div
-          className=" w-full lg:w-[69%] border-2 border-solid  bg-slate-50 rounded-lg lg:h-full sm:h-3/4 "
-          style={{
-            boxShadow:
-              "rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px",
-          }}
-        >
-          {/* <NoticeBord /> */}
-          <HouseStudentChart />
-        </div>
+        {roleId === null ? (
+          // Skeleton card
+          <div
+            className=" w-full lg:w-[69%] border-2 border-solid  bg-slate-50 rounded-lg lg:h-full sm:h-3/4 "
+            style={{
+              boxShadow:
+                "rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px",
+            }}
+          >
+            <div className="flex justify-between animate-pulse bg-white rounded shadow-md p-4 w-full h-[114px] border border-gray-200">
+              <div className=" relative -top-2 h-20 bg-gray-300 rounded w-1/2 "></div>
+              <div className=" relative top-3 h-10 bg-gray-300 rounded w-1/3"></div>
+            </div>
+          </div>
+        ) : roleId === "M" ? null : (
+          roleId !== "M" && (
+            <div
+              className=" w-full lg:w-[69%] border-2 border-solid  bg-slate-50 rounded-lg lg:h-full sm:h-3/4 "
+              style={{
+                boxShadow:
+                  "rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px",
+              }}
+            >
+              {/* <NoticeBord /> */}
+              <HouseStudentChart />
+            </div>
+          )
+        )}
       </div>
-      {/* <div className=" mt-6 ">
-        <Footer />
-      </div> */}
     </>
   );
 };

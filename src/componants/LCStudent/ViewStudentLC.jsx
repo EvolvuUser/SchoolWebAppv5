@@ -17,6 +17,9 @@ function ViewStudentLC() {
   const [selectedClass, setSelectedClass] = useState(null);
   const [selectedDivision, setSelectedDivision] = useState(null);
   console.log("student data for view", student);
+
+  const section_id = location.state?.section_id || null;
+  console.log("view student for back navigation:", section_id);
   // Fetch class names
   useEffect(() => {
     const fetchClassNames = async () => {
@@ -138,7 +141,7 @@ function ViewStudentLC() {
             city: student.city || " ",
             state: student.state || "",
             roll_no: student.roll_no || "",
-            student_id: student.student_id || " ",
+            student_id: student.stud_id_no || " ",
             reg_id: student.reg_no || " ",
             blood_group: student.blood_group || " ",
 
@@ -278,9 +281,15 @@ function ViewStudentLC() {
           <h5 className="text-gray-700 mt-1 text-md lg:text-lg">
             View LC Student Information
           </h5>
-          <RxCross1
+          {/* <RxCross1
             className="float-end relative right-2 text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
             onClick={() => navigate("/manageStudentLC")}
+          /> */}
+          <RxCross1
+            className="float-end relative right-2 text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
+            onClick={() =>
+              navigate("/manageStudentLC", { state: { section_id } })
+            }
           />
         </div>
         <div
@@ -660,7 +669,7 @@ function ViewStudentLC() {
               <input
                 type="text"
                 disabled
-                value={formData.student_id}
+                value={formData.stud_id_no}
                 className=" block w-full  rounded-md py-1 px-3 bg-gray-300 "
 
                 // onBlur={handleBlur}
@@ -1352,6 +1361,16 @@ function ViewStudentLC() {
               />
             </div>
             {/*  */}
+            <div className="  col-span-3  mt-4 text-right space-x-4">
+              <button
+                onClick={() => {
+                  navigate("/manageStudentLC");
+                }}
+                className=" text-white font-bold py-1 bg-yellow-500 hover:bg-yellow-600 border-1 border-yellow-500 px-4 rounded"
+              >
+                Back
+              </button>
+            </div>
           </div>
         </form>
       </div>

@@ -21,7 +21,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 function NoticeAndSms() {
   const API_URL = import.meta.env.VITE_API_URL; // URL for host
   // const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const [activeTab, setActiveTab] = useState("Manage");
   const [classes, setClasses] = useState([]);
@@ -130,11 +130,11 @@ function NoticeAndSms() {
     setIsSubmitting(true);
     setSearchTerm("");
     try {
+      setLoading(true);
       const token = localStorage.getItem("authToken");
       const params = {};
-      if (status) params.status = status;
       if (selectedDate) params.notice_date = selectedDate;
-
+      if (status) params.status = status;
       const response = await axios.get(`${API_URL}/api/get_smsnoticelist`, {
         headers: { Authorization: `Bearer ${token}` },
         params,
@@ -163,6 +163,7 @@ function NoticeAndSms() {
       toast.error("Error fetching SMS notices. Please try again.");
     } finally {
       setIsSubmitting(false); // Re-enable the button after the operation
+      setLoading(false);
     }
   };
 
@@ -480,7 +481,7 @@ function NoticeAndSms() {
 
       console.log("formated data of the edit sms part", formData);
       console.log("seletd files", uploadedFiles);
-      await axios.post(
+      const response = await axios.post(
         `${API_URL}/api/update_smsnotice/${currentSection?.unq_id}`,
         formData,
         {
@@ -492,7 +493,7 @@ function NoticeAndSms() {
         }
       );
 
-      toast.success("Notice updated successfully!");
+      toast.success(response.data.message || "Notice updated successfully!");
       handleSearch();
       handleCloseModal();
     } catch (error) {
@@ -531,7 +532,7 @@ function NoticeAndSms() {
         throw new Error("Unique ID is missing");
       }
 
-      await axios.put(
+      const response = await axios.put(
         `${API_URL}/api/update_publishsmsnotice/${currentSection?.unq_id}`,
         {},
         {
@@ -547,7 +548,10 @@ function NoticeAndSms() {
 
       // setShowPublishModal(false);
       // setSubjects([]);
-      toast.success(`${currestSubjectNameForDelete} Publish successfully!`);
+      toast.success(
+        response.data.message ||
+          `${currestSubjectNameForDelete} Publish successfully!`
+      );
     } catch (error) {
       if (error.response && error.response.data) {
         toast.error(
@@ -584,7 +588,7 @@ function NoticeAndSms() {
         throw new Error("Unique ID is missing");
       }
 
-      await axios.delete(
+      const response = await axios.delete(
         `${API_URL}/api/delete_smsnotice/${currentSection?.classToDelete?.unq_id}`,
         {
           headers: {
@@ -599,7 +603,10 @@ function NoticeAndSms() {
 
       setShowDeleteModal(false);
       // setSubjects([]);
-      toast.success(`${currestSubjectNameForDelete} Deleted successfully!`);
+      toast.success(
+        response.data.message ||
+          `${currestSubjectNameForDelete} Deleted successfully!`
+      );
     } catch (error) {
       if (error.response && error.response.data) {
         toast.error(
@@ -647,22 +654,41 @@ function NoticeAndSms() {
   }, [searchTerm]);
 
   const searchLower = searchTerm.trim().toLowerCase();
-
   const filteredSections = notices.filter((section) => {
     // Convert the fields to lowercase for case-insensitive comparison
     const teacherName = section?.classnames?.toLowerCase() || "";
     const subjectName = section?.subject?.toLowerCase() || "";
-    const noticeDesc = section?.notice_type?.toLowerCase() || ""; // New field to filter
-    const teacher = section?.name?.toLowerCase() || ""; // Example for teacher's name, update as needed
+    const noticeDesc = section?.notice_type?.toLowerCase() || "";
+    const teacher = section?.name?.toLowerCase() || "";
 
-    // Check if the search term is present in any of the specified fields
+    // Format `notice_date` to a readable string (optional: you can also use raw date)
+    const noticeDate = section?.notice_date || ""; // e.g. "2025-05-29"
+
+    // Check if the search term is in any of the fields (assumes `searchLower` is already .toLowerCase())
     return (
-      teacherName.toLowerCase().includes(searchLower) ||
-      subjectName.toLowerCase().includes(searchLower) ||
-      noticeDesc.toLowerCase().includes(searchLower) || // Check notice description
-      teacher.toLowerCase().includes(searchLower) // Check teacher name
+      teacherName.includes(searchLower) ||
+      subjectName.includes(searchLower) ||
+      noticeDesc.includes(searchLower) ||
+      teacher.includes(searchLower) ||
+      noticeDate.includes(searchLower) // ✅ Now filters by notice date
     );
   });
+
+  // const filteredSections = notices.filter((section) => {
+  //   // Convert the fields to lowercase for case-insensitive comparison
+  //   const teacherName = section?.classnames?.toLowerCase() || "";
+  //   const subjectName = section?.subject?.toLowerCase() || "";
+  //   const noticeDesc = section?.notice_type?.toLowerCase() || ""; // New field to filter
+  //   const teacher = section?.name?.toLowerCase() || ""; // Example for teacher's name, update as needed
+
+  //   // Check if the search term is present in any of the specified fields
+  //   return (
+  //     teacherName.toLowerCase().includes(searchLower) ||
+  //     subjectName.toLowerCase().includes(searchLower) ||
+  //     noticeDesc.toLowerCase().includes(searchLower) || // Check notice description
+  //     teacher.toLowerCase().includes(searchLower) // Check teacher name
+  //   );
+  // });
 
   const displayedSections = filteredSections.slice(
     currentPage * pageSize,
@@ -897,7 +923,13 @@ function NoticeAndSms() {
                           </tr>
                         </thead>
                         <tbody>
-                          {displayedSections.length ? (
+                          {loading ? (
+                            <div className=" absolute left-[4%] w-[100%]  text-center flex justify-center items-center mt-14">
+                              <div className=" text-center text-xl text-blue-700">
+                                Please wait while data is loading...
+                              </div>
+                            </div>
+                          ) : displayedSections.length ? (
                             displayedSections.map((subject, index) => (
                               <tr key={subject.notice_id} className="text-sm ">
                                 <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">

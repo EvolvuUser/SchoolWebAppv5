@@ -219,24 +219,56 @@ import CreateTimetablePlanner from "../componants/TimeTablePlanner/CreateExamTim
 import TimetablePlanner from "../componants/TimeTablePlanner/TimeTablePlanner.jsx";
 import MonthlyAttendenceReport from "../componants/Reports/MonthlyAttendanceReport.jsx";
 import ComingSoon from "../componants/common/CommingSoon/ComingSoon.jsx";
+import ForgotPassword from "../Layouts/ForgotPassword.jsx";
+import UpdateStudentIdCards from "../componants/IDCards/UpdateStudentIdCards.jsx";
+import UploadStudentPhoto from "../componants/IDCards/UploadStudentPhoto.jsx";
+import UploadParentPhoto from "../componants/IDCards/UploadParentPhoto.jsx";
+import StudentAbsent from "../componants/AllTableList/StudentAbsent.jsx";
+import NonTeachingStaff from "../componants/AllTableList/NonTeachingStaff.jsx";
+import ApproveLessonP from "../componants/AllTableList/ApproveLessonP.jsx";
+import ManageSubjectPrinciple from "../componants/MastersModule/SubjectAllotment/SubjectAllotmentForPrinciple/ManageSubjectPrinciple.jsx";
+import NoticeAndSmsforStaff from "../componants/NoticeAndSms/NotiveAndSmsForStaff/NoticeAndSmsforStaff.jsx";
+import DuplicatePaymentReport from "../componants/Reports/FinanceReport/DuplicatePaymentReport.jsx";
+import DiscrepancyWorldlinePaymentReport from "../componants/Reports/FinanceReport/DiscrepancyWorldlinePaymentReport.jsx";
+import ViewLeaveApplicationForPrinciple from "../componants/LeaveApplications/PrincipleLeaveApplication/ViewLeaveApplicationForPrinciple.jsx";
+import LeaveApplicatonForPrinciple from "../componants/LeaveApplications/PrincipleLeaveApplication/LeaveApplicatonForPrinciple.jsx";
+import EditLeaveApplicationForPrinciple from "../componants/LeaveApplications/PrincipleLeaveApplication/EditLeaveApplicationForPrinciple.jsx";
+import CreateLeaveApplicationForPrinciple from "../componants/LeaveApplications/PrincipleLeaveApplication/CreateLeaveApplicationForPrinciple.jsx";
+import StudentIdCardDetailedReport from "../componants/Reports/StudentReportPrinciple/StudentIdCardDetailedReport.jsx";
+import TeacherAttendanceDailyReport from "../componants/Reports/TeacherAttendanceDailyReport.jsx";
+import TeacherRemarkandObservation from "../componants/RemarkAndObserVationForPrinciple/RemarkandObservationforTeachers.jsx";
+import EditTeacherRemarkandObservation from "../componants/RemarkAndObserVationForPrinciple/EditRemarkandObservationforTeachers.jsx";
+import CreateRemarkandObservationTeacher from "../componants/RemarkAndObserVationForPrinciple/CreateRemarkandObservationforTeachers.jsx";
+import ApproveLeave from "../componants/AllTableList/ApproveLeaveList.jsx";
+import ApproveLeaveList from "../componants/AllTableList/ApproveLeaveList.jsx";
+import LeaveApprove from "../componants/AllTableList/LeaveApproveForPrinciple/LeaveApprove (1).jsx";
+import TeacherList from "../componants/AllTableList/TeacherList.jsx";
+import EditLeaveApprove from "../componants/AllTableList/LeaveApproveForPrinciple/EditLeaveApprove (1).jsx";
 
-// import Menus from "../cd";
+// import Menus from "../c";
 function Index() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/notification" element={<NotificationPage />} />
+      <Route path="/forgotPassword" element={<ForgotPassword />} />
       <Route path="/" element={<MainLayout />}>
         {/* Role Management */}
-        <Route path="/menus" element={<PrivateRoute element={<Menus />} />} />
-        <Route path="/roles" element={<PrivateRoute element={<Roles />} />} />
         <Route
-          path="/show_roles"
+          path="/manageMenus"
+          element={<PrivateRoute element={<Menus />} />}
+        />
+        <Route
+          path="/manageRoles"
+          element={<PrivateRoute element={<Roles />} />}
+        />
+        <Route
+          path="/manageRoleAccess"
           element={<PrivateRoute element={<ShowRolesWithMenu />} />}
         />
         <Route
-          path="//manage-role-access/:roleId"
+          path="/manageRoleAccess/:roleId"
           element={<PrivateRoute element={<ManageRoleAccess />} />}
         />
         {/* <Route
@@ -654,6 +686,22 @@ function Index() {
           path="/teacherIdCard"
           element={<PrivateRoute element={<TeacherIdCard />} />}
         />
+
+        <Route
+          path="/updateStudentIdCard"
+          element={<PrivateRoute element={<UpdateStudentIdCards />} />}
+        />
+        {/* ID card Photo Upload */}
+        <Route
+          path="/uploadStudentPhoto/:id"
+          element={<PrivateRoute element={<UploadStudentPhoto />} />}
+        />
+
+        <Route
+          path="/uploadParentPhoto/:id"
+          element={<PrivateRoute element={<UploadParentPhoto />} />}
+        />
+
         {/* Pending StudentID Card Module */}
         <Route
           path="/pendingStudentId"
@@ -789,15 +837,112 @@ function Index() {
           path="/ticktinglist"
           element={<PrivateRoute element={<TickitingCountList />} />}
         />
+        {/* Approve leave module card of dashboard */}
+        <Route
+          path="/approveLeavelist"
+          element={<PrivateRoute element={<LeaveApprove />} />}
+        />
+        <Route
+          path="/leaveApprove/edit/:id"
+          element={<PrivateRoute element={<EditLeaveApprove />} />}
+        />
         <Route
           path="/feependinglist"
           element={<PrivateRoute element={<FeePendingList />} />}
         />
         <Route
+          path="/studentAbsent"
+          element={<PrivateRoute element={<StudentAbsent />} />}
+        />
+        <Route
+          path="/nonTeachingStaff"
+          element={<PrivateRoute element={<NonTeachingStaff />} />}
+        />
+        <Route
+          path="/approveLessonP"
+          element={<PrivateRoute element={<ApproveLessonP />} />}
+        />
+        <Route
           path="/staffbirthlist"
           element={<PrivateRoute element={<StaffBirthdayTabList />} />}
         />
+        <Route
+          path="/teacherList"
+          element={<PrivateRoute element={<TeacherList />} />}
+        />
+        {/* For Principle or management login routes RoleId is M */}
+
+        <Route
+          path="/manageSubjectP"
+          element={<PrivateRoute element={<ManageSubjectPrinciple />} />}
+        />
+
+        {/* For notice and sms for staff */}
+        <Route
+          path="/staffNoticeAndSms"
+          element={<PrivateRoute element={<NoticeAndSmsforStaff />} />}
+        />
+        {/* Finacne Report */}
+        <Route
+          path="/duplicatePaymentReport"
+          element={<PrivateRoute element={<DuplicatePaymentReport />} />}
+        />
+        {/* Leave APplication for principle */}
+        <Route
+          path="/LeaveApplicationP"
+          element={<PrivateRoute element={<LeaveApplicatonForPrinciple />} />}
+        />
+        <Route
+          path="/createLeaveApplicationP"
+          element={
+            <PrivateRoute element={<CreateLeaveApplicationForPrinciple />} />
+          }
+        />
+        <Route
+          path="/leaveApplicationP/edit/:id"
+          element={
+            <PrivateRoute element={<EditLeaveApplicationForPrinciple />} />
+          }
+        />
+        <Route
+          path="/leaveApplicationP/view/:id"
+          element={
+            <PrivateRoute element={<ViewLeaveApplicationForPrinciple />} />
+          }
+        />
+        {/* dw pay report */}
+        <Route
+          path="/dwPaymentReport"
+          element={
+            <PrivateRoute element={<DiscrepancyWorldlinePaymentReport />} />
+          }
+        />
+        {/* StudenIdCard Detailed report */}
+        <Route
+          path="/studentIdcDReport"
+          element={<PrivateRoute element={<StudentIdCardDetailedReport />} />}
+        />
+
+        {/* TeacherAttendance Daily Report  report */}
+        <Route
+          path="/TeacherADReport"
+          element={<PrivateRoute element={<TeacherAttendanceDailyReport />} />}
+        />
+
+        {/* Remark and observation modules for principle */}
+        <Route
+          path="/remObsTeacher"
+          element={<PrivateRoute element={<TeacherRemarkandObservation />} />}
+        />
+
+        <Route
+          path="/remObsTeacher/edit/:id"
+          element={
+            <PrivateRoute element={<EditTeacherRemarkandObservation />} />
+          }
+        />
       </Route>
+
       {/* Page Not FOund Routes */}
       <Route path="*" element={<PrivateRoute element={<PageNotFounde />} />} />
     </Routes>

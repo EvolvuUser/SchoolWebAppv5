@@ -22,6 +22,7 @@ function EditOfNewStudentList() {
   const navigate = useNavigate();
   const location = useLocation();
   const { student } = location.state || {};
+  // console.log("new Student list for check ", student);
   const [classForSiblingMapping, setClassForSiblingMapping] = useState(null);
 
   const [classes, setClasses] = useState([]);
@@ -375,6 +376,7 @@ function EditOfNewStudentList() {
 
   // Function to handle the search
   const handleSearch = async () => {
+    setUsernameErrors({});
     if (!selectedStudentId) {
       setNameError("Please select a student.");
       toast.error("Please select a student!");
@@ -970,12 +972,36 @@ function EditOfNewStudentList() {
     const newErrors = {};
 
     // Required field validations
+    // if (
+    //   !formData?.SetEmailIDAsUsername ||
+    //   formData.SetEmailIDAsUsername == null ||
+    //   formData.SetEmailIDAsUsername == ""
+    // ) {
+    //   newErrors.SetEmailIDAsUsername = "User name is required";
+    // }
+    const allValidUsernames = [
+      formData.f_mobile,
+      formData.f_email,
+      formData.m_mobile,
+      formData.m_emailid,
+    ];
+
+    // Check if user_id exists
+    const userIdExists = student.user_master?.user_id;
+
+    // Show error only if username is null or doesn't match
     if (
-      !formData?.SetEmailIDAsUsername ||
-      formData.SetEmailIDAsUsername == null ||
-      formData.SetEmailIDAsUsername == ""
+      !selectedUsername && // If username is not selected (null or empty)
+      (!formData?.SetEmailIDAsUsername ||
+        formData.SetEmailIDAsUsername == null ||
+        formData.SetEmailIDAsUsername == "" ||
+        (userIdExists && // If user ID exists
+          !allValidUsernames.includes(formData.SetEmailIDAsUsername))) // And username doesn't match any formData field
     ) {
       newErrors.SetEmailIDAsUsername = "User name is required";
+    } else {
+      // If selectedUsername is not null or error is resolved
+      delete newErrors.SetEmailIDAsUsername;
     }
     if (
       !formData?.SetToReceiveSMS ||
@@ -1308,77 +1334,27 @@ function EditOfNewStudentList() {
     }));
   };
 
-  // const handleSubmit = async (event) => {
-  //   event.preventDefault();
-  //   const validationErrors = validate();
+  const getUserIdDetails = (formData, selectedUsername) => {
+    switch (selectedUsername) {
+      case "FatherMob":
+        return { value: formData.f_mobile, key: "fatherMobile" };
+      case "MotherMob":
+        return { value: formData.m_mobile, key: "motherMobile" };
+      case "Father":
+        return { value: formData.f_email, key: "fatherEmail" };
+      case "Mother":
+        return { value: formData.m_emailid, key: "motherEmail" };
+      default:
+        return { value: "", key: "general" };
+    }
+  };
 
-  //   if (Object.keys(validationErrors).length > 0) {
-  //     setErrors(validationErrors);
-  //     Object.values(validationErrors).forEach((error) => {
-  //       toast.error(error);
-  //     });
-  //     return;
-  //   }
-
-  //   // Prepare the data for API submission
-  //   const formattedFormData = new FormData();
-  //   Object.keys(formData).forEach((key) => {
-  //     if (formData[key] instanceof File) {
-  //       formattedFormData.append(key, formData[key]);
-  //     } else {
-  //       formattedFormData.append(key, formData[key]);
-  //     }
-  //   });
-  //   console.log(" formattedFormData is,", formData);
-
-  //   try {
-  //     const token = localStorage.getItem("authToken");
-  //     if (!token) {
-  //       throw new Error("No authentication token is found");
-  //     }
-  //     console.log(" formattedFormData,", formattedFormData);
-  //     const response = await axios.put(
-  //       `${API_URL}/api/students/${student.student_id}`,
-  //       formData,
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-
-  //     if (response.status === 200) {
-  //       toast.success("Student updated successfully!");
-  //       setTimeout(() => {
-  //         navigate("/StudentList");
-  //       }, 3000);
-  //     }
-  //   } catch (error) {
-  //     toast.error("An error occurred while updating the student.");
-  //     console.error("Error:", error.response?.data || error.message);
-  //     if (error.response && error.response.data && error.response.data.errors) {
-  //       setBackendErrors(error.response.data.errors || {});
-  //     } else {
-  //       toast.error(error.message);
-  //     }
-  //   }
-  // };
   const handleSubmit = async (event) => {
-    console.log("hudsfh");
+    console.log("Submit triggered");
     event.preventDefault();
-    // const validationErrors = validate();
 
-    // if (Object.keys(validationErrors).length > 0) {
-    //   setErrors(validationErrors);
-    //   Object.values(validationErrors).forEach((error) => {
-    //     console.log(error);
-    //   });
-    //   console.log("error in feilds name");
-
-    //   return;
-    // }
     setErrors({});
+    setUsernameErrors({});
     const validationErrors = validate();
 
     if (Object.keys(validationErrors).length > 0) {
@@ -1386,56 +1362,61 @@ function EditOfNewStudentList() {
       console.log("Validation Errors:", validationErrors);
       return;
     }
-    // Check for username-specific errors
-    const hasUsernameErrors = Object.values(usernameErrors).some(
-      (error) => error !== ""
+
+    // ✅ Derive user ID and related error key
+    const { value: userIdForCheck, key: errorKey } = getUserIdDetails(
+      formData,
+      selectedUsername
     );
-    if (hasUsernameErrors) {
-      // Set backend errors if any
-      if (hasUsernameErrors) {
-        Object.keys(usernameErrors).forEach((key) => {
-          if (usernameErrors[key]) {
-            console.log(usernameErrors[key]);
-          }
-        });
-      }
-      console.log("error in the uniquye name");
-      // Exit function if there are validation errors or username errors
+
+    // ✅ Check for username presence
+    if (!userIdForCheck) {
+      setUsernameErrors((prev) => ({
+        ...prev,
+        [errorKey]: "Username is empty or invalid.",
+      }));
+      toast.error("Please provide a valid username.");
       return;
     }
-    // // Create FormData object
-    // const formattedFormData = new FormData();
-    // Object.keys(formData).forEach((key) => {
-    //   formattedFormData.append(key, formData[key]);
-    // });
+
+    // ✅ Check uniqueness
+    const usernameExists = await checkUserId(
+      student.student_id,
+      userIdForCheck
+    );
+    if (usernameExists) {
+      setUsernameErrors((prevErrors) => ({
+        ...prevErrors,
+        [errorKey]: "Username is already taken.",
+      }));
+      toast.error("Username is already taken. Please choose another.");
+      return;
+    }
+
+    // ✅ Continue if no errors
     if (parentExist === "no") {
       formData.parent_id = 0;
-      console.log("formadata parent_id not exit", formData.parent_id);
+      console.log("No existing parent, parent_id set to 0");
     } else {
-      console.log("formadata parent_id is exit", formData.parent_id);
+      console.log("Parent exists, parent_id is:", formData.parent_id);
     }
+
     try {
       setBackendErrors({});
-      setLoading(true); // Start loading
+      setLoading(true);
       const token = localStorage.getItem("authToken");
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
-      // console.log("formattedFormData", formattedFormData);
-      console.log("formData", formData);
+      if (!token) throw new Error("No authentication token found");
+
       const updatedFormData = {
         ...formData,
         SetEmailIDAsUsername: selectedUsername || "",
       };
-      console.log("formData Before submitting", updatedFormData);
-      // const ParentIdIs=formData.parent_id;
+
       const response = await axios.put(
         `${API_URL}/api/updateNewStudent/${student.student_id}/${formData?.parent_id}`,
-        updatedFormData, // Send the FormData object
+        updatedFormData,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -1447,20 +1428,118 @@ function EditOfNewStudentList() {
       }
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
-      if (error.response && error.response.data && error.response.data.errors) {
-        setBackendErrors(error.response.data.errors || {});
+      if (error.response?.data?.errors) {
+        setBackendErrors(error.response.data.errors);
         toast.error(
           "Some fields contain duplicate data. Please ensure all values are unique."
         );
       } else {
         toast.error(
-          error.message || "Backdend error occur while updating data"
+          error.message || "Backend error occurred while updating data."
         );
       }
     } finally {
-      setLoading(false); // End loading state
+      setLoading(false);
     }
   };
+  // above code is working well i will c it
+  // const handleSubmit = async (event) => {
+  //   console.log("hudsfh");
+  //   event.preventDefault();
+  //   // const validationErrors = validate();
+
+  //   // if (Object.keys(validationErrors).length > 0) {
+  //   //   setErrors(validationErrors);
+  //   //   Object.values(validationErrors).forEach((error) => {
+  //   //     console.log(error);
+  //   //   });
+  //   //   console.log("error in feilds name");
+
+  //   //   return;
+  //   // }
+  //   setErrors({});
+  //   const validationErrors = validate();
+
+  //   if (Object.keys(validationErrors).length > 0) {
+  //     setErrors(validationErrors);
+  //     console.log("Validation Errors:", validationErrors);
+  //     return;
+  //   }
+  //   // Check for username-specific errors
+  //   const hasUsernameErrors = Object.values(usernameErrors).some(
+  //     (error) => error !== ""
+  //   );
+  //   if (hasUsernameErrors) {
+  //     // Set backend errors if any
+  //     if (hasUsernameErrors) {
+  //       Object.keys(usernameErrors).forEach((key) => {
+  //         if (usernameErrors[key]) {
+  //           console.log(usernameErrors[key]);
+  //         }
+  //       });
+  //     }
+  //     console.log("error in the uniquye name");
+  //     // Exit function if there are validation errors or username errors
+  //     return;
+  //   }
+  //   // // Create FormData object
+  //   // const formattedFormData = new FormData();
+  //   // Object.keys(formData).forEach((key) => {
+  //   //   formattedFormData.append(key, formData[key]);
+  //   // });
+  //   if (parentExist === "no") {
+  //     formData.parent_id = 0;
+  //     console.log("formadata parent_id not exit", formData.parent_id);
+  //   } else {
+  //     console.log("formadata parent_id is exit", formData.parent_id);
+  //   }
+  //   try {
+  //     setBackendErrors({});
+  //     setLoading(true); // Start loading
+  //     const token = localStorage.getItem("authToken");
+  //     if (!token) {
+  //       throw new Error("No authentication token found");
+  //     }
+  //     // console.log("formattedFormData", formattedFormData);
+  //     console.log("formData", formData);
+  //     const updatedFormData = {
+  //       ...formData,
+  //       SetEmailIDAsUsername: selectedUsername || "",
+  //     };
+  //     console.log("formData Before submitting", updatedFormData);
+  //     // const ParentIdIs=formData.parent_id;
+  //     const response = await axios.put(
+  //       `${API_URL}/api/updateNewStudent/${student.student_id}/${formData?.parent_id}`,
+  //       updatedFormData, // Send the FormData object
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (response.status === 200) {
+  //       toast.success("Student updated successfully!");
+  //       setTimeout(() => {
+  //         navigate("/newStudentList");
+  //       }, 3000);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error.response?.data || error.message);
+  //     if (error.response && error.response.data && error.response.data.errors) {
+  //       setBackendErrors(error.response.data.errors || {});
+  //       toast.error(
+  //         "Some fields contain duplicate data. Please ensure all values are unique."
+  //       );
+  //     } else {
+  //       toast.error(
+  //         error.message || "Backdend error occur while updating data"
+  //       );
+  //     }
+  //   } finally {
+  //     setLoading(false); // End loading state
+  //   }
+  // };
 
   // Fetch the class names when component loads
 
@@ -2394,7 +2473,14 @@ function EditOfNewStudentList() {
                   name="height"
                   value={formData.height}
                   className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Allow only numbers and one dot (.)
+                    if (/^\d*\.?\d*$/.test(value)) {
+                      handleChange(e);
+                    }
+                  }}
+                  // onChange={handleChange}
                   // onBlur={handleBlur}
                 />
               </div>
@@ -2412,7 +2498,14 @@ function EditOfNewStudentList() {
                   maxLength={4.1}
                   value={formData.weight}
                   className="input-field block w-full border-1 border-gray-400 rounded-md py-1 px-3 bg-white shadow-inner"
-                  onChange={handleChange}
+                  // onChange={handleChange}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Allow only numbers and one dot (.)
+                    if (/^\d*\.?\d*$/.test(value)) {
+                      handleChange(e);
+                    }
+                  }}
                   // onBlur={handleBlur}
                 />
               </div>
@@ -3213,52 +3306,23 @@ function EditOfNewStudentList() {
               </div>
               {/*  */}
               {/* added father feilds here */}
-              <div className="col-span-4 md:mr-9 my-2 text-right">
+              <div className="  col-span-3  mt-4 text-right space-x-2">
                 <button
-                  type="search"
-                  onClick={handleSubmit}
-                  style={{ backgroundColor: "#2196F3" }}
-                  className={`my-1 md:my-4 btn h-10 w-18 md:w-auto btn-primary text-white font-bold py-1 border-1 border-blue-500 px-4 rounded ${
-                    loading ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <span className="flex items-center">
-                      <svg
-                        className="animate-spin h-4 w-4 mr-2 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                        ></path>
-                      </svg>
-                      Updating...
-                    </span>
-                  ) : (
-                    "Update"
-                  )}
-                </button>
-                {/* <button
-                  type="submit"
+                  // type="submit"
                   // type="button"
                   style={{ backgroundColor: "#2196F3" }}
                   className=" text-white font-bold py-1 border-1 border-blue-500 px-4 rounded"
                 >
                   Update
-                </button> */}
+                </button>
+                <button
+                  onClick={() => {
+                    navigate("/newStudentList");
+                  }}
+                  className=" text-white font-bold py-1 bg-yellow-500 hover:bg-yellow-600 border-1 border-yellow-500 px-4 rounded"
+                >
+                  Back
+                </button>
               </div>
             </div>
           )}

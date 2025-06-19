@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
 import Select from "react-select";
 import { toast, ToastContainer } from "react-toastify";
@@ -9,6 +9,10 @@ import Loader from "../common/LoaderFinal/LoaderStyle";
 import { FiPrinter } from "react-icons/fi";
 import { FaDownload, FaFileExcel } from "react-icons/fa";
 import * as XLSX from "xlsx";
+import moment from "moment";
+import { useLocation } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 
 const StudentIdCard = () => {
   const API_URL = import.meta.env.VITE_API_URL;
@@ -33,6 +37,14 @@ const StudentIdCard = () => {
   const pageSize = 10;
   const [pageCount, setPageCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const previousPageRef = useRef(0);
+  const prevSearchTermRef = useRef("");
+
+  const location = useLocation();
+  const { sectionID } = location.state || 0;
+
+  console.log("Student is card section id", sectionID);
 
   useEffect(() => {
     fetchExams();
@@ -62,10 +74,10 @@ const StudentIdCard = () => {
   const handleStudentSelect = (selectedOption) => {
     setStudentError(""); // Reset error if student is select.
     setSelectedStudent(selectedOption);
+    console.log("selectedStudent", selectedOption);
     setSelectedStudentId(selectedOption?.value);
+    console.log("sectionid", selectedOption?.value);
   };
-
-  // Dropdown options
 
   const studentOptions = useMemo(
     () =>
@@ -76,48 +88,262 @@ const StudentIdCard = () => {
     [studentNameWithClassId]
   );
 
-  // Handle search and fetch parent information
+  useEffect(() => {
+    if (sectionID && studentOptions.length > 0) {
+      const selectedOption = studentOptions.find(
+        (opt) => opt.value === sectionID
+      );
+      if (selectedOption) {
+        setSelectedStudent(selectedOption);
+        setSelectedStudentId(sectionID);
+        handleSearch(sectionID);
+        setTimetable([]);
+      }
+    }
+  }, [sectionID, studentOptions]); // Add dependencies
+
   const handleSearch = async () => {
     let valid = true;
+    let idToUse = sectionID || selectedStudentId;
 
-    // Check if selectedStudent is empty and set the error message
-    if (!selectedStudent) {
+    // check if real is empty if it is set to temp.
+    if (!selectedStudentId && !sectionID) {
       setStudentError("Please select Class.");
       valid = false;
-    } else {
-      setStudentError(""); // Reset error if teacher is selected
+    } else if (selectedStudentId) {
+      idToUse = selectedStudentId;
+      setStudentError("");
+    } else if (!selectedStudentId && sectionID) {
+      idToUse = sectionID;
+      setStudentError("");
+    } else if (sectionID) {
+      idToUse = sectionID;
+      setStudentError("");
     }
 
     if (!valid) {
       setLoadingForSearch(false);
       return;
-    } // Stop if any validation fails
+    }
 
     try {
-      setLoadingForSearch(true); // Start loading
+      setLoadingForSearch(true);
       setTimetable([]);
       setSearchTerm("");
+
       const token = localStorage.getItem("authToken");
       const response = await axios.get(
-        `${API_URL}/api/get_studentidcard?section_id=${selectedStudentId}`,
+        `${API_URL}/api/get_studentidcard?section_id=${idToUse}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
       if (!response?.data?.data || response?.data?.data.length === 0) {
-        toast.error("No student ID card data found for the selected class."); // Show warning toast
-        setTimetable([]); // Ensure timetable is set to an empty array
+        toast.error("No student ID card data found for the selected class.");
+        setTimetable([]);
       } else {
-        setTimetable(response?.data?.data);
-        setPageCount(Math.ceil(response?.data?.data?.length / pageSize)); // Set page count based on response size
+        setTimetable(response.data.data);
+        setPageCount(Math.ceil(response.data.data.length / pageSize));
       }
     } catch (error) {
       console.error("Error fetching Student Id Card data:", error);
-      toast.error("An error occurred while fetching Student Id Carddata.");
+      toast.error("An error occurred while fetching Student ID Card data.");
     } finally {
       setLoadingForSearch(false);
     }
   };
+
+  // working
+  // const handleDownloadEXL = () => {
+  //   if (!displayedSections || displayedSections.length === 0) {
+  //     toast.error(
+  //       "No data available to download Excel sheet of Student ID Card."
+  //     );
+  //     return;
+  //   }
+
+  //   // Define headers
+  //   const headers = [
+  //     "Sr.No",
+  //     "Roll No",
+  //     "Photo URL",
+  //     "Class",
+  //     "Student Name",
+  //     "DOB",
+  //     "Father Mobile No.",
+  //     "Mother Mobile No.",
+  //     "Address",
+  //     "Blood Group",
+  //     "Grn No.",
+  //     "House",
+  //     "Image Name",
+  //   ];
+
+  //   // Convert table data into an array format
+  //   // const data = displayedSections.map((subject, index) => [
+  //   //   index + 1,
+  //   //   subject?.roll_no || " ",
+  //   //   subject?.image_url || " ",
+  //   //   `${subject?.class_name || ""} ${subject?.sec_name || ""}`,
+  //   //   `${subject?.first_name || ""} ${subject?.mid_name || ""} ${
+  //   //     subject?.last_name || ""
+  //   //   }`,
+  //   //   `${
+  //   //     subject?.dob ? new Date(subject.dob).toLocaleDateString("en-GB") : ""
+  //   //   }`,
+  //   //   subject?.f_mobile || " ",
+  //   //   subject?.m_mobile || " ",
+  //   //   subject?.permant_add || " ",
+  //   //   subject?.blood_group || " ",
+  //   //   subject?.reg_no || " ",
+  //   //   `${subject?.house === "Unknown House" ? "" : subject?.house}`,
+  //   //   subject?.image_name || " ",
+  //   // ]);
+
+  //   const handleDownloadEXL = () => {
+  //     if (!displayedSections || displayedSections.length === 0) {
+  //       toast.error(
+  //         "No data available to download Excel sheet of Student ID Card."
+  //       );
+  //       return;
+  //     }
+
+  //     const headers = [
+  //       "Sr.No",
+  //       "Roll No",
+  //       "Photo URL",
+  //       "Class",
+  //       "Student Name",
+  //       "DOB",
+  //       "Father Mobile No.",
+  //       "Mother Mobile No.",
+  //       "Address",
+  //       "Blood Group",
+  //       "Grn No.",
+  //       "House",
+  //       "Image Name",
+  //     ];
+
+  //     const data = displayedSections.map((subject, index) => [
+  //       index + 1,
+  //       subject?.roll_no || "",
+  //       subject?.image_url || "",
+  //       `${subject?.class_name || ""} ${subject?.sec_name || ""}`,
+  //       `${subject?.first_name || ""} ${subject?.mid_name || ""} ${
+  //         subject?.last_name || ""
+  //       }`,
+  //       subject?.dob ? new Date(subject.dob).toLocaleDateString("en-GB") : "",
+  //       subject?.f_mobile || "",
+  //       subject?.m_mobile || "",
+  //       subject?.permant_add || "",
+  //       subject?.blood_group || "",
+  //       subject?.reg_no || "",
+  //       subject?.house === "Unknown House" ? "" : subject?.house,
+  //       subject?.image_name || "",
+  //     ]);
+
+  //     const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+
+  //     // Add hyperlinks manually to the "Image Name" column (index 12, or column "M")
+  //     displayedSections.forEach((subject, i) => {
+  //       if (subject?.image_name) {
+  //         const row = i + 2; // +2 because headers are in row 1 and Excel rows are 1-indexed
+  //         const cellRef = `M${row}`;
+  //         worksheet[cellRef] = {
+  //           t: "s",
+  //           v: subject.image_name,
+  //           l: {
+  //             Target: `https://your-site.com/student-profile?id=${subject?.id}`, // Adjust ID key accordingly
+  //           },
+  //         };
+  //       }
+  //     });
+
+  //     const workbook = XLSX.utils.book_new();
+  //     XLSX.utils.book_append_sheet(workbook, worksheet, "Student Data");
+
+  //     XLSX.writeFile(
+  //       workbook,
+  //       `Student idCard list of ${selectedStudent.label}.xlsx`
+  //     );
+  //   };
+
+  //   // Create a worksheet
+  //   const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+
+  //   // Create a workbook and append the worksheet
+  //   const workbook = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, "Student Data");
+
+  //   // Write and download the file
+  //   XLSX.writeFile(
+  //     workbook,
+  //     `Student idCard list of ${selectedStudent.label}.xlsx`
+  //   );
+  // };
+
+  // open browswe
+  // const handleDownloadEXL = async () => {
+  //   if (!displayedSections || displayedSections.length === 0) {
+  //     toast.error(
+  //       "No data available to download Excel sheet of Student ID Card."
+  //     );
+  //     return;
+  //   }
+
+  //   // Define column headers
+  //   const headers = [
+  //     "Sr.No",
+  //     "Roll No",
+  //     "Photo (Click to View)",
+  //     "Class",
+  //     "Student Name",
+  //     "DOB",
+  //     "Father Mobile No.",
+  //     "Mother Mobile No.",
+  //     "Address",
+  //     "Blood Group",
+  //     "Grn No.",
+  //     "House",
+  //     "Image Name",
+  //   ];
+
+  //   // Convert each row
+  //   const data = displayedSections.map((subject, index) => {
+  //     const imageUrl = subject?.image_url || "https://via.placeholder.com/50";
+  //     return [
+  //       index + 1,
+  //       subject?.roll_no || "",
+  //       { t: "s", v: "View", l: { Target: imageUrl } }, // Excel hyperlink
+  //       `${subject?.class_name || ""} ${subject?.sec_name || ""}`,
+  //       `${subject?.first_name || ""} ${subject?.mid_name || ""} ${
+  //         subject?.last_name || ""
+  //       }`,
+  //       subject?.dob ? new Date(subject.dob).toLocaleDateString("en-GB") : "",
+  //       subject?.f_mobile || "",
+  //       subject?.m_mobile || "",
+  //       subject?.permant_add || "",
+  //       subject?.blood_group || "",
+  //       subject?.reg_no || "",
+  //       subject?.house === "Unknown House" ? "" : subject?.house,
+  //       subject?.image_name || "",
+  //     ];
+  //   });
+
+  //   // Create worksheet from headers + data
+  //   const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+
+  //   // Create workbook and add worksheet
+  //   const workbook = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, "Student Data");
+
+  //   // Download Excel file
+  //   XLSX.writeFile(
+  //     workbook,
+  //     `Student idCard list of ${selectedStudent.label}.xlsx`
+  //   );
+  // };
 
   const handleDownloadEXL = () => {
     if (!displayedSections || displayedSections.length === 0) {
@@ -127,7 +353,6 @@ const StudentIdCard = () => {
       return;
     }
 
-    // Define headers
     const headers = [
       "Sr.No",
       "Roll No",
@@ -144,41 +369,53 @@ const StudentIdCard = () => {
       "Image Name",
     ];
 
-    // Convert table data into an array format
     const data = displayedSections.map((subject, index) => [
       index + 1,
-      subject?.roll_no || " ",
-      subject?.image_url || " ",
+      subject?.roll_no || "",
+      subject?.image_url || "",
       `${subject?.class_name || ""} ${subject?.sec_name || ""}`,
       `${subject?.first_name || ""} ${subject?.mid_name || ""} ${
         subject?.last_name || ""
       }`,
-      subject?.dob || " ",
-      subject?.f_mobile || " ",
-      subject?.m_mobile || " ",
-      subject?.permant_add || " ",
-      subject?.blood_group || " ",
-      subject?.reg_no || " ",
-      subject?.house || " ",
-      subject?.image_name || " ",
+      subject?.dob ? new Date(subject.dob).toLocaleDateString("en-GB") : "",
+      subject?.f_mobile || "",
+      subject?.m_mobile || "",
+      subject?.permant_add || "",
+      subject?.blood_group || "",
+      subject?.reg_no || "",
+      subject?.house === "Unknown House" ? "" : subject?.house,
+      subject?.image_name || "",
     ]);
 
-    // Create a worksheet
     const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
 
-    // Create a workbook and append the worksheet
+    displayedSections.forEach((subject, i) => {
+      if (subject?.image_name) {
+        const row = i + 2; // +2 to account for 1-based index + header row
+        const cellRef = `M${row}`;
+        worksheet[cellRef] = {
+          t: "s",
+          v: subject.image_name, // Visible text in Excel (like "1604.jpg")
+          l: {
+            Target: `http://localhost:5173/iDCardDetails/${subject?.student_id}`, // Clickable link
+          },
+        };
+      }
+    });
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Student Data");
 
-    // Write and download the file
     XLSX.writeFile(
       workbook,
       `Student idCard list of ${selectedStudent.label}.xlsx`
     );
   };
+
   const handleDownloadZip = () => {
     setShowDeleteModal(true);
   };
+
   const handleSubmitDownloadZip = async () => {
     if (isSubmitting) return; // Prevent multiple submissions
     setIsSubmitting(true);
@@ -246,13 +483,14 @@ const StudentIdCard = () => {
   };
 
   console.log("row", timetable);
+
   const handlePrint = () => {
     const printTitle = `Student ID Card List of ${selectedStudent.label}`;
 
     const printContent = `
-  <div id="tableMain" class="flex items-center justify-center min-h-screen bg-white">
+     <div id="tableMain" class="flex items-center justify-center min-h-screen bg-white">
          <h5 id="tableHeading5"  class="text-lg font-semibold border-1 border-black">${printTitle}</h5>
- <div id="tableHeading" class="text-center w-3/4">
+     <div id="tableHeading" class="text-center w-3/4">
       <table class="min-w-full leading-normal table-auto border border-black mx-auto mt-2">
         <thead>
           <tr class="bg-gray-100">
@@ -293,8 +531,11 @@ const StudentIdCard = () => {
                 <td class="px-2 text-center py-2 border border-black">${
                   subject?.first_name || ""
                 } ${subject?.mid_name || ""} ${subject?.last_name || ""}</td>
-                <td class="px-2 text-center py-2 border border-black">${
-                  subject?.dob || " "
+                <td class="px-2 text-center py-2 border border-black">
+                ${
+                  subject?.dob
+                    ? new Date(subject.dob).toLocaleDateString("en-GB")
+                    : ""
                 }</td>
                 <td class="px-2 text-center py-2 border border-black">${
                   subject?.f_mobile || " "
@@ -312,7 +553,7 @@ const StudentIdCard = () => {
                   subject?.reg_no || " "
                 }</td>
                 <td class="px-2 text-center py-2 border border-black">${
-                  subject?.house || " "
+                  subject?.house === "Unknown House" ? "" : subject?.house
                 }</td>
                 <td class="px-2 text-center py-2 border border-black">${
                   subject?.image_name || " "
@@ -325,7 +566,7 @@ const StudentIdCard = () => {
     </div>
   </div>`;
 
-    const printWindow = window.open("", "", "height=800,width=1000");
+    const printWindow = window.open("", "_blank", "height=800,width=1000");
     printWindow.document.write(`
   <html>
   <head>
@@ -345,20 +586,14 @@ const StudentIdCard = () => {
   width: 100%; /* Ensures the table fills its container */
   margin:auto;
   padding:0 10em 0 10em;
-
-  
-
-
 }
 
 #tableContainer {
   display: flex;
   justify-content: center; /* Centers the table horizontally */
   width: 80%;
-  
 }
 
- 
 h5 {  
   width: 100%;  
   text-align: center;  
@@ -381,7 +616,6 @@ h5 + * { /* Targets the element after h5 */
   margin-top: 0; /* Ensures no extra space after h5 */
 }
 
-
       table { border-spacing: 0; width: 70%; margin: auto;   }
       th { font-size: 0.8em; background-color: #f9f9f9; }
       td { font-size: 12px; }
@@ -399,13 +633,17 @@ h5 + * { /* Targets the element after h5 */
   </body>
   </html>`);
     printWindow.document.close();
-    printWindow.print();
+    printWindow.onload = function () {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close(); // Optional: close after printing
+    };
   };
+
   const handleSubjectClick = (subject) => {
     if (subject) {
-      // window.location.href = `/iDCardDetails?subject=${subject}`;
       navigate(
-        `/iDCardDetails/${subject?.parent_id}`,
+        `/iDCardDetails/${subject?.student_id}`,
 
         {
           state: { staff: subject },
@@ -414,20 +652,38 @@ h5 + * { /* Targets the element after h5 */
     }
   };
 
+  useEffect(() => {
+    const trimmedSearch = searchTerm.trim().toLowerCase();
+
+    if (trimmedSearch !== "" && prevSearchTermRef.current === "") {
+      previousPageRef.current = currentPage; // Save current page before search
+      setCurrentPage(0); // Jump to first page when searching
+    }
+
+    if (trimmedSearch === "" && prevSearchTermRef.current !== "") {
+      setCurrentPage(previousPageRef.current); // Restore saved page when clearing search
+    }
+
+    prevSearchTermRef.current = trimmedSearch;
+  }, [searchTerm]);
+
   const filteredSections = timetable.filter((section) => {
-    const searchLower = searchTerm.toLowerCase();
+    const searchLower = searchTerm.toLowerCase().trim();
 
     // Extract relevant fields and convert them to lowercase for case-insensitive search
     const studentRollNo = section?.roll_no?.toString().toLowerCase() || "";
     const studentName =
       `${section?.first_name} ${section?.mid_name} ${section?.last_name}`.toLowerCase() ||
       "";
-    const studentDOB = section?.dob?.toLowerCase() || "";
+    const studentDOB = section?.dob
+      ? moment(section.dob).format("DD/MM/YYYY")
+      : "";
     const studentFatherMobile = section?.f_mobile?.toLowerCase() || "";
     const studentMotherMobile = section?.m_mobile?.toLowerCase() || "";
     const studentBloodGroup = section?.blood_group?.toLowerCase() || "";
     const studentGrnNo = section?.reg_no?.toLowerCase() || "";
     const studentHouse = section?.house?.toLowerCase() || "";
+    const studentAddress = section?.permant_add?.toLowerCase() || "";
     const studentClass =
       `${section?.class_name} ${section?.sec_name}`.toLowerCase() || "";
 
@@ -441,11 +697,13 @@ h5 + * { /* Targets the element after h5 */
       studentBloodGroup.includes(searchLower) ||
       studentGrnNo.includes(searchLower) ||
       studentHouse.includes(searchLower) ||
-      studentClass.includes(searchLower)
+      studentClass.includes(searchLower) ||
+      studentAddress.includes(searchLower)
     );
   });
 
   const displayedSections = filteredSections.slice(currentPage * pageSize);
+
   return (
     <>
       <div className="w-full md:w-[95%] mx-auto p-4 ">
@@ -456,7 +714,7 @@ h5 + * { /* Targets the element after h5 */
               Student ID Card
             </h5>
             <RxCross1
-              className=" relative right-2 text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
+              className="relative right-2 text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
               onClick={() => {
                 navigate("/dashboard");
               }}
@@ -679,8 +937,7 @@ h5 + * { /* Targets the element after h5 */
                                     <img
                                       src={
                                         subject?.image_url
-                                          ? // ? `https://sms.evolvu.in/storage/app/public/student_images/${subject?.image_name}`
-                                            `${subject?.image_url}`
+                                          ? `${subject?.image_url}`
                                           : "https://via.placeholder.com/50"
                                       }
                                       alt={subject?.name}
@@ -700,7 +957,11 @@ h5 + * { /* Targets the element after h5 */
                                     }${subject?.last_name ?? ""}`.trim()}
                                   </td>
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                    {subject?.dob}
+                                    {subject?.dob
+                                      ? new Date(
+                                          subject.dob
+                                        ).toLocaleDateString("en-GB")
+                                      : ""}
                                   </td>
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
                                     {subject?.f_mobile}
@@ -718,15 +979,35 @@ h5 + * { /* Targets the element after h5 */
                                     {subject?.reg_no}
                                   </td>
                                   <td className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm">
-                                    {subject?.house}
+                                    {subject?.house == "Unknown House"
+                                      ? ""
+                                      : subject?.house}
                                   </td>
                                   <td
-                                    className="px-2 text-center lg:px-3 py-2 hover:font-semibold  border border-gray-950 text-sm cursor-pointer text-blue-600 hover:text-blue-700"
+                                    className="px-2 text-center lg:px-3 py-2 hover:font-semibold border border-gray-950 text-sm cursor-pointer text-blue-600 hover:text-blue-700"
                                     onClick={() => handleSubjectClick(subject)}
                                   >
-                                    <p className="border-b-2 mt-3  hover:border-blue-600 ">
-                                      {subject?.image_name}
-                                    </p>
+                                    <div className="flex justify-center items-center h-full">
+                                      {subject?.image_name === "" ? (
+                                        <FontAwesomeIcon
+                                          icon={faCircleUser}
+                                          className="text-2xl text-gray-500"
+                                        />
+                                      ) : (
+                                        <p className=" mt-2">
+                                          {subject?.image_name}
+                                        </p>
+                                      )}
+                                    </div>
+
+                                    {/* <p className="flex justify-center items-center text-2xl mt-2">
+                                      border-b-2 mt-3  hover:border-blue-600
+                                      {subject?.image_name == "" ? (
+                                        <FontAwesomeIcon icon={faCircleUser} />
+                                      ) : (
+                                        subject?.image_name
+                                      )}
+                                    </p> */}
                                   </td>
                                 </tr>
                               ))

@@ -1,7 +1,7 @@
 import axios from "axios";
 import ReactPaginate from "react-paginate";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { ToastContainer, toast } from "react-toastify";
@@ -17,9 +17,6 @@ function LeaveApplicaton() {
   const [error, setError] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const previousPageRef = useRef(0);
-  const prevSearchTermRef = useRef("");
 
   const [currentLeave, setCurrentLeave] = useState(null);
   const [currentLeaveName, setCurrentLeaveName] = useState(null);
@@ -136,26 +133,18 @@ function LeaveApplicaton() {
     const year = String(date.getFullYear()).slice(-2); // Last 2 digits of the year
     return `${day}-${month}-${year}`;
   };
-  useEffect(() => {
-    const trimmedSearch = searchTerm.trim().toLowerCase();
-
-    if (trimmedSearch !== "" && prevSearchTermRef.current === "") {
-      previousPageRef.current = currentPage; // Save current page before search
-      setCurrentPage(0); // Jump to first page when searching
-    }
-
-    if (trimmedSearch === "" && prevSearchTermRef.current !== "") {
-      setCurrentPage(previousPageRef.current); // Restore saved page when clearing search
-    }
-
-    prevSearchTermRef.current = trimmedSearch;
-  }, [searchTerm]);
-
-  // const searchLower = searchTerm.trim().toLowerCase();
-
+  // const filteredStaffs = Array.isArray(staffs)
+  //   ? staffs.filter(
+  //       (leave) =>
+  //         String(leave.leave_app_id)
+  //           .toLowerCase()
+  //           .includes(String(searchTerm).toLowerCase()) ||
+  //         leave.name.toLowerCase().includes(searchTerm.toLowerCase())
+  //     )
+  //   : [];
   const filteredStaffs = Array.isArray(staffs)
     ? staffs.filter((leave) => {
-        const search = String(searchTerm).trim().toLowerCase();
+        const search = String(searchTerm).toLowerCase();
         return (
           String(leave.name).toLowerCase().includes(search) || // Leave Type
           String(formatDate(leave.leave_start_date))
@@ -171,10 +160,6 @@ function LeaveApplicaton() {
     : [];
 
   console.log("filetred staff leave", filteredStaffs);
-
-  useEffect(() => {
-    setPageCount(Math.ceil(filteredStaffs.length / pageSize));
-  }, [filteredStaffs, pageSize]);
 
   const displayedStaffs = filteredStaffs.slice(
     currentPage * pageSize,
@@ -296,8 +281,39 @@ function LeaveApplicaton() {
                               {leave.status || "-"}
                             </p>
                           </td>
+                          {leave.status !== "Cancelled" &&
+                          leave.status !== "Rejected" &&
+                          leave.status !== "Approve" ? (
+                            <>
+                              <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                                <button
+                                  className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
+                                  onClick={() => handleSubmitEdit(leave)}
+                                >
+                                  <FontAwesomeIcon icon={faEdit} />
+                                </button>
+                              </td>
+                              <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                                <button
+                                  className="text-red-600 hover:text-red-800 hover:bg-transparent "
+                                  onClick={() => handleDelete(leave)}
+                                >
+                                  <FontAwesomeIcon icon={faTrash} />
+                                </button>
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                                {" "}
+                              </td>
+                              <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                                {" "}
+                              </td>
+                            </>
+                          )}
 
-                          <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
+                          {/* <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
                             <button
                               className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
                               onClick={() => handleSubmitEdit(leave)}
@@ -312,7 +328,7 @@ function LeaveApplicaton() {
                             >
                               <FontAwesomeIcon icon={faTrash} />
                             </button>
-                          </td>
+                          </td> */}
                           <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
                             <button
                               className="text-blue-600 hover:text-blue-800 hover:bg-transparent "
@@ -335,7 +351,8 @@ function LeaveApplicaton() {
                 </table>
               </div>
             </div>
-            <div className=" flex justify-center  pt-2 -mb-3  box-border  overflow-hidden">
+            {/* <div className=" flex justify-center  pt-2 -mb-3  box-border  overflow-hidden"> */}
+            {filteredStaffs.length > pageSize && (
               <ReactPaginate
                 previousLabel={"Previous"}
                 nextLabel={"Next"}
@@ -355,7 +372,8 @@ function LeaveApplicaton() {
                 nextLinkClassName={"page-link"}
                 activeClassName={"active"}
               />
-            </div>
+            )}
+            {/* </div> */}
           </div>
         </div>
       </div>

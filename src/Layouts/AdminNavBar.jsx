@@ -589,13 +589,13 @@ const AdminNavBar = () => {
           title={<span className="nav-dropdown-title">Role</span>}
           className="custom-nav-dropdown"
         >
-          <NavDropdown.Item as={Link} to="/roles">
+          <NavDropdown.Item as={Link} to="/manageRoles">
             Manage Role
           </NavDropdown.Item>
-          <NavDropdown.Item as={Link} to="/menus">
+          <NavDropdown.Item as={Link} to="/manageMenus">
             Manage Menu
           </NavDropdown.Item>
-          <NavDropdown.Item as={Link} to="/show_roles">
+          <NavDropdown.Item as={Link} to="/manageRoleAccess">
             Manage Access
           </NavDropdown.Item>
         </NavDropdown> */}
@@ -781,7 +781,7 @@ const AdminNavBar = () => {
           <NavDropdown.Item as={Link} to="/allotClassTeacher">
             Allot Class Teachers
           </NavDropdown.Item>
-          <NavDropdown.Item as={Link} to="#">
+          <NavDropdown.Item as={Link} to="comingSoon">
             Allot Department Coordinator
           </NavDropdown.Item>
           <NavDropdown.Item as={Link} to="/allotGRNumber">
@@ -820,12 +820,19 @@ const AdminNavBar = () => {
           >
             Teacher ID Card
           </NavDropdown.Item>
-          <NavDropdown.Item
+          {/* <NavDropdown.Item
             as={Link}
             to="/pendingStudentId"
             className="text-sm font-bold hover:text-black"
           >
             Pending Student ID Card
+          </NavDropdown.Item> */}
+          <NavDropdown.Item
+            as={Link}
+            to="/updateStudentIdCard"
+            className="text-sm font-bold hover:text-black"
+          >
+            Update student ID Card
           </NavDropdown.Item>
         </NavDropdown>
 
