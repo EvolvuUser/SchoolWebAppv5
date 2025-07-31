@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Select from "react-select";
 import { toast, ToastContainer } from "react-toastify";
@@ -12,7 +12,13 @@ import * as XLSX from "xlsx";
 
 const TeacherAttendanceDailyReport = () => {
   const API_URL = import.meta.env.VITE_API_URL;
-  const [currentPage, setCurrentPage] = useState(0);
+
+  const academicYrFrom = localStorage.getItem("academic_yr_from");
+  const academicYrTo = localStorage.getItem("academic_yr_to");
+
+  console.log("from year", academicYrFrom);
+  console.log("to yaer", academicYrTo);
+
   const [studentNameWithClassId, setStudentNameWithClassId] = useState([]);
   const [loadingForSearch, setLoadingForSearch] = useState(false);
   // const [selectedMonth, setSelectedMonth] = useState(null);
@@ -21,17 +27,18 @@ const TeacherAttendanceDailyReport = () => {
   const [studentError, setStudentError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [attendanceCount, setAttendanceCount] = useState("0/0");
-
   const [timetable, setTimetable] = useState([]);
-  // const [toDate, setToDate] = useState(null);
   const [toDate, setToDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split("T")[0]; // returns 'YYYY-MM-DD'
   });
-
-  const pageSize = 10;
-  const [pageCount, setPageCount] = useState(0);
+  // const [toDate, setToDate] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const presentRef = useRef(null);
+  const lateRef = useRef(null);
+  const absentRef = useRef(null);
+  const rowRefs = useRef({});
+  const outerScrollContainerRef = useRef(null);
 
   useEffect(() => {
     fetchExams();
@@ -122,7 +129,7 @@ const TeacherAttendanceDailyReport = () => {
 
         setTimetable(mergedData);
         setAttendanceCount(total_attendance); //  set string like "24/119"
-        setPageCount(Math.ceil(mergedData.length / pageSize));
+        // setPageCount(Math.ceil(mergedData.length / pageSize));
       }
       console.log("total attendance", setAttendanceCount);
     } catch (error) {
@@ -136,8 +143,11 @@ const TeacherAttendanceDailyReport = () => {
     }
   };
 
+  const capitalizeWords = (str) =>
+    str.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+
   const handlePrint = () => {
-    const printTitle = `Teacher Attendance Daily Report ${
+    const printTitle = `Staff Daily Attendance Report ${
       toDate ? `for ${toDate}` : "for All Staff"
     }`;
 
@@ -172,9 +182,8 @@ const TeacherAttendanceDailyReport = () => {
                   <td class="px-2 text-center py-2 border border-black">${
                     index + 1
                   }</td>
-                  <td class="px-2 text-center py-2 border border-black">${
-                    student?.name || ""
-                  }</td>
+                  <td class="px-2 text-center py-2 border border-black">
+                  ${capitalizeWords(student?.name || "")}</td>
                   <td class="px-2 text-center py-2 border border-black">${
                     student?.employee_id || ""
                   }</td>
@@ -263,37 +272,68 @@ const TeacherAttendanceDailyReport = () => {
     };
   };
 
-  // const filterStaffByStatus = (status) =>
-  //   Array.isArray(timetable)
-  //     ? timetable.filter((staff) => {
-  //         if (staff.status !== status) return false;
+  const handleDownloadEXL = () => {
+    if (
+      (!displayedPresent || displayedPresent.length === 0) &&
+      (!displayedLate || displayedLate.length === 0) &&
+      (!displayedAbsent || displayedAbsent.length === 0)
+    ) {
+      toast.error("No data available to download the Excel sheet.");
+      return;
+    }
 
-  //         const searchLower = searchTerm.toString().trim().toLowerCase();
-  //         const staffName = staff?.name?.toString().toLowerCase() || "";
-  //         const date = staff?.date_part?.toString().toLowerCase() || "";
-  //         const inTime = staff?.punch_in_time?.toString().toLowerCase() || "";
-  //         const outTime = staff?.punch_out_time?.toString().toLowerCase() || "";
-  //         const lateTime = staff?.lateTime?.toString().toLowerCase() || "";
-  //         const employeeId = staff?.employee_id?.toString().toLowerCase() || "";
+    const capitalizeWords = (str) =>
+      str.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
 
-  //         return (
-  //           staffName.includes(searchLower) ||
-  //           date.includes(searchLower) ||
-  //           inTime.includes(searchLower) ||
-  //           outTime.includes(searchLower) ||
-  //           lateTime.includes(searchLower) ||
-  //           employeeId.includes(searchLower)
-  //         );
-  //       })
-  //     : [];
+    const workbook = XLSX.utils.book_new();
 
-  // const filteredAbsent = filterStaffByStatus("Absent");
-  // const filteredLate = filterStaffByStatus("Late");
-  // const filteredPresent = filterStaffByStatus("Present");
+    const sections = [
+      { title: "Present Staff", data: displayedPresent, type: "Present" },
+      { title: "Late Staff", data: displayedLate, type: "Late" },
+      { title: "Absent Staff", data: displayedAbsent, type: "Absent" },
+    ];
 
-  // const displayedPresent = filteredPresent.slice(currentPage * pageSize);
-  // const displayedAbsent = filteredAbsent.slice(currentPage * pageSize);
-  // const displayedLate = filteredLate.slice(currentPage * pageSize);
+    sections.forEach(({ title, data, type }) => {
+      if (!data || data.length === 0) return;
+
+      const showPunchData = type !== "Absent";
+
+      // Headers
+      const headers = ["Sr.No", "Name", "Employee ID"];
+      if (showPunchData) {
+        headers.push("Punch Date", "In Time", "Out Time");
+      }
+
+      // Rows
+      const rows = data.map((student, index) => {
+        const row = [
+          index + 1,
+          capitalizeWords(student?.name || ""),
+          student?.employee_id || "",
+        ];
+        if (showPunchData) {
+          row.push(
+            student?.date_part
+              ? new Date(student.date_part).toLocaleDateString("en-GB")
+              : "",
+            student?.punch_in_time || "",
+            student?.punch_out_time || ""
+          );
+        }
+        return row;
+      });
+
+      const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+      worksheet["!cols"] = headers.map(() => ({ wch: 20 }));
+      XLSX.utils.book_append_sheet(workbook, worksheet, title);
+    });
+
+    const fileName = `Staff_Daily_Attendance_Report_${new Date()
+      .toISOString()
+      .slice(0, 10)}.xlsx`;
+
+    XLSX.writeFile(workbook, fileName);
+  };
 
   const filteredStaff = Array.isArray(timetable)
     ? timetable.filter((staff) => {
@@ -319,28 +359,62 @@ const TeacherAttendanceDailyReport = () => {
   const filteredPresent = filteredStaff.filter((s) => s.status === "Present");
   const filteredLate = filteredStaff.filter((s) => s.status === "Late");
   const filteredAbsent = filteredStaff.filter((s) => s.status === "Absent");
+  const displayedPresent = filteredPresent;
+  const displayedLate = filteredLate;
+  const displayedAbsent = filteredAbsent;
+  useEffect(() => {
+    if (!searchTerm.trim()) return;
 
-  const displayedPresent = filteredPresent.slice(
-    currentPage * pageSize,
-    (currentPage + 1) * pageSize
-  );
-  const displayedLate = filteredLate.slice(
-    currentPage * pageSize,
-    (currentPage + 1) * pageSize
-  );
-  const displayedAbsent = filteredAbsent.slice(
-    currentPage * pageSize,
-    (currentPage + 1) * pageSize
-  );
+    const searchLower = searchTerm.toLowerCase().trim();
+
+    const allMatched = [...filteredPresent, ...filteredLate, ...filteredAbsent];
+    const firstMatched = allMatched[0];
+
+    if (!firstMatched || !outerScrollContainerRef.current) return;
+
+    const container = outerScrollContainerRef.current;
+
+    let targetRef = null;
+
+    switch (firstMatched.status) {
+      case "Present":
+        targetRef = presentRef;
+        break;
+      case "Late":
+        targetRef = lateRef;
+        break;
+      case "Absent":
+        targetRef = absentRef;
+        break;
+      default:
+        break;
+    }
+
+    if (targetRef?.current) {
+      const offsetTop = targetRef.current.offsetTop - container.offsetTop;
+
+      container.scrollTo({
+        top: offsetTop - 20, // adjust if needed
+        behavior: "smooth",
+      });
+    }
+  }, [searchTerm, filteredPresent, filteredLate, filteredAbsent]);
 
   return (
     <>
-      <div className="w-full md:w-[80%] mx-auto p-4 ">
+      {/* <div className="w-full md:w-[80%] mx-auto p-4 "> */}
+      <div
+        className={`mx-auto p-4 transition-all duration-700 ease-[cubic-bezier(0.4, 0, 0.2, 1)] transform ${
+          timetable.length > 0
+            ? "w-full md:w-[90%] scale-100"
+            : "w-full md:w-[80%] scale-[0.98]"
+        }`}
+      >
         <ToastContainer />
-        <div className="card p-4 rounded-md ">
+        <div className="card rounded-md ">
           <div className=" card-header mb-4 flex justify-between items-center ">
             <h5 className="text-gray-700 mt-1 text-md lg:text-lg">
-              Satff Attendance Daily Report
+              Staff Daily Attendance Report
             </h5>
             <RxCross1
               className=" relative right-2 text-xl text-red-600 hover:cursor-pointer hover:bg-red-100"
@@ -357,16 +431,30 @@ const TeacherAttendanceDailyReport = () => {
           ></div>
 
           <>
-            <div className=" w-full md:w-[80%]  flex justify-center flex-col md:flex-row gap-x-1     ml-0    p-2">
+            {/* <div className=" w-full md:w-[80%]  flex justify-center flex-col md:flex-row gap-x-1 ml-0 p-2"> */}
+            <div
+              className={`  flex justify-between flex-col md:flex-row gap-x-1 ml-0 p-2  ${
+                timetable.length > 0
+                  ? "pb-0 w-full md:w-[99%]"
+                  : "pb-4 w-full md:w-[80%]"
+              }`}
+            >
               <div className="w-full md:w-[99%] flex md:flex-row justify-between items-center mt-0 md:mt-4">
-                <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-y-3 md:gap-y-0 mb-4">
+                {/* <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-y-3 md:gap-y-0 mb-4"> */}
+                <div
+                  className={`  w-full gap-x-0 md:gap-x-12  flex flex-col gap-y-2 md:gap-y-0 md:flex-row ${
+                    timetable.length > 0
+                      ? "w-full md:w-[90%]  wrelative left-0"
+                      : " w-full md:w-[95%] relative left-10"
+                  }`}
+                >
                   {/* Date Picker */}
-                  <div className="flex  mt-2 items-center w-full md:w-1/3">
+                  <div className="flex mt-2 md:ml-4 items-center w-[50%]">
                     <label
                       htmlFor="dateSelect"
                       className="w-1/3 text-md pl-0 md:pl-5"
                     >
-                      Date<span className="text-sm text-red-500">*</span>
+                      Date <span className="text-sm text-red-500">*</span>
                     </label>
                     <div className="w-2/3">
                       <input
@@ -375,8 +463,10 @@ const TeacherAttendanceDailyReport = () => {
                         value={toDate}
                         onChange={(e) => {
                           setToDate(e.target.value);
-                          setStudentError(""); // 👈 Clear error when user changes the date
+                          setStudentError("");
                         }}
+                        min={localStorage.getItem("academic_yr_from") || ""}
+                        max={localStorage.getItem("academic_yr_to") || ""}
                         className="w-full px-2 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         disabled={loadingExams}
                       />
@@ -429,23 +519,60 @@ const TeacherAttendanceDailyReport = () => {
 
                   {/* Staff Attendance */}
                   <div className="w-full md:w-[35%] text-md font-medium text-gray-800 text-center md:text-right mt-2 md:mt-0 pr-2">
-                    Staff Attendance &nbsp; | &nbsp;
-                    <span className="font-semibold">
-                      Total Attendance: {attendanceCount}
-                    </span>
+                    Staff Attendance : {/* &nbsp; | &nbsp; */}
+                    {/* <span className="font-semibold">
+                      Total Attendance: */}
+                    {attendanceCount}
+                    {/* </span> */}
                   </div>
                 </div>
               </div>
+              {timetable.length > 0 && (
+                <div className="p-2 px-3 w-[500px] bg-gray-100 border-none flex justify-between items-center">
+                  <div className="w-full   flex flex-row justify-between mr-0 md:mr-4 ">
+                    <div className="w-1/2 md:w-[95%] mr-1 ">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Search "
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-x-1 justify-center md:justify-end">
+                    <button
+                      type="button"
+                      onClick={handleDownloadEXL}
+                      className="relative bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded group"
+                    >
+                      <FaFileExcel />
+                      <div className="absolute  bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:flex items-center justify-center bg-gray-700 text-white text-xs text-nowrap rounded-md py-1 px-2">
+                        Export to Excel
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={handlePrint}
+                      className="relative bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded group flex items-center"
+                    >
+                      <FiPrinter />
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:flex items-center justify-center bg-gray-700 text-white text-xs rounded-md py-1 px-2">
+                        Print
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {timetable.length > 0 && (
               <>
-                <div className="w-full  mt-4">
+                <div className="w-[full] px-4 mb-4 mt-4">
                   <div className="card mx-auto lg:w-full shadow-lg">
-                    <div className="p-2 px-3 bg-gray-100 border-none flex justify-between items-center">
+                    {/* <div className="p-2 px-3 bg-gray-100 border-none flex justify-between items-center">
                       <div className="w-full   flex flex-row justify-between mr-0 md:mr-4 ">
                         <h3 className="text-gray-700 mt-1 text-[1.2em] lg:text-xl text-nowrap">
-                          List Of Teacher Attendance Daily Report
+                          List of Staff Attendance Daily Report
                         </h3>
                         <div className="w-1/2 md:w-[18%] mr-1 ">
                           <input
@@ -457,18 +584,6 @@ const TeacherAttendanceDailyReport = () => {
                         </div>
                       </div>
                       <div className="flex flex-col md:flex-row gap-x-1 justify-center md:justify-end">
-                        {/* <button
-                          type="button"
-                          onClick={handleDownloadEXL}
-                          className="relative bg-blue-400 py-1 hover:bg-blue-500 text-white px-3 rounded group"
-                        >
-                          <FaFileExcel />
-
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:flex items-center justify-center bg-gray-600  text-white text-[.7em] rounded-md py-1 px-2">
-                            Exports to excel
-                          </div>
-                        </button> */}
-
                         <button
                           onClick={handlePrint}
                           className="relative flex flex-row justify-center align-middle items-center  bg-blue-400 hover:bg-blue-500 text-white px-3 py-1 rounded group"
@@ -485,214 +600,251 @@ const TeacherAttendanceDailyReport = () => {
                       style={{
                         backgroundColor: "#C03078",
                       }}
-                    ></div>
-
-                    <div className="card-body w-full md:w-[90%] mx-auto">
-                      <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
-                        Present Staff
-                      </h2>
+                    ></div> */}
+                    <div
+                      ref={outerScrollContainerRef}
+                      className="h-[600px] overflow-y-scroll border border-gray-200 rounded-md p-2"
+                    >
                       <div
-                        className="h-96 lg:h-96  overflow-y-scroll overflow-x-scroll"
-                        style={{
-                          scrollbarWidth: "thin", // Makes scrollbar thin in Firefox
-                          scrollbarColor: "#C03178 transparent", // Sets track and thumb color in Firefox
-                        }}
+                        ref={presentRef}
+                        className=" card-body w-full md:w-[90%] mx-auto"
                       >
-                        <table className="min-w-full leading-normal table-auto">
-                          <thead>
-                            <tr className="bg-gray-100">
-                              {[
-                                "Sr No.",
-                                "Name",
-                                "Employee Id",
-                                "Punch Date",
-                                "In Time",
-                                "Out Time",
-                              ].map((header, index) => (
-                                <th
-                                  key={index}
-                                  className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider"
-                                >
-                                  {header}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {displayedPresent.length ? (
-                              displayedPresent?.map((student, index) => (
-                                <tr
-                                  key={student.adm_form_pk}
-                                  className="border border-gray-300"
-                                >
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {index + 1}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student.name || " "}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student.employee_id}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student.date_part
-                                      ? new Date(
-                                          student.date_part
-                                        ).toLocaleDateString("en-GB")
-                                      : " "}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student.punch_in_time || " "}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student.punch_out_time || " "}
-                                  </td>
-                                </tr>
-                              ))
-                            ) : (
-                              <div className=" absolute left-[1%] w-[100%]  text-center flex justify-center items-center mt-14">
-                                <div className=" text-center text-xl text-red-700">
-                                  Oops! No data found for Present Staff..
-                                </div>
-                              </div>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    <div className="card-body w-full md:w-[90%] mx-auto">
-                      <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
-                        Late Staff
-                      </h2>
-                      <div
-                        className="h-96 lg:h-96  overflow-y-scroll overflow-x-scroll"
-                        style={{
-                          scrollbarWidth: "thin", // Makes scrollbar thin in Firefox
-                          scrollbarColor: "#C03178 transparent", // Sets track and thumb color in Firefox
-                        }}
-                      >
-                        <table className="min-w-full leading-normal table-auto">
-                          <thead>
-                            <tr className="bg-gray-100">
-                              {[
-                                "Sr No.",
-                                "Name",
-                                "Employee Id",
-                                "Punch Date",
-                                "In Time",
-                                "Out Time",
-                                "Late Time",
-                              ].map((header, index) => (
-                                <th
-                                  key={index}
-                                  className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider"
-                                >
-                                  {header}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {displayedLate.length ? (
-                              displayedLate?.map((student, index) => (
-                                <tr
-                                  key={student.adm_form_pk}
-                                  className="border border-gray-300"
-                                >
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {index + 1}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student.name || " "}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student.employee_id}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student?.date_part
-                                      ? new Date(
-                                          student?.date_part
-                                        ).toLocaleDateString("en-GB")
-                                      : ""}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student.punch_in_time || " "}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student.punch_out_time || " "}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300">
-                                    {student.late_time || " "}
-                                  </td>
-                                </tr>
-                              ))
-                            ) : (
-                              <div className=" absolute left-[1%] w-[100%]  text-center flex justify-center items-center mt-14">
-                                <div className=" text-center text-xl text-red-700">
-                                  Oops! No data found for Late Staff..
-                                </div>
-                              </div>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    <div className="card-body w-full md:w-[90%] mx-auto">
-                      <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
-                        Absent Staff
-                      </h2>
-                      <div
-                        className="h-96 lg:h-96  overflow-y-scroll overflow-x-scroll"
-                        style={{
-                          scrollbarWidth: "thin", // Makes scrollbar thin in Firefox
-                          scrollbarColor: "#C03178 transparent", // Sets track and thumb color in Firefox
-                        }}
-                      >
-                        <table className="min-w-full leading-normal table-auto">
-                          <thead>
-                            <tr className="bg-gray-100">
-                              {["Sr No.", "Name", "Employee Id"].map(
-                                (header, index) => (
+                        <h2 className="text-xl font-semibold text-center text-gray-800 mb-2">
+                          Present Staff
+                        </h2>
+                        <div
+                          className="h-96 lg:h-96  overflow-y-scroll overflow-x-scroll"
+                          style={{
+                            scrollbarWidth: "thin", // Makes scrollbar thin in Firefox
+                            scrollbarColor: "#C03178 transparent", // Sets track and thumb color in Firefox
+                          }}
+                        >
+                          <table className="min-w-full leading-normal table-auto">
+                            <thead>
+                              <tr className="bg-gray-100">
+                                {[
+                                  "Sr No.",
+                                  "Name",
+                                  "Employee Id",
+                                  "Punch Date",
+                                  "In Time",
+                                  "Out Time",
+                                ].map((header, index) => (
                                   <th
                                     key={index}
                                     className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider"
                                   >
                                     {header}
                                   </th>
-                                )
-                              )}
-                            </tr>
-                          </thead>
-
-                          <tbody>
-                            {displayedAbsent.length ? (
-                              displayedAbsent?.map((student, index) => (
-                                <tr
-                                  key={student.adm_form_pk}
-                                  className="border border-gray-300"
-                                >
-                                  <td className="px-2 py-2 text-center border border-gray-300 text-red-500">
-                                    {index + 1}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300 text-red-500">
-                                    {student.name || " "}
-                                  </td>
-                                  <td className="px-2 py-2 text-center border border-gray-300 text-red-500">
-                                    {student.employee_id || " "}
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {displayedPresent.length ? (
+                                displayedPresent?.map((student, index) => (
+                                  <tr
+                                    key={student.adm_form_pk}
+                                    ref={(el) => {
+                                      if (el)
+                                        rowRefs.current[student.adm_form_pk] =
+                                          el;
+                                    }}
+                                    className="border border-gray-300"
+                                  >
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {index + 1}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {capitalizeWords(student.name || " ")}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {student.employee_id}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {student.date_part
+                                        ? new Date(
+                                            student.date_part
+                                          ).toLocaleDateString("en-GB")
+                                        : " "}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {student.punch_in_time || " "}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {student.punch_out_time || " "}
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td
+                                    colSpan={6}
+                                    className="text-center py-6 text-lg text-red-700 "
+                                  >
+                                    Oops! No data found for Present Staff..
                                   </td>
                                 </tr>
-                              ))
-                            ) : (
-                              <div className=" absolute left-[1%] w-[100%]  text-center flex justify-center items-center mt-14">
-                                <div className=" text-center text-xl text-red-700">
-                                  Oops! No data found for Absent Staff..
-                                </div>
-                              </div>
-                            )}
-                          </tbody>
-                        </table>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      <div
+                        ref={lateRef}
+                        className="card-body w-full md:w-[90%] mx-auto"
+                      >
+                        <h2 className="text-xl font-semibold text-center text-gray-800 mb-2">
+                          Late Staff
+                        </h2>
+                        <div
+                          className="h-96 lg:h-96  overflow-y-scroll overflow-x-scroll"
+                          style={{
+                            scrollbarWidth: "thin", // Makes scrollbar thin in Firefox
+                            scrollbarColor: "#C03178 transparent", // Sets track and thumb color in Firefox
+                          }}
+                        >
+                          <table className="min-w-full leading-normal table-auto">
+                            <thead>
+                              <tr className="bg-gray-100">
+                                {[
+                                  "Sr No.",
+                                  "Name",
+                                  "Employee Id",
+                                  "Punch Date",
+                                  "In Time",
+                                  "Out Time",
+                                  "Late Time",
+                                ].map((header, index) => (
+                                  <th
+                                    key={index}
+                                    className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider"
+                                  >
+                                    {header}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {displayedLate.length ? (
+                                displayedLate?.map((student, index) => (
+                                  <tr
+                                    key={student.adm_form_pk}
+                                    ref={(el) => {
+                                      if (el)
+                                        rowRefs.current[student.adm_form_pk] =
+                                          el;
+                                    }}
+                                    className="border border-gray-300"
+                                  >
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {index + 1}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {capitalizeWords(student.name || " ")}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {student.employee_id}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {student?.date_part
+                                        ? new Date(
+                                            student?.date_part
+                                          ).toLocaleDateString("en-GB")
+                                        : ""}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {student.punch_in_time || " "}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {student.punch_out_time || " "}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300">
+                                      {student.late_time || " "}
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td
+                                    colSpan={7}
+                                    className="text-center py-6 text-lg text-red-700 "
+                                  >
+                                    Oops! No data found for Late Staff..
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      <div
+                        ref={absentRef}
+                        className="card-body w-full md:w-[90%] mx-auto"
+                      >
+                        <h2 className="text-xl font-semibold text-center text-gray-800 mb-2">
+                          Absent Staff
+                        </h2>
+                        <div
+                          className="h-96 lg:h-96  overflow-y-scroll overflow-x-scroll"
+                          style={{
+                            scrollbarWidth: "thin", // Makes scrollbar thin in Firefox
+                            scrollbarColor: "#C03178 transparent", // Sets track and thumb color in Firefox
+                          }}
+                        >
+                          <table className="min-w-full leading-normal table-auto">
+                            <thead>
+                              <tr className="bg-gray-100">
+                                {["Sr No.", "Name", "Employee Id"].map(
+                                  (header, index) => (
+                                    <th
+                                      key={index}
+                                      className="px-2 text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider"
+                                    >
+                                      {header}
+                                    </th>
+                                  )
+                                )}
+                              </tr>
+                            </thead>
+
+                            <tbody>
+                              {displayedAbsent.length ? (
+                                displayedAbsent?.map((student, index) => (
+                                  <tr
+                                    key={student.adm_form_pk}
+                                    ref={(el) => {
+                                      if (el)
+                                        rowRefs.current[student.adm_form_pk] =
+                                          el;
+                                    }}
+                                    className="border border-gray-300"
+                                  >
+                                    <td className="px-2 py-2 text-center border border-gray-300 text-red-500">
+                                      {index + 1}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300 text-red-500">
+                                      {capitalizeWords(student.name || " ")}
+                                    </td>
+                                    <td className="px-2 py-2 text-center border border-gray-300 text-red-500">
+                                      {student.employee_id || " "}
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td
+                                    colSpan={3}
+                                    className="text-center py-6 text-lg text-red-700 "
+                                  >
+                                    Oops! No data found for Absent Staff..
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </div>
                   </div>

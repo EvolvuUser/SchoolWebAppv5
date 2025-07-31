@@ -875,28 +875,36 @@ function NavBar() {
           "the userupdate profile inside the navbar compoenent",
           staff
         );
+        const errorMsg = response?.data?.message;
+        // Handle expired token
+        console.log("tokeneeee error--->", errorMsg, response?.data?.message);
+        if (errorMsg === "Token has expired") {
+          toast.error("Session expired. Please login again.");
+          localStorage.removeItem("authToken"); // Optional: clear old token
+          navigate("/"); // Redirect to login
+          return;
+        }
       } catch (error) {
         toast.error(error.response.data.message);
         console.error(
           "Error fetching profile data inside navbar component:",
           error
         );
+
+        // working well code
+        const errorMsg = error.response?.data?.message;
+        // Handle expired token
+        if (errorMsg === "Token has expired") {
+          toast.error("Session expired. Please login again.");
+          localStorage.removeItem("authToken"); // Optional: clear old token
+          navigate("/"); // Redirect to login
+          return;
+        }
+
+        // Other error handling
+        toast.error(errorMsg || "Something went wrong.");
+        console.error("Error fetching profile:", error);
       }
-      // working well code
-      //   const errorMsg = error.response?.data?.message;
-
-      //   // Handle expired token
-      //   if (errorMsg === "Token has expired") {
-      //     toast.error("Session expired. Please login again.");
-      //     localStorage.removeItem("authToken"); // Optional: clear old token
-      //     navigate("/"); // Redirect to login
-      //     return;
-      //   }
-
-      //   // Other error handling
-      //   toast.error(errorMsg || "Something went wrong.");
-      //   console.error("Error fetching profile:", error);
-      // }
     };
 
     fetcUSerProfilehData();
@@ -932,7 +940,7 @@ function NavBar() {
       console.log("Student List:", studentList); // Debugging
 
       if (studentList.length === 0) {
-        alert("Not students found with tis gr no");
+        // alert("Not students found with tis gr no");
         toast.error("No student found with this GR number.");
         console.log("Error: No student found"); // Debugging
       } else {
@@ -990,7 +998,22 @@ function NavBar() {
         setSessionData(sessionResponse.data);
         setSelectedYear(sessionResponse?.data?.custom_claims?.academic_year);
         setRoleId(sessionResponse.data.user.role_id); // Store role_id
-        // setRoleId("A"); // Store role_id
+        localStorage.setItem(
+          "academic_yr_from",
+          sessionResponse?.data?.custom_claims?.settings?.academic_yr_from
+        );
+        localStorage.setItem(
+          "academic_yr_to",
+          sessionResponse?.data?.custom_claims?.settings?.academic_yr_to
+        );
+        const errorMsg = sessionResponse?.data?.message;
+        // Handle expired token
+        if (errorMsg === "Token has expired") {
+          toast.error("Session expired. Please login again.");
+          localStorage.removeItem("authToken"); // Optional: clear old token
+          navigate("/"); // Redirect to login
+          return;
+        } // setRoleId("A"); // Store role_id
         // Fetch academic year data
         const academicYearResponse = await axios.get(
           `${API_URL}/api/getAcademicYear`,
@@ -1003,7 +1026,8 @@ function NavBar() {
         setAcademicYear(academicYearResponse.data.academic_years);
 
         // Fetch navigation items
-        const navResponse = await axios.get(`${API_URL}/api/navmenulist`, {
+        // const navResponse = await axios.get(`${API_URL}/api/navmenulist`,
+        const navResponse = await axios.get(`${API_URL}/api/navmenulisttest`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -1012,6 +1036,14 @@ function NavBar() {
         console.log("this is the nablis", navResponse.data);
         console.log("this is the array", navResponse.data.sub_menus);
       } catch (error) {
+        const errorMsg = error.response?.data?.message;
+        // Handle expired token
+        if (errorMsg === "Token has expired") {
+          toast.error("Session expired. Please login again.");
+          localStorage.removeItem("authToken"); // Optional: clear old token
+          navigate("/"); // Redirect to login
+          return;
+        }
         console.error("Error fetching data:", error);
       }
     };
@@ -1445,9 +1477,11 @@ function NavBar() {
                     </div>
 
                     {console.log("the Role id", roleId)}
-                    {roleId === "A" ? renderStaticMenu() : renderDynamicMenu()}
+                    {/* {roleId === "A" ? renderStaticMenu() : renderDynamicMenu()} */}
+                    {renderDynamicMenu()}
+
                     {/* {renderDropdownItemsis(navItems)} */}
-                    {/* Resysuib function  */}
+                    {/* Resysuib function .  */}
                     {/* <RecursiveDropdown items={navItems} /> */}
                   </Nav>
                 </Navbar.Collapse>{" "}
@@ -1461,6 +1495,7 @@ function NavBar() {
                     type="text"
                     id="search"
                     name="search"
+                    // disabled
                     placeholder="GR NO"
                     value={inputValueGR}
                     onChange={(e) => {

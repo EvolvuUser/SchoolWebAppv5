@@ -1,6 +1,5 @@
 import axios from "axios";
 import ReactPaginate from "react-paginate";
-import NavBar from "../../../Layouts/NavBar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -643,7 +642,7 @@ function ClassList() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              {roleId !== "M" ? (
+              {roleId === "U" ? (
                 loading ? ( // Replace isLoading with your actual loading flag
                   <div className="h-9 w-20 bg-gray-300 animate-pulse rounded-sm"></div>
                 ) : (
@@ -670,7 +669,7 @@ function ClassList() {
           <div className="card-body w-full">
             <div
               className={`h-96 lg:h-96 overflow-y-scroll lg:overflow-x-hidden mx-auto ${
-                roleId === "M" ? "w-full md:w-[75%]" : "w-full md:w-[84%]"
+                roleId === "U" ? "w-full md:w-[84%]" : "w-full md:w-[75%]"
               }`}
             >
               <div className="bg-white rounded-lg shadow-xs">
@@ -702,7 +701,7 @@ function ClassList() {
                         <th className="px-2 w-full md:w-[25%] text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
                           Section
                         </th>
-                        {roleId !== "M" && (
+                        {roleId === "U" && (
                           <>
                             <th className="px-2 w-full md:w-[10%] text-center lg:px-3 py-2 border border-gray-950 text-sm font-semibold text-gray-900 tracking-wider">
                               Edit
@@ -749,7 +748,7 @@ function ClassList() {
                                 }
                               </p>
                             </td>
-                            {roleId !== "M" && (
+                            {roleId === "U" && (
                               <>
                                 <td className="text-center px-2 lg:px-3 border border-gray-950 text-sm">
                                   <button
@@ -776,7 +775,7 @@ function ClassList() {
                       ) : (
                         <tr>
                           <td
-                            colSpan={roleId !== "M" ? 6 : 4}
+                            colSpan={roleId === "U" ? 6 : 4}
                             className="text-center py-6 text-red-700 text-lg"
                           >
                             Oops! No data found..

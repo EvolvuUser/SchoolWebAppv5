@@ -244,6 +244,46 @@ import ApproveLeaveList from "../componants/AllTableList/ApproveLeaveList.jsx";
 import LeaveApprove from "../componants/AllTableList/LeaveApproveForPrinciple/LeaveApprove (1).jsx";
 import TeacherList from "../componants/AllTableList/TeacherList.jsx";
 import EditLeaveApprove from "../componants/AllTableList/LeaveApproveForPrinciple/EditLeaveApprove (1).jsx";
+import ViewTimeTablePlanner from "../componants/TimeTablePlanner/ViewExamTimeTablePlanner/ViewTimeTablePlanner.jsx";
+import Stationery from "../componants/Stationery/Stationery.jsx";
+import SiblingUnmapping from "../componants/SiblingUnmapping/SiblingUnmapping.jsx";
+import UnmapDetails from "../componants/SiblingUnmapping/UnmapDetails.jsx";
+import SubServiceType from "../componants/TicketingModule/SubServiceType.jsx";
+import AppointmentWindow from "../componants/TicketingModule/ApponitmentWindow.jsx";
+import CreateAppointmentWindow from "../componants/TicketingModule/CreateApponimentWindow.jsx";
+import EditAppointmentWindow from "../componants/TicketingModule/EditApponitmentWindow.jsx";
+import ServiceType from "../componants/TicketingModule/ServiceType.jsx";
+import TicketList from "../componants/TicketingModule/TicketList.jsx";
+import TicketReport from "../componants/TicketingModule/TicketReport.jsx";
+import ViewTicket from "../componants/TicketingModule/ViewTicket.jsx";
+import AllotSpecialRole from "../componants/MastersModule/AllotSpecialRole/AllotSpecialRole.jsx";
+import RemarkObservationStudent from "../componants/RemarkAndObservationforStudent/RemarkObservationStudent.jsx";
+import EditRemarkandObservation from "../componants/RemarkAndObservationforStudent/EditRemarkObservation.jsx";
+import CreateRemarkObservationStudent from "../componants/RemarkAndObservationforStudent/CreateRemarkObservationStudent.jsx";
+import CreateRemarkObservation from "../componants/RemarkAndObservationforStudent/CreateRemarkObservation.jsx";
+import StaffMonthlyAttendanceRepo from "../componants/Reports/StaffMonthlyAttendanceRepo.jsx";
+import FeesStructure from "../componants/Finance/FeesStructure.jsx";
+import FeesCategoryStudentAllotment from "../componants/Finance/FeesCategoryStudentAllotment.jsx";
+import FeesCategoryView from "../componants/Finance/FeesCategoryView.jsx";
+import FeesOutStandingSendSms from "../componants/Finance/FeesOutStandingSendSms.jsx";
+import SubstituteClassTeacher from "../componants/SubstituteClassTeacher/SubstituteClassTeacher.jsx";
+import AttendanceMarkingStatusReport from "../componants/Reports/AttendanceReport/AttendanceMarkingStatusReport.jsx";
+import StaffLeaveReport from "../componants/Reports/StaffReport/StaffLeaveReport.jsx";
+import TeacherRemarkReport from "../componants/Reports/StaffReport/TeacherRemarkReport.jsx";
+import AttendanceDetaileMontReport from "../componants/Reports/AttendanceReport/AttendanceDetaileMontReport.jsx";
+import LessonPlanStatusReport from "../componants/Reports/LessonPlanReport/LessonPlanStatusReport.jsx";
+import LessonPlanSummarisedReport from "../componants/Reports/LessonPlanReport/LessonPlanSummarisedReport.jsx";
+import HomeworkStatusReport from "../componants/Reports/LessonPlanReport/HomeworkStatusReport.jsx";
+import ClasswiseHomeworkDetailReport from "../componants/Reports/LessonPlanReport/ClasswiseHomeworkDetailReport.jsx";
+import TeacherAttendanceMonthlyReport from "../componants/Reports/TeacherAttendanceMonthlyReport.jsx";
+import FullTermMarksClass from "../componants/Reports/AssessmentrReportModule/FullTermMarksClass.jsx";
+import LessonPlanDetailedView from "../componants/View/LessonPlanDetailedView.jsx";
+import IciciFeePaymentReport from "../componants/Reports/IciciFeePaymentReport.jsx";
+import ReportCardMarksClass from "../componants/Reports/AssessmentrReportModule/ReportCardMarksClass.jsx";
+import Event from "../componants/Events/Event.jsx";
+import CreateEvent from "../componants/Events/CreateEvent.jsx";
+import EditEvent from "../componants/Events/EditEvent.jsx";
+import MarkDropdownEditor from "../componants/Events/MarkDropdownEditor.jsx";
 
 // import Menus from "../c";
 function Index() {
@@ -461,6 +501,11 @@ function Index() {
           path="/leaveAllocationtoAllStaff"
           element={<PrivateRoute element={<LeaveAllocationtoAllStaff />} />}
         />
+        {/* Substitute class teacher module */}
+        <Route
+          path="/substituteClassTeacher"
+          element={<PrivateRoute element={<SubstituteClassTeacher />} />}
+        />
         {/* Substitute Teacher */}
         <Route
           path="/SubstituteTeacher"
@@ -530,6 +575,11 @@ function Index() {
         <Route
           path="/myprofile"
           element={<PrivateRoute element={<UserProfile />} />}
+        />
+        {/* Allot special Role */}
+        <Route
+          path="/allotSpecialRole"
+          element={<PrivateRoute element={<AllotSpecialRole />} />}
         />
         <Route
           path="/classes"
@@ -664,6 +714,10 @@ function Index() {
           element={<PrivateRoute element={<CreateExamTimeTable />} />}
         />
         <Route
+          path="/viewTimeTable/view/:id"
+          element={<PrivateRoute element={<ViewTimeTablePlanner />} />}
+        />
+        <Route
           path="/examTimeTable/edit/:id"
           element={<PrivateRoute element={<EditExamTimeTable />} />}
         />
@@ -674,6 +728,20 @@ function Index() {
         <Route
           path="/sections"
           element={<PrivateRoute element={<Sections />} />}
+        />
+        {/* Event modules Card Module */}
+        <Route path="/event" element={<PrivateRoute element={<Event />} />} />
+        <Route
+          path="/createEvent"
+          element={<PrivateRoute element={<CreateEvent />} />}
+        />
+        <Route
+          path="/editEvent/:id"
+          element={<PrivateRoute element={<EditEvent />} />}
+        />
+        <Route
+          path="/markDropdown"
+          element={<PrivateRoute element={<MarkDropdownEditor />} />}
         />
         {/* Id Cards Module */}
         {/* Student Id Card Module */}
@@ -686,7 +754,6 @@ function Index() {
           path="/teacherIdCard"
           element={<PrivateRoute element={<TeacherIdCard />} />}
         />
-
         <Route
           path="/updateStudentIdCard"
           element={<PrivateRoute element={<UpdateStudentIdCards />} />}
@@ -696,23 +763,73 @@ function Index() {
           path="/uploadStudentPhoto/:id"
           element={<PrivateRoute element={<UploadStudentPhoto />} />}
         />
-
         <Route
           path="/uploadParentPhoto/:id"
           element={<PrivateRoute element={<UploadParentPhoto />} />}
         />
-
         {/* Pending StudentID Card Module */}
         <Route
           path="/pendingStudentId"
           element={<PrivateRoute element={<PendingStudentId />} />}
         />
         {/* Id Card Details */}
-
         <Route
           path="/iDCardDetails/:id"
           element={<PrivateRoute element={<IDCardDetails />} />}
         />
+        {/* Remark and Observation for Student  */}
+        <Route
+          path="/remObsStudent"
+          element={<PrivateRoute element={<RemarkObservationStudent />} />}
+        />
+        <Route
+          path="/remObsStudent/edit/:id"
+          element={<PrivateRoute element={<EditRemarkandObservation />} />}
+        />
+        <Route
+          path="/createremObsStudent"
+          element={
+            <PrivateRoute element={<CreateRemarkObservationStudent />} />
+          }
+        />
+        <Route
+          path="createremObs"
+          element={<PrivateRoute element={<CreateRemarkObservation />} />}
+        />
+        {/* Ticketing module start */}
+        <Route
+          path="/serviceType"
+          element={<PrivateRoute element={<ServiceType />} />}
+        />
+        <Route
+          path="/subServiceType"
+          element={<PrivateRoute element={<SubServiceType />} />}
+        />
+        <Route
+          path="/appointmentWindow"
+          element={<PrivateRoute element={<AppointmentWindow />} />}
+        />
+        <Route
+          path="/CreateAppWindow"
+          element={<PrivateRoute element={<CreateAppointmentWindow />} />}
+        />
+        <Route
+          path="/EditAppWindow/edit/:id"
+          element={<PrivateRoute element={<EditAppointmentWindow />} />}
+        />
+        <Route
+          path="/ticketList"
+          element={<PrivateRoute element={<TicketList />} />}
+        />
+        <Route
+          path="/ticketReport"
+          element={<PrivateRoute element={<TicketReport />} />}
+        />
+        <Route
+          path="/ticketList/view/:id"
+          element={<PrivateRoute element={<ViewTicket />} />}
+        />
+        {/* Report start */}
         {/* List Of Admission Form Reports */}
         <Route
           path="/listAdmFrmRep"
@@ -783,17 +900,82 @@ function Index() {
           path="/staffReport"
           element={<PrivateRoute element={<StaffReport />} />}
         />
+        {/* Staff Leave report  */}
+        <Route
+          path="/staffLeaveReport"
+          element={<PrivateRoute element={<StaffLeaveReport />} />}
+        />
+        {/* Teacher Remark Report */}
+        {/* Staff Report Module */}
+        <Route
+          path="/teacherRemarkReport"
+          element={<PrivateRoute element={<TeacherRemarkReport />} />}
+        />
+        <Route
+          path="/AttendanceDetaileMontReport"
+          element={<PrivateRoute element={<AttendanceDetaileMontReport />} />}
+        />
+        {/* Lesson plane report modules */}
+        <Route
+          path="/lessonPlanStatusReport"
+          element={<PrivateRoute element={<LessonPlanStatusReport />} />}
+        />
+        <Route
+          path="/lessonPlanSummarisedReport"
+          element={<PrivateRoute element={<LessonPlanSummarisedReport />} />}
+        />
+        <Route
+          path="/homeworkStatusReport"
+          element={<PrivateRoute element={<HomeworkStatusReport />} />}
+        />
+        <Route
+          path="/classwiseHomeworkDetailReport"
+          element={<PrivateRoute element={<ClasswiseHomeworkDetailReport />} />}
+        />
+        {/* Staff Monthly Attendance Report */}
+        <Route
+          path="/staffMonthlyAttendanceRepo"
+          element={
+            <PrivateRoute element={<TeacherAttendanceMonthlyReport />} />
+          }
+        />
+        {/* Staff Monthly Attendance Report */}
+        <Route
+          path="/teacherAttendanceMonthlyReport"
+          element={
+            <PrivateRoute element={<TeacherAttendanceMonthlyReport />} />
+          }
+        />{" "}
+        {/* Lesson plan Detailed Report */}
+        <Route
+          path="/lessonPlanDetailedView"
+          element={<PrivateRoute element={<LessonPlanDetailedView />} />}
+        />
+        {/* Attendance Marking Status Report */}
+        <Route
+          path="/attendanceMarkingStatusRepo"
+          element={<PrivateRoute element={<AttendanceMarkingStatusReport />} />}
+        />
         {/* monthlyAttendenceReport module */}
         <Route
           path="/monthlyAttendenceRepo"
           element={<PrivateRoute element={<MonthlyAttendenceReport />} />}
+        />
+        {/* Full Term Marks Of A Class repor */}
+        <Route
+          path="/fullTermMarksClass"
+          element={<PrivateRoute element={<FullTermMarksClass />} />}
+        />
+        {/* Report Card Marks Of A Class repor */}
+        <Route
+          path="/reportCardMarksClass"
+          element={<PrivateRoute element={<ReportCardMarksClass />} />}
         />
         {/* Student Gender Wise  Report Module */}
         <Route
           path="/hSCStudSubjectsRepo"
           element={<PrivateRoute element={<HSCStudentsSubjectsReport />} />}
         />
-
         {/* Fee payment report module */}
         <Route
           path="/feePaymentRepo"
@@ -803,6 +985,11 @@ function Index() {
         <Route
           path="/worldlinfeePayRepo"
           element={<PrivateRoute element={<WorldlineFeePaymentReport />} />}
+        />
+        {/* IciciFeePaymentReport Fee Payment Report  module */}
+        <Route
+          path="/IciciFeePaymentReport"
+          element={<PrivateRoute element={<IciciFeePaymentReport />} />}
         />
         {/* Razorpay Fee Payment Reportmodule */}
         <Route
@@ -871,12 +1058,10 @@ function Index() {
           element={<PrivateRoute element={<TeacherList />} />}
         />
         {/* For Principle or management login routes RoleId is M */}
-
         <Route
           path="/manageSubjectP"
           element={<PrivateRoute element={<ManageSubjectPrinciple />} />}
         />
-
         {/* For notice and sms for staff */}
         <Route
           path="/staffNoticeAndSms"
@@ -922,24 +1107,53 @@ function Index() {
           path="/studentIdcDReport"
           element={<PrivateRoute element={<StudentIdCardDetailedReport />} />}
         />
-
+        {/* Stationary module*/}
+        <Route
+          path="/stationery"
+          element={<PrivateRoute element={<Stationery />} />}
+        />
+        {/* Siblings unMapping module*/}
+        <Route
+          path="/siblingUnmapping"
+          element={<PrivateRoute element={<SiblingUnmapping />} />}
+        />
+        {/* Stationary module*/}
+        <Route
+          path="/unmapDetails/edit/:id"
+          element={<PrivateRoute element={<UnmapDetails />} />}
+        />
         {/* TeacherAttendance Daily Report  report */}
         <Route
           path="/TeacherADReport"
           element={<PrivateRoute element={<TeacherAttendanceDailyReport />} />}
         />
-
         {/* Remark and observation modules for principle */}
         <Route
           path="/remObsTeacher"
           element={<PrivateRoute element={<TeacherRemarkandObservation />} />}
         />
-
         <Route
           path="/remObsTeacher/edit/:id"
           element={
             <PrivateRoute element={<EditTeacherRemarkandObservation />} />
           }
+        />
+        {/* Finance */}
+        <Route
+          path="/feesStructure"
+          element={<PrivateRoute element={<FeesStructure />} />}
+        />
+        <Route
+          path="/feesCatStudAllot"
+          element={<PrivateRoute element={<FeesCategoryStudentAllotment />} />}
+        />
+        <Route
+          path="/feesCategoryView"
+          element={<PrivateRoute element={<FeesCategoryView />} />}
+        />
+        <Route
+          path="/feesOutStandingSendSms"
+          element={<PrivateRoute element={<FeesOutStandingSendSms />} />}
         />
       </Route>
 

@@ -139,53 +139,6 @@ const EditLeaveApplicationForPrinciple = () => {
     }
   };
 
-  // const handleChange = (event) => {
-  //   const { name, value } = event.target;
-
-  //   setFormData((prevData) => {
-  //     let updatedData = {
-  //       ...prevData,
-  //       [name]: value,
-  //     };
-
-  //     // Recalculate no_of_days only if the dates are changed, and no manual editing is done
-  //     if (
-  //       updatedData.leave_start_date &&
-  //       updatedData.leave_end_date &&
-  //       name !== "no_of_days"
-  //     ) {
-  //       const startDate = new Date(updatedData.leave_start_date);
-  //       const endDate = new Date(updatedData.leave_end_date);
-
-  //       // Calculate day difference as a decimal (including fractional days)
-  //       const timeDiff = endDate - startDate;
-  //       const dayDiff = timeDiff / (1000 * 60 * 60 * 24) + 1; // Including fractional days
-
-  //       // Set the calculated value
-  //       updatedData.no_of_days = dayDiff > 0 ? dayDiff.toFixed(0) : "";
-  //     }
-
-  //     return updatedData;
-  //   });
-
-  //   // When manually editing no_of_days field, accept decimals and validate
-  //   if (name === "no_of_days") {
-  //     // Allow decimal values (positive only)
-  //     const decimalPattern = /^\d+(\.\d+)?$/;
-  //     if (decimalPattern.test(value)) {
-  //       setErrors((prevErrors) => ({
-  //         ...prevErrors,
-  //         no_of_days: "", // Clear any existing errors
-  //       }));
-  //     } else {
-  //       setErrors((prevErrors) => ({
-  //         ...prevErrors,
-  //         no_of_days: "Please enter a valid positive number (e.g., 0.5).",
-  //       }));
-  //     }
-  //   }
-  // };
-
   const manuallyEditedNoOfDaysRef = useRef(false);
 
   const handleChange = (event) => {
@@ -348,12 +301,12 @@ const EditLeaveApplicationForPrinciple = () => {
   };
 
   return (
-    <div className="container mx-auto min-h-screen flex items-center justify-center  ">
+    <div className="container mx-auto mt-4 flex items-center justify-center  ">
       <ToastContainer />
       <div className="card p-4 rounded-md w-[80%]">
         <div className=" card-header mb-4 flex justify-between items-center">
           <h5 className="text-gray-700 mt-1 text-md lg:text-lg">
-            Edit Leave Application
+            Edit Leave Application For Staff
           </h5>
 
           <RxCross1
@@ -509,20 +462,6 @@ const EditLeaveApplicationForPrinciple = () => {
               )}
             </div>
 
-            {/* Status */}
-            {/* <div className="flex flex-col">
-              <label htmlFor="status" className="mb-1">
-                Status <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="status"
-                name="status"
-                value={statusMap[formData.status] || ""}
-                readOnly
-                className="form-control bg-gray-200 shadow-inner"
-              />
-            </div> */}
             <div className="flex flex-col">
               <label htmlFor="status" className="mb-1">
                 Status <span className="text-red-500">*</span>

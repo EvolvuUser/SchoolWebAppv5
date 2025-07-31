@@ -675,11 +675,11 @@ const CreateLeaveApplicationForPrinciple = () => {
       setLoadingExams(true);
       const token = localStorage.getItem("authToken");
 
-      const response = await axios.get(`${API_URL}/api/staff_list`, {
+      const response = await axios.get(`${API_URL}/api/get_allstaff`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log("Class", response);
-      setStudentNameWithClassId(response?.data || []);
+      setStudentNameWithClassId(response?.data?.data || []);
     } catch (error) {
       toast.error("Error fetching Staff");
       console.error("Error fetching Staff:", error);
@@ -925,12 +925,12 @@ const CreateLeaveApplicationForPrinciple = () => {
   };
 
   return (
-    <div className="container mx-auto min-h-screen flex items-center justify-center  ">
+    <div className="container mx-auto mt-4 flex items-center justify-center  ">
       <ToastContainer />
       <div className="card p-4 rounded-md w-[80%] ">
         <div className=" card-header mb-4 flex justify-between items-center">
           <h5 className="text-gray-700 mt-1 text-md lg:text-lg">
-            Create Leave Application
+            Create Leave Application For Staff
           </h5>
 
           <RxCross1
